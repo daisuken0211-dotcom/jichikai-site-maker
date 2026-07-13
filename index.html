@@ -156,6 +156,45 @@
       gap: 8px;
     }
 
+    .block-tabs {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .block-tab {
+      border: 2px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: #334155;
+      font-weight: 900;
+      min-height: 36px;
+      padding: 4px 10px;
+    }
+
+    .block-tab.active {
+      border-color: var(--green);
+      background: var(--soft-green);
+      color: var(--green-dark);
+    }
+
+    .block-picker {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .block-pick {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: #334155;
+      font-weight: 900;
+      min-height: 40px;
+      padding: 7px 10px;
+      text-align: left;
+    }
+
     .added-blocks {
       display: grid;
       gap: 8px;
@@ -163,14 +202,31 @@
 
     .added-block-item {
       display: grid;
-      grid-template-columns: 1fr auto;
-      align-items: center;
+      gap: 8px;
       gap: 8px;
       border: 1px solid var(--line);
       border-radius: 8px;
       padding: 8px;
       background: #fff;
       font-weight: 800;
+    }
+
+    .added-block-title {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .block-fields {
+      display: grid;
+      gap: 8px;
+    }
+
+    .link-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.25fr;
+      gap: 6px;
     }
 
     .small-btn {
@@ -401,6 +457,14 @@
       font-weight: 900;
     }
 
+    .link-buttons {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, auto));
+      justify-content: start;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
     .placeholder-link {
       opacity: .62;
     }
@@ -618,11 +682,9 @@
         </div>
 
         <div class="section-box">
-          <label for="extraBlockSelect">この下に追加するブロック</label>
-          <div class="add-block-row">
-            <select id="extraBlockSelect"></select>
-            <button class="small-btn" id="addBlockBtn" type="button">追加</button>
-          </div>
+          <label>この下に追加するブロック</label>
+          <div class="block-tabs" id="blockTabs"></div>
+          <div class="block-picker" id="blockPicker"></div>
           <div class="added-blocks" id="addedBlocks"></div>
         </div>
 
@@ -630,12 +692,6 @@
           <label>白紙ブロック用の見出し・本文</label>
           <input id="customHeading" placeholder="例: 自治会の活動紹介">
           <textarea id="customText" placeholder="ここに自由に文章を入れます。写真左・文字右などの追加ブロックにも使えます。"></textarea>
-        </div>
-
-        <div class="section-box">
-          <label>PDF・リンク設定</label>
-          <input id="linkText" value="回覧板PDFを見る" placeholder="リンク文字 例: 回覧板PDFを見る">
-          <input id="linkUrl" placeholder="PDFまたはリンクURL 例: https://example.com/kairan.pdf">
         </div>
 
         <div class="section-box">
@@ -704,6 +760,7 @@
   <script>
     const state = {
       activeTab: "html",
+      activeBlockCategory: "basic",
       html: "",
       css: "",
       blockHtml: "",
@@ -724,28 +781,25 @@
       { id: "compact", name: "11. コンパクト", note: "短く一覧向け", className: "t-compact t-magazine" }
     ];
 
+    const blockCategories = [
+      { id: "basic", name: "文字" },
+      { id: "media", name: "写真・リンク" },
+      { id: "list", name: "一覧" },
+      { id: "layout", name: "配置" }
+    ];
+
     const extraBlockTypes = [
-      { id: "headingOnly", name: "見出しだけ" },
-      { id: "textOnly", name: "本文だけ" },
-      { id: "photo", name: "写真ブロック" },
-      { id: "photoTextLeft", name: "写真左・文字右" },
-      { id: "textPhotoRight", name: "文字左・写真右" },
-      { id: "blankHeading", name: "白紙から見出し" },
-      { id: "recentInfo", name: "直近情報一覧" },
-      { id: "newsCards", name: "お知らせカード" },
-      { id: "newsTable", name: "お知らせ表" },
-      { id: "newsletter", name: "広報誌" },
-      { id: "circular", name: "回覧板" },
-      { id: "schedule", name: "行事予定" },
-      { id: "join", name: "会員募集" },
-      { id: "disaster", name: "防災情報" },
-      { id: "disasterPrep", name: "防災の備え" },
-      { id: "facility", name: "コミュセン施設案内" },
-      { id: "traditionalEvent", name: "伝統行事紹介" },
-      { id: "budget", name: "決算・自治会費" },
-      { id: "archiveButton", name: "過去分へのボタン" },
-      { id: "contact", name: "連絡先" },
-      { id: "about", name: "自治会について" }
+      { id: "headingOnly", category: "basic", name: "見出しだけ" },
+      { id: "textOnly", category: "basic", name: "本文だけ" },
+      { id: "headingText", category: "basic", name: "見出し＋本文" },
+      { id: "pdfLinks", category: "media", name: "PDFリンク最大3つ" },
+      { id: "buttonLinks", category: "media", name: "ボタンリンク最大3つ" },
+      { id: "photo", category: "media", name: "写真ブロック" },
+      { id: "photoTextLeft", category: "layout", name: "写真左・文字右" },
+      { id: "textPhotoRight", category: "layout", name: "文字左・写真右" },
+      { id: "recentInfo", category: "list", name: "直近情報一覧" },
+      { id: "newsCards", category: "list", name: "カード一覧" },
+      { id: "newsTable", category: "list", name: "表形式" }
     ];
 
     const els = {
@@ -755,12 +809,11 @@
       photoUrl2: document.getElementById("photoUrl2"),
       photoUrl3: document.getElementById("photoUrl3"),
       templateSelect: document.getElementById("templateSelect"),
-      extraBlockSelect: document.getElementById("extraBlockSelect"),
+      blockTabs: document.getElementById("blockTabs"),
+      blockPicker: document.getElementById("blockPicker"),
       addedBlocks: document.getElementById("addedBlocks"),
       customHeading: document.getElementById("customHeading"),
       customText: document.getElementById("customText"),
-      linkText: document.getElementById("linkText"),
-      linkUrl: document.getElementById("linkUrl"),
       scheduleText: document.getElementById("scheduleText"),
       contactText: document.getElementById("contactText"),
       preview: document.getElementById("preview"),
@@ -790,7 +843,32 @@
     function initializeTemplates() {
       els.templateSelect.innerHTML = templates.map((template) => `<option value="${template.id}">${template.name} - ${template.note}</option>`).join("");
       els.templateSelect.value = "blank";
-      els.extraBlockSelect.innerHTML = extraBlockTypes.map((block) => `<option value="${block.id}">${block.name}</option>`).join("");
+      renderBlockPicker();
+    }
+
+    function renderBlockPicker() {
+      els.blockTabs.innerHTML = blockCategories.map((category) => `
+        <button class="block-tab ${category.id === state.activeBlockCategory ? "active" : ""}" type="button" data-block-category="${category.id}">${category.name}</button>
+      `).join("");
+      els.blockPicker.innerHTML = extraBlockTypes
+        .filter((block) => block.category === state.activeBlockCategory)
+        .map((block) => `<button class="block-pick" type="button" data-add-block-type="${block.id}">${block.name}</button>`)
+        .join("");
+    }
+
+    function defaultBlock(type) {
+      const label = extraBlockTypes.find((block) => block.id === type)?.name || "追加ブロック";
+      return {
+        id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        type,
+        heading: label,
+        text: "",
+        links: [
+          { text: "PDFを見る", url: "" },
+          { text: "", url: "" },
+          { text: "", url: "" }
+        ]
+      };
     }
 
     function placeholderPhoto() {
@@ -860,10 +938,10 @@
       return `<section class="feature-text"><h2>自治会について</h2><p>${catchText}</p></section>`;
     }
 
-    function customHeadingText() {
+    function customHeadingText(block = null) {
       return {
-        heading: escapeHtml(els.customHeading.value.trim() || "新しい見出し"),
-        text: escapeHtml(els.customText.value.trim() || "ここに本文を入れます。")
+        heading: escapeHtml((block ? block.heading : els.customHeading.value).trim() || "新しい見出し"),
+        text: escapeHtml((block ? block.text : els.customText.value).trim() || "ここに本文を入れます。")
       };
     }
 
@@ -872,14 +950,19 @@
       return `<section class="feature-text"><h2>${custom.heading}</h2><p>${custom.text}</p></section>`;
     }
 
-    function headingOnlyMarkup() {
-      const custom = customHeadingText();
+    function headingOnlyMarkup(block) {
+      const custom = customHeadingText(block);
       return `<section><h2>${custom.heading}</h2></section>`;
     }
 
-    function textOnlyMarkup() {
-      const custom = customHeadingText();
+    function textOnlyMarkup(block) {
+      const custom = customHeadingText(block);
       return `<section><p>${custom.text}</p></section>`;
+    }
+
+    function headingTextMarkup(block) {
+      const custom = customHeadingText(block);
+      return `<section class="feature-text"><h2>${custom.heading}</h2><p>${custom.text}</p></section>`;
     }
 
     function recentInfoMarkup(context) {
@@ -902,86 +985,58 @@
       return `<section class="feature-text"><h2>広報誌</h2><p>最新号と直近1年分の広報誌を掲載できます。PDFへのリンクや画像を並べる形にもできます。</p></section>`;
     }
 
-    function linkSettings(defaultText = "PDFを見る") {
-      return {
-        text: escapeHtml(els.linkText.value.trim() || defaultText),
-        url: escapeHtml(els.linkUrl.value.trim())
-      };
+    function linkButtonsMarkup(block, className = "") {
+      const links = (block.links || []).filter((link) => link.text.trim() || link.url.trim()).slice(0, 3);
+      if (!links.length) return `<span class="archive-link placeholder-link">リンクを設定してください</span>`;
+      return `<div class="link-buttons ${className}">
+        ${links.map((link) => {
+          const text = escapeHtml(link.text.trim() || "PDFを見る");
+          const url = escapeHtml(link.url.trim());
+          return url
+            ? `<a class="archive-link" href="${url}" target="_blank" rel="noopener">${text}</a>`
+            : `<span class="archive-link placeholder-link">${text}</span>`;
+        }).join("")}
+      </div>`;
     }
 
-    function linkButtonMarkup(defaultText = "PDFを見る") {
-      const link = linkSettings(defaultText);
-      if (!link.url) {
-        return `<span class="archive-link placeholder-link">${link.text}</span>`;
-      }
-      return `<a class="archive-link" href="${link.url}" target="_blank" rel="noopener">${link.text}</a>`;
+    function linksBlockMarkup(block) {
+      const custom = customHeadingText(block);
+      return `<section class="feature-text"><h2>${custom.heading}</h2><p>${custom.text}</p>${linkButtonsMarkup(block)}</section>`;
     }
 
-    function circularMarkup() {
-      const custom = customHeadingText();
-      return `<section class="feature-text"><h2>回覧板</h2><p>${custom.text}</p><p>${linkButtonMarkup("回覧板PDFを見る")}</p></section>`;
-    }
-
-    function facilityMarkup() {
-      return `<section class="feature-text"><h2>コミュニティセンター</h2><p>施設案内、利用時間、予約方法、利用上の注意を掲載できます。</p></section>`;
-    }
-
-    function traditionalEventMarkup() {
-      return `<section class="feature-text"><h2>伝統行事</h2><p>地域で受け継がれている行事の内容、開催時期、参加方法を紹介できます。</p></section>`;
-    }
-
-    function disasterPrepMarkup() {
-      return `<section class="alert-panel"><h2>防災の備え</h2><p>災害時の行動、発災前の準備、自治会の防災備品を掲載できます。</p></section>`;
-    }
-
-    function budgetMarkup() {
-      return `<section class="feature-text"><h2>自治会費・決算</h2><p>自治会費の使い道や決算資料を、簡単な説明とPDFリンクで掲載できます。</p></section>`;
-    }
-
-    function archiveButtonMarkup() {
-      return `<section class="feature-text"><h2>過去のお知らせ</h2><p>${linkButtonMarkup("過去分を見る")}</p></section>`;
-    }
-
-    function photoTextMarkup(photoUrls, siteName, reverse = false) {
-      const custom = customHeadingText();
+    function photoTextMarkup(photoUrls, siteName, block, reverse = false) {
+      const custom = customHeadingText(block);
       const photo = photoMarkup(photoUrls, siteName);
       const text = `<div class="feature-text"><h2>${custom.heading}</h2><p>${custom.text}</p></div>`;
       return `<section class="feature-row ${reverse ? "reverse" : ""}">${reverse ? `${text}${photo}` : `${photo}${text}`}</section>`;
     }
 
-    function extraBlockMarkup(blockType, context) {
-      if (blockType === "headingOnly") return headingOnlyMarkup();
-      if (blockType === "textOnly") return textOnlyMarkup();
+    function extraBlockMarkup(block, context) {
+      const blockType = block.type;
+      if (blockType === "headingOnly") return headingOnlyMarkup(block);
+      if (blockType === "textOnly") return textOnlyMarkup(block);
+      if (blockType === "headingText") return headingTextMarkup(block);
+      if (blockType === "pdfLinks" || blockType === "buttonLinks") return linksBlockMarkup(block);
       if (blockType === "photo") return context.photoBlock;
-      if (blockType === "photoTextLeft") return photoTextMarkup(context.photoUrls, context.siteName, false);
-      if (blockType === "textPhotoRight") return photoTextMarkup(context.photoUrls, context.siteName, true);
+      if (blockType === "photoTextLeft") return photoTextMarkup(context.photoUrls, context.siteName, block, false);
+      if (blockType === "textPhotoRight") return photoTextMarkup(context.photoUrls, context.siteName, block, true);
       if (blockType === "blankHeading") return blankHeadingMarkup();
       if (blockType === "recentInfo") return recentInfoMarkup(context);
       if (blockType === "newsCards") return context.noticeCards;
       if (blockType === "newsTable") return context.noticeTable;
-      if (blockType === "newsletter") return newsletterMarkup();
-      if (blockType === "circular") return circularMarkup();
       if (blockType === "schedule") return scheduleMarkup();
-      if (blockType === "join") return joinMarkup();
-      if (blockType === "disaster") return disasterMarkup();
-      if (blockType === "disasterPrep") return disasterPrepMarkup();
-      if (blockType === "facility") return facilityMarkup();
-      if (blockType === "traditionalEvent") return traditionalEventMarkup();
-      if (blockType === "budget") return budgetMarkup();
-      if (blockType === "archiveButton") return archiveButtonMarkup();
       if (blockType === "contact") return contactMarkup();
-      if (blockType === "about") return aboutMarkup(context.catchText);
       return "";
     }
 
     function extraBlocksMarkup(context) {
       if (!state.extraBlocks.length) return "";
       if (context.templateId === "blank") {
-        return state.extraBlocks.map((block) => extraBlockMarkup(block.type, context)).join("");
+        return state.extraBlocks.map((block) => extraBlockMarkup(block, context)).join("");
       }
       return `
         <div class="extra-divider">追加ブロック</div>
-        ${state.extraBlocks.map((block) => extraBlockMarkup(block.type, context)).join("")}
+        ${state.extraBlocks.map((block) => extraBlockMarkup(block, context)).join("")}
       `;
     }
 
@@ -989,10 +1044,25 @@
       els.addedBlocks.innerHTML = state.extraBlocks.length
         ? state.extraBlocks.map((block, index) => {
             const type = extraBlockTypes.find((item) => item.id === block.type);
+            const needsHeading = ["headingOnly", "headingText", "photoTextLeft", "textPhotoRight", "pdfLinks", "buttonLinks"].includes(block.type);
+            const needsText = ["textOnly", "headingText", "photoTextLeft", "textPhotoRight", "pdfLinks", "buttonLinks"].includes(block.type);
+            const needsLinks = ["pdfLinks", "buttonLinks"].includes(block.type);
             return `
               <div class="added-block-item">
-                <span>${index + 1}. ${escapeHtml(type ? type.name : block.type)}</span>
-                <button class="small-btn" type="button" data-remove-block="${index}">削除</button>
+                <div class="added-block-title">
+                  <span>${index + 1}. ${escapeHtml(type ? type.name : block.type)}</span>
+                  <button class="small-btn" type="button" data-remove-block="${index}">削除</button>
+                </div>
+                <div class="block-fields">
+                  ${needsHeading ? `<input data-block-field="${index}:heading" value="${escapeHtml(block.heading)}" placeholder="見出し">` : ""}
+                  ${needsText ? `<textarea data-block-field="${index}:text" placeholder="本文">${escapeHtml(block.text)}</textarea>` : ""}
+                  ${needsLinks ? (block.links || []).slice(0, 3).map((link, linkIndex) => `
+                    <div class="link-grid">
+                      <input data-block-field="${index}:links.${linkIndex}.text" value="${escapeHtml(link.text)}" placeholder="リンク文字 ${linkIndex + 1}">
+                      <input data-block-field="${index}:links.${linkIndex}.url" value="${escapeHtml(link.url)}" placeholder="PDFまたはリンクURL ${linkIndex + 1}">
+                    </div>
+                  `).join("") : ""}
+                </div>
               </div>
             `;
           }).join("")
@@ -1273,6 +1343,14 @@ main {
   padding: 8px 14px;
   text-decoration: none;
   font-weight: 800;
+}
+
+.link-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, auto));
+  justify-content: start;
+  gap: 8px;
+  margin-top: 10px;
 }
 
 .placeholder-link {
@@ -1882,15 +1960,35 @@ exports.deleteUserByAdmin = onCall(async (request) => {
       return state.extraBlocks.map((block, index) => {
         const sectionId = `section-extra-${index + 1}`;
         if (block.type === "headingOnly") {
-          const custom = customHeadingText();
+          const custom = customHeadingText(block);
           return `<div class="pera1-section block heading-line" data-structure="b-heading-origin-bdr--updown" data-block-name="見出し" id="${sectionId}">
     <div class="c-wrapper u-align-center"><h2 class="pera1-editable" data-structure="e-heading">${custom.heading}</h2></div>
   </div>`;
         }
         if (block.type === "textOnly") {
-          const custom = customHeadingText();
+          const custom = customHeadingText(block);
           return `<div class="pera1-section block" data-structure="b-sentence" data-block-name="文章" id="${sectionId}">
     <div class="c-wrapper"><div class="sentence pera1-editable" data-structure="e-text">${custom.text}</div></div>
+  </div>`;
+        }
+        if (block.type === "headingText") {
+          const custom = customHeadingText(block);
+          return `<div class="pera1-section block" data-structure="b-sentence" data-block-name="見出しと文章" id="${sectionId}">
+    <div class="c-wrapper"><h2 class="pera1-editable" data-structure="e-heading">${custom.heading}</h2><div class="sentence pera1-editable" data-structure="e-text">${custom.text}</div></div>
+  </div>`;
+        }
+        if (block.type === "pdfLinks" || block.type === "buttonLinks") {
+          const custom = customHeadingText(block);
+          const links = (block.links || []).filter((link) => link.text.trim() || link.url.trim()).slice(0, 3);
+          const linksHtml = links.length
+            ? links.map((link) => {
+                const text = escapeHtml(link.text.trim() || "PDFを見る");
+                const url = escapeHtml(link.url.trim());
+                return url ? `<a href="${url}" target="_blank" rel="noopener">${text}</a>` : text;
+              }).join("<br>")
+            : "リンクを設定してください";
+          return `<div class="pera1-section block" data-structure="b-sentence-card" data-block-name="リンク" id="${sectionId}">
+    <div class="c-wrapper"><div class="note"><h2 class="pera1-editable" data-structure="e-heading">${custom.heading}</h2><div class="pera1-editable" data-structure="e-text">${custom.text}<br>${linksHtml}</div></div></div>
   </div>`;
         }
         if (block.type === "photo") {
@@ -1899,7 +1997,7 @@ exports.deleteUserByAdmin = onCall(async (request) => {
   </div>`;
         }
         if (block.type === "photoTextLeft" || block.type === "textPhotoRight") {
-          const custom = customHeadingText();
+          const custom = customHeadingText(block);
           const photo = `<div>${buildPeraichiPhotoRow(context.photoUrls || [], context.siteName)}</div>`;
           const text = `<div><h2 class="pera1-editable" data-structure="e-heading">${custom.heading}</h2><div class="pera1-editable" data-structure="e-text">${custom.text}</div></div>`;
           return `<div class="pera1-section block" data-structure="b-article-img-left--bdr" data-block-name="左画像(枠付)" id="${sectionId}">
@@ -1907,7 +2005,7 @@ exports.deleteUserByAdmin = onCall(async (request) => {
   </div>`;
         }
         if (block.type === "blankHeading") {
-          const custom = customHeadingText();
+          const custom = customHeadingText(block);
           return `<div class="pera1-section block" data-structure="b-sentence" data-block-name="文章" id="${sectionId}">
     <div class="c-wrapper"><h2 class="pera1-editable" data-structure="e-heading">${custom.heading}</h2><div class="sentence pera1-editable" data-structure="e-text">${custom.text}</div></div>
   </div>`;
@@ -1915,61 +2013,6 @@ exports.deleteUserByAdmin = onCall(async (request) => {
         if (block.type === "recentInfo" || block.type === "newsCards" || block.type === "newsTable") {
           return `<div class="pera1-section block" data-structure="b-table--bdr-btm" data-block-name="表(下線のみ)" id="${sectionId}">
     <div class="c-wrapper"><table data-structure="m-table"><tbody class="pera1-sortable">${context.noticeRows}</tbody></table></div>
-  </div>`;
-        }
-        if (block.type === "newsletter") {
-          return `<div class="pera1-section block" data-structure="b-sentence-card" data-block-name="広報誌" id="${sectionId}">
-    <div class="c-wrapper"><div class="note"><h2 class="pera1-editable" data-structure="e-heading">広報誌</h2><div class="pera1-editable" data-structure="e-text">最新号と直近1年分の広報誌を掲載できます。</div></div></div>
-  </div>`;
-        }
-        if (block.type === "circular") {
-          const custom = customHeadingText();
-          const link = linkSettings("回覧板PDFを見る");
-          const linkHtml = link.url ? `<a href="${link.url}" target="_blank" rel="noopener">${link.text}</a>` : link.text;
-          return `<div class="pera1-section block" data-structure="b-sentence-card" data-block-name="回覧板" id="${sectionId}">
-    <div class="c-wrapper"><div class="note"><h2 class="pera1-editable" data-structure="e-heading">回覧板</h2><div class="pera1-editable" data-structure="e-text">${custom.text}<br>${linkHtml}</div></div></div>
-  </div>`;
-        }
-        if (block.type === "schedule") {
-          return `<div class="pera1-section block" data-structure="b-sentence-card" data-block-name="カード型(背景色あり)" id="${sectionId}">
-    <div class="c-wrapper"><div class="note pera1-editable" data-structure="e-text"><strong>行事予定</strong><br>${escapeHtml(els.scheduleText.value)}</div></div>
-  </div>`;
-        }
-        if (block.type === "join") {
-          return `<div class="pera1-section block" data-structure="b-premium-list-note" data-block-name="ノート" id="${sectionId}">
-    <div class="c-wrapper"><div class="note"><h2 class="pera1-editable" data-structure="e-heading">自治会会員募集</h2><p>自治会への加入をお待ちしています。</p></div></div>
-  </div>`;
-        }
-        if (block.type === "disaster") {
-          return `<div class="pera1-section block" data-structure="b-sentence-card" data-block-name="カード型(背景色あり)" id="${sectionId}">
-    <div class="c-wrapper"><div class="note pera1-editable" data-structure="e-text"><strong>防災・重要情報</strong><br>避難場所、安否確認、防災訓練のお知らせを掲載できます。</div></div>
-  </div>`;
-        }
-        if (block.type === "disasterPrep") {
-          return `<div class="pera1-section block" data-structure="b-sentence-card" data-block-name="防災の備え" id="${sectionId}">
-    <div class="c-wrapper"><div class="note pera1-editable" data-structure="e-text"><strong>防災の備え</strong><br>災害時の行動、発災前の準備、自治会の防災備品を掲載できます。</div></div>
-  </div>`;
-        }
-        if (block.type === "facility") {
-          return `<div class="pera1-section block" data-structure="b-sentence" data-block-name="施設案内" id="${sectionId}">
-    <div class="c-wrapper"><h2 class="pera1-editable" data-structure="e-heading">コミュニティセンター</h2><div class="sentence pera1-editable" data-structure="e-text">施設案内、利用時間、予約方法、利用上の注意を掲載できます。</div></div>
-  </div>`;
-        }
-        if (block.type === "traditionalEvent") {
-          return `<div class="pera1-section block" data-structure="b-sentence" data-block-name="伝統行事" id="${sectionId}">
-    <div class="c-wrapper"><h2 class="pera1-editable" data-structure="e-heading">伝統行事</h2><div class="sentence pera1-editable" data-structure="e-text">地域で受け継がれている行事の内容、開催時期、参加方法を紹介できます。</div></div>
-  </div>`;
-        }
-        if (block.type === "budget") {
-          return `<div class="pera1-section block" data-structure="b-sentence" data-block-name="決算" id="${sectionId}">
-    <div class="c-wrapper"><h2 class="pera1-editable" data-structure="e-heading">自治会費・決算</h2><div class="sentence pera1-editable" data-structure="e-text">自治会費の使い道や決算資料を掲載できます。</div></div>
-  </div>`;
-        }
-        if (block.type === "archiveButton") {
-          const link = linkSettings("過去分を見る");
-          const linkHtml = link.url ? `<a href="${link.url}" target="_blank" rel="noopener">${link.text}</a>` : link.text;
-          return `<div class="pera1-section block" data-structure="b-sentence-card" data-block-name="過去分ボタン" id="${sectionId}">
-    <div class="c-wrapper"><div class="note"><h2 class="pera1-editable" data-structure="e-heading">過去のお知らせ</h2><div class="pera1-editable" data-structure="e-text">${linkHtml}</div></div></div>
   </div>`;
         }
         if (block.type === "contact") {
@@ -1990,7 +2033,7 @@ exports.deleteUserByAdmin = onCall(async (request) => {
       </div>`;
     }
 
-    function render() {
+    function render(skipAddedBlocks = false) {
       const template = currentTemplate();
       const previewPhoto = escapeHtml(primaryPhotoUrl() || placeholderPhoto());
       state.html = buildExportHtml();
@@ -2000,7 +2043,7 @@ exports.deleteUserByAdmin = onCall(async (request) => {
       els.preview.style.setProperty("--preview-photo", `url('${previewPhoto}')`);
       els.preview.innerHTML = buildPreviewHtml();
       els.codeOutput.textContent = state.activeTab === "html" ? state.html : state.activeTab === "css" ? state.css : state.blockHtml;
-      renderAddedBlocks();
+      if (!skipAddedBlocks) renderAddedBlocks();
       els.status.textContent = "ソースを生成しました";
     }
 
@@ -2155,19 +2198,30 @@ functions/index.js にCloud Functionsの雛形を入れています。
       els.photoUrl3.value = "";
       els.customHeading.value = "自治会の活動紹介";
       els.customText.value = "清掃活動、防災訓練、季節の行事などを通じて、安心して暮らせる地域づくりを進めています。";
-      els.linkText.value = "最新の回覧板PDFを見る";
-      els.linkUrl.value = "https://example.com/kairan.pdf";
       els.scheduleText.value = "7月20日: 町内清掃 / 8月3日: 夏祭り / 9月1日: 防災訓練";
       els.contactText.value = "ご不明点は各班長、または自治会役員までご連絡ください。";
       state.extraBlocks = [
-        { type: "join" },
-        { type: "disaster" }
+        { ...defaultBlock("headingText"), heading: "自治会の活動紹介", text: "清掃活動、防災訓練、季節の行事などを通じて、安心して暮らせる地域づくりを進めています。" },
+        { ...defaultBlock("pdfLinks"), heading: "回覧板", text: "直近の回覧板をPDFで確認できます。", links: [
+          { text: "最新の回覧板PDFを見る", url: "https://example.com/kairan.pdf" },
+          { text: "", url: "" },
+          { text: "", url: "" }
+        ] }
       ];
       render();
     });
 
-    document.getElementById("addBlockBtn").addEventListener("click", () => {
-      state.extraBlocks.push({ type: els.extraBlockSelect.value });
+    els.blockTabs.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-block-category]");
+      if (!button) return;
+      state.activeBlockCategory = button.dataset.blockCategory;
+      renderBlockPicker();
+    });
+
+    els.blockPicker.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-add-block-type]");
+      if (!button) return;
+      state.extraBlocks.push(defaultBlock(button.dataset.addBlockType));
       render();
     });
 
@@ -2175,6 +2229,22 @@ functions/index.js にCloud Functionsの雛形を入れています。
       const button = event.target.closest("[data-remove-block]");
       if (!button) return;
       state.extraBlocks.splice(Number(button.dataset.removeBlock), 1);
+      render(true);
+    });
+
+    els.addedBlocks.addEventListener("input", (event) => {
+      const input = event.target.closest("[data-block-field]");
+      if (!input) return;
+      const [indexText, path] = input.dataset.blockField.split(":");
+      const block = state.extraBlocks[Number(indexText)];
+      if (!block) return;
+      if (path === "heading" || path === "text") {
+        block[path] = input.value;
+      } else if (path.startsWith("links.")) {
+        const [, linkIndexText, key] = path.split(".");
+        const link = block.links[Number(linkIndexText)];
+        if (link) link[key] = input.value;
+      }
       render();
     });
 
