@@ -572,7 +572,6 @@
   <header class="topbar">
     <div class="brand"><span class="brand-mark">町</span>自治会ホームページ生成</div>
     <div class="top-actions">
-      <button class="small-btn" id="authPresetBtn" type="button">認証設定</button>
       <div class="status" id="status">HTML/CSSを生成できます</div>
     </div>
   </header>
@@ -651,26 +650,6 @@
           <button class="btn secondary" id="sampleBtn" type="button">例を入れる</button>
         </div>
 
-        <div class="section-box" id="authSettings">
-          <label>認証設定 Firebase</label>
-          <div class="auth-summary">
-            <span>メールアドレス、パスワード、使用者氏名で登録します。</span>
-            <span>登録後は確認メールを送り、本人確認後に利用可能にします。</span>
-            <span>管理者はFirebase管理画面または管理者機能から利用者を削除できます。</span>
-          </div>
-          <div class="auth-grid">
-            <input id="firebaseApiKey" placeholder="apiKey">
-            <input id="firebaseAuthDomain" placeholder="authDomain">
-            <input id="firebaseProjectId" placeholder="projectId">
-            <input id="firebaseStorageBucket" placeholder="storageBucket">
-            <input id="firebaseMessagingSenderId" placeholder="messagingSenderId">
-            <input id="firebaseAppId" placeholder="appId">
-          </div>
-          <input id="adminEmail" placeholder="管理者メールアドレス 例: admin@example.com">
-          <input id="adminPassword" type="password" placeholder="管理者専用パスワード">
-          <div class="auth-note">利用者画面と管理者画面は分けます。利用者は自分の作成データだけ、管理者は別URLで管理者パスワードを入れて利用者削除を行う想定です。</div>
-        </div>
-
         <div class="button-row">
           <button class="btn secondary" id="copyHtmlBtn" type="button">表示中コードをコピー</button>
           <button class="btn secondary" id="downloadHtmlBtn" type="button">表示中コードを保存</button>
@@ -698,36 +677,6 @@
         <pre id="codeOutput"></pre>
       </section>
 
-      <section class="panel code-panel">
-        <div class="panel-head">認証画面イメージ</div>
-        <div class="form auth-preview">
-          <div class="login-card">
-            <h3>利用者登録</h3>
-            <input placeholder="使用者氏名">
-            <input placeholder="メールアドレス">
-            <input placeholder="パスワード">
-            <button class="btn primary" type="button">確認メールを送る</button>
-          </div>
-          <div class="login-card">
-            <h3>利用者ログイン後</h3>
-            <p>自分が作った自治会ホームページだけを表示します。</p>
-            <button class="btn secondary" type="button">自分のホームページを開く</button>
-          </div>
-          <div class="login-card">
-            <h3>管理者画面 別URL</h3>
-            <input placeholder="管理者メールアドレス">
-            <input placeholder="管理者専用パスワード">
-            <button class="btn primary" type="button">管理画面に入る</button>
-          </div>
-          <div class="login-card">
-            <h3>管理者だけが見える一覧</h3>
-            <div class="admin-list">
-              <div class="admin-user"><span>田中 太郎 / tanaka@example.com</span><button class="small-btn" type="button">強制削除</button></div>
-              <div class="admin-user"><span>佐藤 花子 / sato@example.com</span><button class="small-btn" type="button">強制削除</button></div>
-            </div>
-          </div>
-        </div>
-      </section>
     </section>
   </main>
 
@@ -783,15 +732,7 @@
       contactText: document.getElementById("contactText"),
       preview: document.getElementById("preview"),
       codeOutput: document.getElementById("codeOutput"),
-      status: document.getElementById("status"),
-      firebaseApiKey: document.getElementById("firebaseApiKey"),
-      firebaseAuthDomain: document.getElementById("firebaseAuthDomain"),
-      firebaseProjectId: document.getElementById("firebaseProjectId"),
-      firebaseStorageBucket: document.getElementById("firebaseStorageBucket"),
-      firebaseMessagingSenderId: document.getElementById("firebaseMessagingSenderId"),
-      firebaseAppId: document.getElementById("firebaseAppId"),
-      adminEmail: document.getElementById("adminEmail"),
-      adminPassword: document.getElementById("adminPassword")
+      status: document.getElementById("status")
     };
 
     function escapeHtml(value) {
@@ -1253,12 +1194,12 @@ main {
 
     function firebaseConfig() {
       return {
-        apiKey: els.firebaseApiKey.value.trim() || "YOUR_API_KEY",
-        authDomain: els.firebaseAuthDomain.value.trim() || "YOUR_PROJECT.firebaseapp.com",
-        projectId: els.firebaseProjectId.value.trim() || "YOUR_PROJECT_ID",
-        storageBucket: els.firebaseStorageBucket.value.trim() || "YOUR_PROJECT.appspot.com",
-        messagingSenderId: els.firebaseMessagingSenderId.value.trim() || "YOUR_SENDER_ID",
-        appId: els.firebaseAppId.value.trim() || "YOUR_APP_ID"
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_PROJECT.firebaseapp.com",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_PROJECT.appspot.com",
+        messagingSenderId: "YOUR_SENDER_ID",
+        appId: "YOUR_APP_ID"
       };
     }
 
@@ -1571,14 +1512,13 @@ usersEl?.addEventListener("click", async (event) => {
     }
 
     function buildFunctionsIndexJs() {
-      const adminPassword = els.adminPassword.value.trim() || "CHANGE_THIS_ADMIN_PASSWORD";
       return `const admin = require("firebase-admin");
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
 
 admin.initializeApp();
 
 function assertAdmin(request) {
-  const adminPassword = process.env.ADMIN_PASSWORD || "${escapeHtml(adminPassword)}";
+  const adminPassword = process.env.ADMIN_PASSWORD || "CHANGE_THIS_ADMIN_PASSWORD";
   if (request.data.adminPassword !== adminPassword) {
     throw new HttpsError("permission-denied", "管理者だけが削除できます。");
   }
@@ -1971,9 +1911,6 @@ functions/index.js にCloud Functionsの雛形を入れています。
     }
 
     document.getElementById("generateBtn").addEventListener("click", render);
-    document.getElementById("authPresetBtn").addEventListener("click", () => {
-      document.getElementById("authSettings").scrollIntoView({ behavior: "smooth", block: "start" });
-    });
     document.getElementById("copyHtmlBtn").addEventListener("click", () => copyText(currentCode().text));
     document.getElementById("downloadHtmlBtn").addEventListener("click", () => {
       const code = currentCode();
