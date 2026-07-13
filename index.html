@@ -2260,8 +2260,13 @@ functions/index.js にCloud Functionsの雛形を入れています。
     els.addedBlocks.addEventListener("click", (event) => {
       const button = event.target.closest("[data-remove-block]");
       if (!button) return;
+      event.preventDefault();
+      event.stopPropagation();
+      const item = button.closest(".added-block-item");
+      if (item) item.remove();
       state.extraBlocks.splice(Number(button.dataset.removeBlock), 1);
-      render();
+      renderAddedBlocks();
+      render(true);
     });
 
     els.addedBlocks.addEventListener("input", (event) => {
