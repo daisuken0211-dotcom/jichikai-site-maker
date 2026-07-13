@@ -141,6 +141,11 @@
       resize: vertical;
     }
 
+    .block-fields textarea {
+      min-height: 46px;
+      overflow: hidden;
+    }
+
     .section-box {
       display: grid;
       gap: 8px;
@@ -403,9 +408,9 @@
     }
 
     .site-preview main {
-      padding: 24px 30px 34px;
+      padding: 16px 30px 24px;
       display: grid;
-      gap: 22px;
+      gap: 12px;
     }
 
     .hero-photo {
@@ -461,6 +466,36 @@
       border-radius: 8px;
       padding: 16px;
       background: #fff;
+    }
+
+    .feature-text p {
+      margin: 0;
+      white-space: pre-wrap;
+    }
+
+    .text-block {
+      display: grid;
+      gap: 6px;
+      padding: 2px 0;
+      background: transparent;
+    }
+
+    .text-block h2 {
+      margin: 0;
+      border-left: 6px solid var(--green);
+      padding-left: 10px;
+      line-height: 1.35;
+      font-size: clamp(20px, 2.8vw, 30px);
+    }
+
+    .text-block p {
+      margin: 0;
+      line-height: 1.75;
+      white-space: pre-wrap;
+    }
+
+    .text-heading-only {
+      padding: 0;
     }
 
     .cards {
@@ -617,7 +652,7 @@
     }
 
     .site-preview.t-blank main {
-      min-height: 360px;
+      min-height: 80px;
     }
 
     .site-preview.t-magazine h2 {
@@ -1204,22 +1239,22 @@
 
     function blankHeadingMarkup() {
       const custom = customHeadingText();
-      return `<section class="feature-text"><h2>${custom.heading}</h2><p>${custom.text}</p></section>`;
+      return `<section class="text-block"><h2>${custom.heading}</h2><p>${custom.text}</p></section>`;
     }
 
     function headingOnlyMarkup(block) {
       const custom = customHeadingText(block);
-      return `<section><h2>${custom.heading}</h2></section>`;
+      return `<section class="text-block text-heading-only"><h2>${custom.heading}</h2></section>`;
     }
 
     function textOnlyMarkup(block) {
       const custom = customHeadingText(block);
-      return `<section><p>${custom.text}</p></section>`;
+      return `<section class="text-block text-only"><p>${custom.text}</p></section>`;
     }
 
     function headingTextMarkup(block) {
       const custom = customHeadingText(block);
-      return `<section class="feature-text"><h2>${custom.heading}</h2><p>${custom.text}</p></section>`;
+      return `<section class="text-block"><h2>${custom.heading}</h2><p>${custom.text}</p></section>`;
     }
 
     function recentInfoMarkup(context) {
@@ -1324,6 +1359,14 @@
             `;
           }).join("")
         : `<div class="status">まだ追加ブロックはありません</div>`;
+      autoResizeBlockTextareas();
+    }
+
+    function autoResizeBlockTextareas() {
+      els.addedBlocks.querySelectorAll("textarea").forEach((textarea) => {
+        textarea.style.height = "auto";
+        textarea.style.height = `${Math.max(46, textarea.scrollHeight)}px`;
+      });
     }
 
     function buildPreviewHtml() {
@@ -1521,9 +1564,9 @@ h2 {
 main {
   width: min(1080px, calc(100% - 32px));
   margin: 0 auto;
-  padding: 28px 0 44px;
+  padding: 18px 0 32px;
   display: grid;
-  gap: 28px;
+  gap: 14px;
 }
 
 .hero-photo {
@@ -1590,6 +1633,36 @@ main {
   border-radius: 8px;
   padding: 16px;
   background: #fff;
+}
+
+.feature-text p {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.text-block {
+  display: grid;
+  gap: 6px;
+  padding: 2px 0;
+  background: transparent;
+}
+
+.text-block h2 {
+  margin: 0;
+  border-left: 6px solid #2f7d57;
+  padding-left: 10px;
+  line-height: 1.35;
+  font-size: clamp(20px, 2.8vw, 30px);
+}
+
+.text-block p {
+  margin: 0;
+  line-height: 1.75;
+  white-space: pre-wrap;
+}
+
+.text-heading-only {
+  padding: 0;
 }
 
 .cards {
@@ -1711,7 +1784,7 @@ main {
 }
 
 .t-blank main {
-  min-height: 360px;
+  min-height: 80px;
 }
 
 .t-magazine h2 {
@@ -2646,6 +2719,7 @@ functions/index.js にCloud Functionsの雛形を入れています。
         const link = block.links[Number(linkIndexText)];
         if (link) link[key] = input.value;
       }
+      if (input.tagName === "TEXTAREA") autoResizeBlockTextareas();
       render(true);
     });
 
