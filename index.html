@@ -2261,12 +2261,13 @@ functions/index.js にCloud Functionsの雛形を入れています。
       const button = event.target.closest("[data-remove-block]");
       if (!button) return;
       state.extraBlocks.splice(Number(button.dataset.removeBlock), 1);
-      render(true);
+      render();
     });
 
     els.addedBlocks.addEventListener("input", (event) => {
       const input = event.target.closest("[data-block-field]");
       if (!input) return;
+      event.stopPropagation();
       const [indexText, path] = input.dataset.blockField.split(":");
       const block = state.extraBlocks[Number(indexText)];
       if (!block) return;
@@ -2277,7 +2278,7 @@ functions/index.js にCloud Functionsの雛形を入れています。
         const link = block.links[Number(linkIndexText)];
         if (link) link[key] = input.value;
       }
-      render();
+      render(true);
     });
 
     document.querySelectorAll(".tab").forEach((tab) => {
