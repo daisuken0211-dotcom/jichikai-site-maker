@@ -2594,6 +2594,18 @@ functions/index.js にCloud Functionsの雛形を入れています。
       render();
     });
 
+    els.preview.addEventListener("click", (event) => {
+      const link = event.target.closest(".site-nav a");
+      if (!link) return;
+      event.preventDefault();
+      saveCurrentPage();
+      const nextIndex = state.pages.findIndex((page, index) => slugForPage(index) === link.getAttribute("href"));
+      if (nextIndex < 0) return;
+      state.currentPageIndex = nextIndex;
+      applyPageData(state.pages[state.currentPageIndex]);
+      render();
+    });
+
     els.blockTabs.addEventListener("click", (event) => {
       const button = event.target.closest("[data-block-category]");
       if (!button) return;
