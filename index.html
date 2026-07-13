@@ -390,6 +390,17 @@
       padding: 18px;
     }
 
+    .archive-link {
+      display: inline-block;
+      border: 2px solid var(--green);
+      border-radius: 8px;
+      color: var(--green-dark);
+      background: var(--soft-green);
+      padding: 8px 14px;
+      text-decoration: none;
+      font-weight: 900;
+    }
+
     .extra-divider {
       display: grid;
       grid-template-columns: 1fr auto 1fr;
@@ -704,15 +715,25 @@
     ];
 
     const extraBlockTypes = [
+      { id: "headingOnly", name: "見出しだけ" },
+      { id: "textOnly", name: "本文だけ" },
       { id: "photo", name: "写真ブロック" },
       { id: "photoTextLeft", name: "写真左・文字右" },
       { id: "textPhotoRight", name: "文字左・写真右" },
       { id: "blankHeading", name: "白紙から見出し" },
+      { id: "recentInfo", name: "直近情報一覧" },
       { id: "newsCards", name: "お知らせカード" },
       { id: "newsTable", name: "お知らせ表" },
+      { id: "newsletter", name: "広報誌" },
+      { id: "circular", name: "回覧板" },
       { id: "schedule", name: "行事予定" },
       { id: "join", name: "会員募集" },
       { id: "disaster", name: "防災情報" },
+      { id: "disasterPrep", name: "防災の備え" },
+      { id: "facility", name: "コミュセン施設案内" },
+      { id: "traditionalEvent", name: "伝統行事紹介" },
+      { id: "budget", name: "決算・自治会費" },
+      { id: "archiveButton", name: "過去分へのボタン" },
       { id: "contact", name: "連絡先" },
       { id: "about", name: "自治会について" }
     ];
@@ -839,6 +860,60 @@
       return `<section class="feature-text"><h2>${custom.heading}</h2><p>${custom.text}</p></section>`;
     }
 
+    function headingOnlyMarkup() {
+      const custom = customHeadingText();
+      return `<section><h2>${custom.heading}</h2></section>`;
+    }
+
+    function textOnlyMarkup() {
+      const custom = customHeadingText();
+      return `<section><p>${custom.text}</p></section>`;
+    }
+
+    function recentInfoMarkup(context) {
+      return `
+        <section>
+          <h2>直近のお知らせ</h2>
+          <table class="notice-table">
+            ${context.notices.map((notice, index) => `
+              <tr>
+                <th>${index + 1}</th>
+                <td><strong>${escapeHtml(notice.title || "お知らせ")}</strong><br>${escapeHtml(notice.body)}</td>
+              </tr>
+            `).join("")}
+          </table>
+        </section>
+      `;
+    }
+
+    function newsletterMarkup() {
+      return `<section class="feature-text"><h2>広報誌</h2><p>最新号と直近1年分の広報誌を掲載できます。PDFへのリンクや画像を並べる形にもできます。</p></section>`;
+    }
+
+    function circularMarkup() {
+      return `<section class="feature-text"><h2>回覧板</h2><p>直近3か月分の回覧板を掲載できます。古いものは過去分ボタンから見られる形にします。</p></section>`;
+    }
+
+    function facilityMarkup() {
+      return `<section class="feature-text"><h2>コミュニティセンター</h2><p>施設案内、利用時間、予約方法、利用上の注意を掲載できます。</p></section>`;
+    }
+
+    function traditionalEventMarkup() {
+      return `<section class="feature-text"><h2>伝統行事</h2><p>地域で受け継がれている行事の内容、開催時期、参加方法を紹介できます。</p></section>`;
+    }
+
+    function disasterPrepMarkup() {
+      return `<section class="alert-panel"><h2>防災の備え</h2><p>災害時の行動、発災前の準備、自治会の防災備品を掲載できます。</p></section>`;
+    }
+
+    function budgetMarkup() {
+      return `<section class="feature-text"><h2>自治会費・決算</h2><p>自治会費の使い道や決算資料を、簡単な説明とPDFリンクで掲載できます。</p></section>`;
+    }
+
+    function archiveButtonMarkup() {
+      return `<section class="feature-text"><h2>過去のお知らせ</h2><p><a class="archive-link" href="#">過去分を見る</a></p></section>`;
+    }
+
     function photoTextMarkup(photoUrls, siteName, reverse = false) {
       const custom = customHeadingText();
       const photo = photoMarkup(photoUrls, siteName);
@@ -847,15 +922,25 @@
     }
 
     function extraBlockMarkup(blockType, context) {
+      if (blockType === "headingOnly") return headingOnlyMarkup();
+      if (blockType === "textOnly") return textOnlyMarkup();
       if (blockType === "photo") return context.photoBlock;
       if (blockType === "photoTextLeft") return photoTextMarkup(context.photoUrls, context.siteName, false);
       if (blockType === "textPhotoRight") return photoTextMarkup(context.photoUrls, context.siteName, true);
       if (blockType === "blankHeading") return blankHeadingMarkup();
+      if (blockType === "recentInfo") return recentInfoMarkup(context);
       if (blockType === "newsCards") return context.noticeCards;
       if (blockType === "newsTable") return context.noticeTable;
+      if (blockType === "newsletter") return newsletterMarkup();
+      if (blockType === "circular") return circularMarkup();
       if (blockType === "schedule") return scheduleMarkup();
       if (blockType === "join") return joinMarkup();
       if (blockType === "disaster") return disasterMarkup();
+      if (blockType === "disasterPrep") return disasterPrepMarkup();
+      if (blockType === "facility") return facilityMarkup();
+      if (blockType === "traditionalEvent") return traditionalEventMarkup();
+      if (blockType === "budget") return budgetMarkup();
+      if (blockType === "archiveButton") return archiveButtonMarkup();
       if (blockType === "contact") return contactMarkup();
       if (blockType === "about") return aboutMarkup(context.catchText);
       return "";
@@ -896,7 +981,7 @@
       const noticeCards = noticesCardsMarkup(notices);
       const noticeTable = noticesTableMarkup(notices);
       const photoBlock = photoMarkup(photoUrls, siteName);
-      const context = { siteName, catchText, photoUrls, photoBlock, noticeCards, noticeTable, templateId: template.id };
+      const context = { siteName, catchText, photoUrls, photoBlock, noticeCards, noticeTable, notices, templateId: template.id };
       let bodyBlocks = "";
 
       if (template.id === "photoLeft" || template.id === "photoRight") {
@@ -1149,6 +1234,17 @@ main {
   border-radius: 8px;
   background: #e8f0f7;
   padding: 18px;
+}
+
+.archive-link {
+  display: inline-block;
+  border: 2px solid #2f7d57;
+  border-radius: 8px;
+  color: #245f43;
+  background: #e8f3ed;
+  padding: 8px 14px;
+  text-decoration: none;
+  font-weight: 800;
 }
 
 .t-photo-hero header {
@@ -1753,6 +1849,18 @@ exports.deleteUserByAdmin = onCall(async (request) => {
     function buildPeraichiExtraSections(context) {
       return state.extraBlocks.map((block, index) => {
         const sectionId = `section-extra-${index + 1}`;
+        if (block.type === "headingOnly") {
+          const custom = customHeadingText();
+          return `<div class="pera1-section block heading-line" data-structure="b-heading-origin-bdr--updown" data-block-name="見出し" id="${sectionId}">
+    <div class="c-wrapper u-align-center"><h2 class="pera1-editable" data-structure="e-heading">${custom.heading}</h2></div>
+  </div>`;
+        }
+        if (block.type === "textOnly") {
+          const custom = customHeadingText();
+          return `<div class="pera1-section block" data-structure="b-sentence" data-block-name="文章" id="${sectionId}">
+    <div class="c-wrapper"><div class="sentence pera1-editable" data-structure="e-text">${custom.text}</div></div>
+  </div>`;
+        }
         if (block.type === "photo") {
           return `<div class="pera1-section block" data-structure="b-img" data-block-name="画像" id="${sectionId}">
     <div class="c-wrapper u-align-center">${buildPeraichiPhotoRow(context.photoUrls || [], context.siteName)}</div>
@@ -1772,9 +1880,19 @@ exports.deleteUserByAdmin = onCall(async (request) => {
     <div class="c-wrapper"><h2 class="pera1-editable" data-structure="e-heading">${custom.heading}</h2><div class="sentence pera1-editable" data-structure="e-text">${custom.text}</div></div>
   </div>`;
         }
-        if (block.type === "newsCards" || block.type === "newsTable") {
+        if (block.type === "recentInfo" || block.type === "newsCards" || block.type === "newsTable") {
           return `<div class="pera1-section block" data-structure="b-table--bdr-btm" data-block-name="表(下線のみ)" id="${sectionId}">
     <div class="c-wrapper"><table data-structure="m-table"><tbody class="pera1-sortable">${context.noticeRows}</tbody></table></div>
+  </div>`;
+        }
+        if (block.type === "newsletter") {
+          return `<div class="pera1-section block" data-structure="b-sentence-card" data-block-name="広報誌" id="${sectionId}">
+    <div class="c-wrapper"><div class="note"><h2 class="pera1-editable" data-structure="e-heading">広報誌</h2><div class="pera1-editable" data-structure="e-text">最新号と直近1年分の広報誌を掲載できます。</div></div></div>
+  </div>`;
+        }
+        if (block.type === "circular") {
+          return `<div class="pera1-section block" data-structure="b-sentence-card" data-block-name="回覧板" id="${sectionId}">
+    <div class="c-wrapper"><div class="note"><h2 class="pera1-editable" data-structure="e-heading">回覧板</h2><div class="pera1-editable" data-structure="e-text">直近3か月分の回覧板を掲載できます。</div></div></div>
   </div>`;
         }
         if (block.type === "schedule") {
@@ -1790,6 +1908,31 @@ exports.deleteUserByAdmin = onCall(async (request) => {
         if (block.type === "disaster") {
           return `<div class="pera1-section block" data-structure="b-sentence-card" data-block-name="カード型(背景色あり)" id="${sectionId}">
     <div class="c-wrapper"><div class="note pera1-editable" data-structure="e-text"><strong>防災・重要情報</strong><br>避難場所、安否確認、防災訓練のお知らせを掲載できます。</div></div>
+  </div>`;
+        }
+        if (block.type === "disasterPrep") {
+          return `<div class="pera1-section block" data-structure="b-sentence-card" data-block-name="防災の備え" id="${sectionId}">
+    <div class="c-wrapper"><div class="note pera1-editable" data-structure="e-text"><strong>防災の備え</strong><br>災害時の行動、発災前の準備、自治会の防災備品を掲載できます。</div></div>
+  </div>`;
+        }
+        if (block.type === "facility") {
+          return `<div class="pera1-section block" data-structure="b-sentence" data-block-name="施設案内" id="${sectionId}">
+    <div class="c-wrapper"><h2 class="pera1-editable" data-structure="e-heading">コミュニティセンター</h2><div class="sentence pera1-editable" data-structure="e-text">施設案内、利用時間、予約方法、利用上の注意を掲載できます。</div></div>
+  </div>`;
+        }
+        if (block.type === "traditionalEvent") {
+          return `<div class="pera1-section block" data-structure="b-sentence" data-block-name="伝統行事" id="${sectionId}">
+    <div class="c-wrapper"><h2 class="pera1-editable" data-structure="e-heading">伝統行事</h2><div class="sentence pera1-editable" data-structure="e-text">地域で受け継がれている行事の内容、開催時期、参加方法を紹介できます。</div></div>
+  </div>`;
+        }
+        if (block.type === "budget") {
+          return `<div class="pera1-section block" data-structure="b-sentence" data-block-name="決算" id="${sectionId}">
+    <div class="c-wrapper"><h2 class="pera1-editable" data-structure="e-heading">自治会費・決算</h2><div class="sentence pera1-editable" data-structure="e-text">自治会費の使い道や決算資料を掲載できます。</div></div>
+  </div>`;
+        }
+        if (block.type === "archiveButton") {
+          return `<div class="pera1-section block" data-structure="b-sentence-card" data-block-name="過去分ボタン" id="${sectionId}">
+    <div class="c-wrapper"><div class="note"><h2 class="pera1-editable" data-structure="e-heading">過去のお知らせ</h2><div class="pera1-editable" data-structure="e-text">過去分を見る</div></div></div>
   </div>`;
         }
         if (block.type === "contact") {
