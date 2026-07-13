@@ -690,17 +690,17 @@
     };
 
     const templates = [
-      { id: "standard", name: "1. 標準", note: "写真上・お知らせ3枚", className: "t-standard" },
-      { id: "photoHero", name: "2. 写真大きめ", note: "写真を最初に大きく表示", className: "t-photo-hero" },
-      { id: "photoLeft", name: "3. 写真左", note: "写真左・説明右", className: "t-photo-left" },
-      { id: "photoRight", name: "4. 写真右", note: "説明左・写真右", className: "t-photo-right" },
-      { id: "newsFirst", name: "5. お知らせ優先", note: "お知らせを最初に表示", className: "t-news-first" },
-      { id: "scheduleFirst", name: "6. 行事予定優先", note: "年間予定を目立たせる", className: "t-schedule-first" },
-      { id: "tableNews", name: "7. 表形式", note: "お知らせを表で表示", className: "t-table-news" },
-      { id: "joinFocus", name: "8. 会員募集", note: "入会案内を強める", className: "t-join-focus" },
-      { id: "disaster", name: "9. 防災重視", note: "防災・重要情報向け", className: "t-disaster" },
-      { id: "compact", name: "10. コンパクト", note: "短く一覧向け", className: "t-compact t-magazine" },
-      { id: "blank", name: "11. 白紙", note: "見出しから自由に作成", className: "t-blank" }
+      { id: "blank", name: "1. 白紙", note: "自治会名だけ表示", className: "t-blank" },
+      { id: "standard", name: "2. 標準", note: "写真上・お知らせ3枚", className: "t-standard" },
+      { id: "photoHero", name: "3. 写真大きめ", note: "写真を最初に大きく表示", className: "t-photo-hero" },
+      { id: "photoLeft", name: "4. 写真左", note: "写真左・説明右", className: "t-photo-left" },
+      { id: "photoRight", name: "5. 写真右", note: "説明左・写真右", className: "t-photo-right" },
+      { id: "newsFirst", name: "6. お知らせ優先", note: "お知らせを最初に表示", className: "t-news-first" },
+      { id: "scheduleFirst", name: "7. 行事予定優先", note: "年間予定を目立たせる", className: "t-schedule-first" },
+      { id: "tableNews", name: "8. 表形式", note: "お知らせを表で表示", className: "t-table-news" },
+      { id: "joinFocus", name: "9. 会員募集", note: "入会案内を強める", className: "t-join-focus" },
+      { id: "disaster", name: "10. 防災重視", note: "防災・重要情報向け", className: "t-disaster" },
+      { id: "compact", name: "11. コンパクト", note: "短く一覧向け", className: "t-compact t-magazine" }
     ];
 
     const extraBlockTypes = [
@@ -756,7 +756,7 @@
 
     function initializeTemplates() {
       els.templateSelect.innerHTML = templates.map((template) => `<option value="${template.id}">${template.name} - ${template.note}</option>`).join("");
-      els.templateSelect.value = templates[0].id;
+      els.templateSelect.value = "blank";
       els.extraBlockSelect.innerHTML = extraBlockTypes.map((block) => `<option value="${block.id}">${block.name}</option>`).join("");
     }
 
@@ -863,6 +863,9 @@
 
     function extraBlocksMarkup(context) {
       if (!state.extraBlocks.length) return "";
+      if (context.templateId === "blank") {
+        return state.extraBlocks.map((block) => extraBlockMarkup(block.type, context)).join("");
+      }
       return `
         <div class="extra-divider">追加ブロック</div>
         ${state.extraBlocks.map((block) => extraBlockMarkup(block.type, context)).join("")}
@@ -893,7 +896,7 @@
       const noticeCards = noticesCardsMarkup(notices);
       const noticeTable = noticesTableMarkup(notices);
       const photoBlock = photoMarkup(photoUrls, siteName);
-      const context = { siteName, catchText, photoUrls, photoBlock, noticeCards, noticeTable };
+      const context = { siteName, catchText, photoUrls, photoBlock, noticeCards, noticeTable, templateId: template.id };
       let bodyBlocks = "";
 
       if (template.id === "photoLeft" || template.id === "photoRight") {
@@ -916,9 +919,20 @@
       } else if (template.id === "compact") {
         bodyBlocks = `${noticeBlock}${scheduleMarkup()}${contactMarkup()}`;
       } else if (template.id === "blank") {
-        bodyBlocks = `${blankHeadingMarkup()}`;
+        bodyBlocks = "";
       } else {
         bodyBlocks = `${photoBlock}${noticeBlock}${scheduleMarkup()}${contactMarkup()}`;
+      }
+
+      if (template.id === "blank") {
+        return `
+          <header>
+            <h1>${siteName}</h1>
+          </header>
+          <main>
+            ${extraBlocksMarkup(context)}
+          </main>
+        `;
       }
 
       return `
@@ -930,7 +944,6 @@
             <span>連絡先</span>
           </nav>
           <h1>${siteName}</h1>
-          <p class="lead">${catchText}</p>
           <span class="template-note">${escapeHtml(template.note)}</span>
         </header>
         <main>
@@ -1565,6 +1578,43 @@ exports.deleteUserByAdmin = onCall(async (request) => {
                 <td data-structure="e-td" class="pera1-editable"><strong>${escapeHtml(notice.title || "お知らせ")}</strong><br>${escapeHtml(notice.body)}</td>
               </tr>`).join("");
       const extraSections = buildPeraichiExtraSections({ siteName, catchText, photoUrl, photoUrls, noticeRows });
+
+      if (template.id === "blank") {
+        return `<!DOCTYPE html>
+<html lang="ja">
+<head prefix="og: http://ogp.me/ns# website: http://ogp.me/ns/website#">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>${siteName}</title>
+  <style>
+    body { margin: 0; color: #1f2933; background: #fff; font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", Meiryo, sans-serif; line-height: 1.8; }
+    .pera1-section { padding: 52px 20px; }
+    .c-wrapper { width: min(1040px, 100%); margin: 0 auto; }
+    .u-align-center { text-align: center; }
+    .main-visual { min-height: 260px; display: grid; place-items: center; background: #fff; color: #245f43; border-bottom: 1px solid #d8e0e7; }
+    .main-visual h1 { margin: 0; font-size: clamp(38px, 7vw, 72px); }
+    .sentence { font-size: 18px; max-width: 760px; margin: 0 auto; }
+    .article-box { border: 1px solid #d8e0e7; padding: 24px; display: grid; grid-template-columns: .8fr 1fr; gap: 24px; align-items: center; }
+    .article-box img { width: 100%; border-radius: 8px; }
+    .photo-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    .photo-row.count-1 { grid-template-columns: 1fr; }
+    .photo-row.count-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .photo-row img { width: 100%; height: 220px; object-fit: cover; border-radius: 8px; }
+    .note { background: #fbf2df; border-left: 8px solid #c88a2d; padding: 24px; }
+    @media (max-width: 760px) { .article-box, .photo-row, .photo-row.count-2 { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body class="${template.className}">
+  <div class="pera1-section block main-visual" data-structure="b-main-set-5--center" data-block-name="メイン(中央寄せ)" id="section-main">
+    <div class="c-wrapper u-align-center">
+      <h1 class="pera1-editable" data-structure="e-heading">${siteName}</h1>
+    </div>
+  </div>
+
+  ${extraSections}
+</body>
+</html>`;
+      }
 
       return `<!DOCTYPE html>
 <html lang="ja">
