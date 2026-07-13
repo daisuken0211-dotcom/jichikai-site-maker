@@ -183,6 +183,62 @@
       border-color: #111827;
     }
 
+    .photo-actions {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+    }
+
+    .photo-library {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      max-height: 260px;
+      overflow: auto;
+    }
+
+    .photo-choice {
+      display: grid;
+      gap: 6px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 6px;
+      background: #fff;
+    }
+
+    .photo-choice img {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      object-fit: cover;
+      border-radius: 6px;
+      background: #eef2f7;
+    }
+
+    .photo-choice-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: #475569;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .photo-slot-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4px;
+    }
+
+    .photo-slot-row button {
+      min-height: 30px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--soft-green);
+      color: var(--green-dark);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
     .page-tabs {
       display: flex;
       gap: 6px;
@@ -903,7 +959,13 @@
         </div>
 
         <div class="section-box optional-box" id="photoBox">
-          <label>写真URL 最大3枚</label>
+          <label>写真 最大3枚</label>
+          <div class="photo-actions">
+            <button class="btn secondary" id="choosePhotoFolderBtn" type="button">PCの写真フォルダーを選ぶ</button>
+            <button class="small-btn" id="clearPhotoLibraryBtn" type="button">一覧クリア</button>
+          </div>
+          <input id="photoFolderInput" type="file" accept="image/*" multiple webkitdirectory hidden>
+          <div class="photo-library" id="photoLibrary"></div>
           <input id="photoUrl1" placeholder="写真1 https://example.com/photo1.jpg">
           <input id="photoUrl2" placeholder="写真2 https://example.com/photo2.jpg">
           <input id="photoUrl3" placeholder="写真3 https://example.com/photo3.jpg">
@@ -1001,7 +1063,8 @@
       pages: [],
       currentPageIndex: 0,
       isLoadingPage: false,
-      themeId: "green"
+      themeId: "green",
+      localPhotos: []
     };
 
     const templates = [
@@ -1064,6 +1127,10 @@
       photoUrl1: document.getElementById("photoUrl1"),
       photoUrl2: document.getElementById("photoUrl2"),
       photoUrl3: document.getElementById("photoUrl3"),
+      choosePhotoFolderBtn: document.getElementById("choosePhotoFolderBtn"),
+      clearPhotoLibraryBtn: document.getElementById("clearPhotoLibraryBtn"),
+      photoFolderInput: document.getElementById("photoFolderInput"),
+      photoLibrary: document.getElementById("photoLibrary"),
       templateSelect: document.getElementById("templateSelect"),
       blockTabs: document.getElementById("blockTabs"),
       blockPicker: document.getElementById("blockPicker"),
@@ -1170,6 +1237,57 @@
         <button class="theme-swatch ${id === state.themeId ? "active" : ""}" type="button" data-theme="${id}" title="${theme.name}" style="--swatch: ${theme.main}"></button>
       `).join("");
       applyTheme(state.themeId);
+    }
+
+    function readFileAsDataUrl(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ""));
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function renderPhotoLibrary() {
+      if (!state.localPhotos.length) {
+        els.photoLibrary.innerHTML = `<div class="status">フォルダーを選ぶと写真がここに並びます</div>`;
+        return;
+      }
+      els.photoLibrary.innerHTML = state.localPhotos.map((photo, index) => `
+        <div class="photo-choice">
+          <img src="${photo.dataUrl}" alt="${escapeHtml(photo.name)}">
+          <div class="photo-choice-name">${escapeHtml(photo.name)}</div>
+          <div class="photo-slot-row">
+            <button type="button" data-use-local-photo="${index}:0">写真1</button>
+            <button type="button" data-use-local-photo="${index}:1">写真2</button>
+            <button type="button" data-use-local-photo="${index}:2">写真3</button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    async function loadLocalPhotoFiles(fileList) {
+      const files = Array.from(fileList || [])
+        .filter((file) => file.type.startsWith("image/"))
+        .slice(0, 80);
+      if (!files.length) {
+        els.status.textContent = "画像ファイルが見つかりませんでした";
+        return;
+      }
+      els.status.textContent = "写真を読み込んでいます";
+      state.localPhotos = await Promise.all(files.map(async (file) => ({
+        name: file.webkitRelativePath || file.name,
+        dataUrl: await readFileAsDataUrl(file)
+      })));
+      renderPhotoLibrary();
+      els.status.textContent = `${state.localPhotos.length}枚の写真を読み込みました`;
+    }
+
+    function setPhotoSlot(slotIndex, dataUrl) {
+      const targets = [els.photoUrl1, els.photoUrl2, els.photoUrl3];
+      const target = targets[slotIndex] || targets[0];
+      target.value = dataUrl;
+      render();
     }
 
     function slugForPage(index) {
@@ -2866,6 +2984,25 @@ functions/index.js にCloud Functionsの雛形を入れています。
         els.projectFileInput.value = "";
       }
     });
+    els.choosePhotoFolderBtn.addEventListener("click", () => els.photoFolderInput.click());
+    els.clearPhotoLibraryBtn.addEventListener("click", () => {
+      state.localPhotos = [];
+      renderPhotoLibrary();
+      els.status.textContent = "写真一覧をクリアしました";
+    });
+    els.photoFolderInput.addEventListener("change", async () => {
+      await loadLocalPhotoFiles(els.photoFolderInput.files);
+      els.photoFolderInput.value = "";
+    });
+    els.photoLibrary.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-use-local-photo]");
+      if (!button) return;
+      const [photoIndexText, slotIndexText] = button.dataset.useLocalPhoto.split(":");
+      const photo = state.localPhotos[Number(photoIndexText)];
+      if (!photo) return;
+      setPhotoSlot(Number(slotIndexText), photo.dataUrl);
+      els.status.textContent = `${button.textContent}に写真を入れました`;
+    });
     document.getElementById("sampleBtn").addEventListener("click", () => {
       els.siteName.value = "さくら台自治会";
       els.catchText.value = "地域の行事、防災、回覧板のお知らせをまとめて掲載しています。";
@@ -2997,6 +3134,7 @@ functions/index.js にCloud Functionsの雛形を入れています。
     initializeTemplates();
     initializeThemes();
     initializePages();
+    renderPhotoLibrary();
     render();
   </script>
 </body>
