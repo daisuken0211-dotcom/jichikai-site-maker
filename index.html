@@ -164,7 +164,7 @@
 
     .block-tab {
       border: 2px solid var(--line);
-      border-radius: 8px;
+      border-radius: 999px;
       background: #fff;
       color: #334155;
       font-weight: 900;
@@ -179,20 +179,24 @@
     }
 
     .block-picker {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      display: flex;
+      flex-wrap: wrap;
       gap: 8px;
     }
 
     .block-pick {
       border: 1px solid var(--line);
-      border-radius: 8px;
+      border-radius: 999px;
       background: #fff;
       color: #334155;
       font-weight: 900;
-      min-height: 40px;
-      padding: 7px 10px;
-      text-align: left;
+      min-height: 36px;
+      padding: 6px 12px;
+      text-align: center;
+    }
+
+    .is-hidden {
+      display: none !important;
     }
 
     .added-blocks {
@@ -664,12 +668,12 @@
           <input id="siteName" value="みどり町自治会">
         </div>
 
-        <div class="field">
+        <div class="field optional-box" id="catchBox">
           <label for="catchText">最初に見せる言葉</label>
           <textarea id="catchText">住みよいまちづくりのために、地域の情報をわかりやすくお届けします。</textarea>
         </div>
 
-        <div class="section-box">
+        <div class="section-box optional-box" id="photoBox">
           <label>写真URL 最大3枚</label>
           <input id="photoUrl1" placeholder="写真1 https://example.com/photo1.jpg">
           <input id="photoUrl2" placeholder="写真2 https://example.com/photo2.jpg">
@@ -688,36 +692,36 @@
           <div class="added-blocks" id="addedBlocks"></div>
         </div>
 
-        <div class="section-box">
+        <div class="section-box optional-box" id="customBox">
           <label>白紙ブロック用の見出し・本文</label>
           <input id="customHeading" placeholder="例: 自治会の活動紹介">
           <textarea id="customText" placeholder="ここに自由に文章を入れます。写真左・文字右などの追加ブロックにも使えます。"></textarea>
         </div>
 
-        <div class="section-box">
+        <div class="section-box optional-box notice-box">
           <label>お知らせ 1</label>
           <input data-notice-title="0" value="町内清掃のお知らせ">
           <textarea data-notice-body="0">7月20日朝8時より町内清掃を行います。公民館前に集合してください。</textarea>
         </div>
 
-        <div class="section-box">
+        <div class="section-box optional-box notice-box">
           <label>お知らせ 2</label>
           <input data-notice-title="1" value="夏祭りのご案内">
           <textarea data-notice-body="1">8月3日午後5時より、公民館前広場で夏祭りを開催します。</textarea>
         </div>
 
-        <div class="section-box">
+        <div class="section-box optional-box notice-box">
           <label>お知らせ 3</label>
           <input data-notice-title="2" value="防災訓練について">
           <textarea data-notice-body="2">9月1日に防災訓練を行います。詳細は回覧板でお知らせします。</textarea>
         </div>
 
-        <div class="field">
+        <div class="field optional-box" id="scheduleBox">
           <label for="scheduleText">行事予定</label>
           <textarea id="scheduleText">毎月第1日曜日: 町内清掃 / 毎月15日: 回覧板配布 / 9月1日: 防災訓練</textarea>
         </div>
 
-        <div class="field">
+        <div class="field optional-box" id="contactBox">
           <label for="contactText">連絡先</label>
           <textarea id="contactText">お問い合わせは自治会役員または班長までお願いします。</textarea>
         </div>
@@ -821,6 +825,15 @@
       status: document.getElementById("status")
     };
 
+    const optionalEls = {
+      catchBox: document.getElementById("catchBox"),
+      photoBox: document.getElementById("photoBox"),
+      customBox: document.getElementById("customBox"),
+      noticeBoxes: Array.from(document.querySelectorAll(".notice-box")),
+      scheduleBox: document.getElementById("scheduleBox"),
+      contactBox: document.getElementById("contactBox")
+    };
+
     function escapeHtml(value) {
       return String(value || "")
         .replace(/&/g, "&amp;")
@@ -869,6 +882,24 @@
           { text: "", url: "" }
         ]
       };
+    }
+
+    function updateVisibleInputs() {
+      const template = currentTemplate();
+      const blockTypes = state.extraBlocks.map((block) => block.type);
+      const isBlank = template.id === "blank";
+      const needsPhoto = !isBlank || blockTypes.some((type) => ["photo", "photoTextLeft", "textPhotoRight"].includes(type));
+      const needsNotices = !isBlank || blockTypes.some((type) => ["recentInfo", "newsCards", "newsTable"].includes(type));
+      const needsSchedule = !isBlank;
+      const needsContact = !isBlank;
+      const needsCatch = !isBlank;
+
+      optionalEls.catchBox.classList.toggle("is-hidden", !needsCatch);
+      optionalEls.photoBox.classList.toggle("is-hidden", !needsPhoto);
+      optionalEls.customBox.classList.add("is-hidden");
+      optionalEls.noticeBoxes.forEach((box) => box.classList.toggle("is-hidden", !needsNotices));
+      optionalEls.scheduleBox.classList.toggle("is-hidden", !needsSchedule);
+      optionalEls.contactBox.classList.toggle("is-hidden", !needsContact);
     }
 
     function placeholderPhoto() {
@@ -2036,6 +2067,7 @@ exports.deleteUserByAdmin = onCall(async (request) => {
     function render(skipAddedBlocks = false) {
       const template = currentTemplate();
       const previewPhoto = escapeHtml(primaryPhotoUrl() || placeholderPhoto());
+      updateVisibleInputs();
       state.html = buildExportHtml();
       state.css = buildExportCss();
       state.blockHtml = buildPeraichiLikeHtml();
