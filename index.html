@@ -142,8 +142,11 @@
     }
 
     .block-fields textarea {
-      min-height: 46px;
+      min-height: 40px;
+      padding: 8px 10px;
+      line-height: 1.45;
       overflow: hidden;
+      resize: none;
     }
 
     .section-box {
@@ -1347,7 +1350,7 @@
                 </div>
                 <div class="block-fields">
                   ${needsHeading ? `<input data-block-field="${index}:heading" value="${escapeHtml(block.heading)}" placeholder="見出し">` : ""}
-                  ${needsText ? `<textarea data-block-field="${index}:text" placeholder="本文">${escapeHtml(block.text)}</textarea>` : ""}
+                  ${needsText ? `<textarea rows="1" data-block-field="${index}:text" placeholder="本文">${escapeHtml(block.text)}</textarea>` : ""}
                   ${needsLinks ? (block.links || []).slice(0, 3).map((link, linkIndex) => `
                     <div class="link-grid">
                       <input data-block-field="${index}:links.${linkIndex}.text" value="${escapeHtml(link.text)}" placeholder="リンク文字 ${linkIndex + 1}">
@@ -1365,7 +1368,7 @@
     function autoResizeBlockTextareas() {
       els.addedBlocks.querySelectorAll("textarea").forEach((textarea) => {
         textarea.style.height = "auto";
-        textarea.style.height = `${Math.max(46, textarea.scrollHeight)}px`;
+        textarea.style.height = `${Math.max(40, textarea.scrollHeight)}px`;
       });
     }
 
