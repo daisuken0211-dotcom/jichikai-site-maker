@@ -150,6 +150,34 @@
       background: #fbfcfd;
     }
 
+    .page-tabs {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .page-tab {
+      border: 2px solid var(--line);
+      border-radius: 999px;
+      background: #fff;
+      color: #334155;
+      font-weight: 900;
+      min-height: 36px;
+      padding: 5px 12px;
+    }
+
+    .page-tab.active {
+      border-color: var(--green);
+      background: var(--soft-green);
+      color: var(--green-dark);
+    }
+
+    .page-actions {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+    }
+
     .add-block-row {
       display: grid;
       grid-template-columns: 1fr auto;
@@ -283,6 +311,10 @@
       background: #fff;
       border: 1px solid #cfd8e3;
       box-shadow: 0 12px 28px rgba(31, 41, 51, .10);
+      position: relative;
+      overflow: auto;
+      max-height: 680px;
+      padding-top: 54px;
     }
 
     .site-preview header {
@@ -298,6 +330,63 @@
       margin-bottom: 22px;
       font-weight: 900;
       color: var(--green-dark);
+    }
+
+    .site-preview .site-nav {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      padding: 9px 14px;
+      margin-top: -54px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 255, 255, .96);
+      box-shadow: 0 8px 18px rgba(31, 41, 51, .08);
+    }
+
+    .site-preview .site-nav a {
+      border: 1px solid #c7dfd2;
+      border-radius: 999px;
+      color: var(--green-dark);
+      background: var(--soft-green);
+      padding: 4px 10px;
+      text-decoration: none;
+      font-weight: 900;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .site-preview .site-nav a.active {
+      color: #fff;
+      background: var(--green);
+    }
+
+    .site-preview.nav-left {
+      padding-top: 0;
+      padding-left: 126px;
+    }
+
+    .site-preview.nav-left .site-nav {
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 126px;
+      align-content: start;
+      align-items: stretch;
+      flex-direction: column;
+      margin-top: 0;
+      border-right: 1px solid var(--line);
+      border-bottom: 0;
+      overflow: auto;
+    }
+
+    .site-preview.nav-left .site-nav a {
+      border-radius: 8px;
+      text-align: center;
+      white-space: normal;
     }
 
     .site-preview h1 {
@@ -346,6 +435,13 @@
       color: var(--green-dark);
       padding: 4px 10px;
       font-size: 13px;
+      font-weight: 900;
+    }
+
+    .page-title-label {
+      display: inline-block;
+      margin-top: 10px;
+      color: #64748b;
       font-weight: 900;
     }
 
@@ -663,6 +759,26 @@
     <section class="panel">
       <div class="panel-head">はめ込む内容</div>
       <div class="form">
+        <div class="section-box">
+          <label>ページ</label>
+          <div class="page-tabs" id="pageTabs"></div>
+          <div class="page-actions">
+            <button class="btn secondary" id="addPageBtn" type="button">新しいページを追加</button>
+            <button class="small-btn" id="deletePageBtn" type="button">ページ削除</button>
+          </div>
+          <div class="field">
+            <label for="pageTitle">このページ名</label>
+            <input id="pageTitle" value="ホーム">
+          </div>
+          <div class="field">
+            <label for="navPosition">リンクバー</label>
+            <select id="navPosition">
+              <option value="top">上に固定</option>
+              <option value="left">左に固定</option>
+            </select>
+          </div>
+        </div>
+
         <div class="field">
           <label for="siteName">自治会名</label>
           <input id="siteName" value="みどり町自治会">
@@ -768,7 +884,10 @@
       html: "",
       css: "",
       blockHtml: "",
-      extraBlocks: []
+      extraBlocks: [],
+      pages: [],
+      currentPageIndex: 0,
+      isLoadingPage: false
     };
 
     const templates = [
@@ -807,6 +926,11 @@
     ];
 
     const els = {
+      pageTabs: document.getElementById("pageTabs"),
+      addPageBtn: document.getElementById("addPageBtn"),
+      deletePageBtn: document.getElementById("deletePageBtn"),
+      pageTitle: document.getElementById("pageTitle"),
+      navPosition: document.getElementById("navPosition"),
       siteName: document.getElementById("siteName"),
       catchText: document.getElementById("catchText"),
       photoUrl1: document.getElementById("photoUrl1"),
@@ -882,6 +1006,108 @@
           { text: "", url: "" }
         ]
       };
+    }
+
+    function cloneData(value) {
+      return JSON.parse(JSON.stringify(value));
+    }
+
+    function slugForPage(index) {
+      return index === 0 ? "index.html" : `page-${index + 1}.html`;
+    }
+
+    function defaultPage(index = 0, siteName = "みどり町自治会") {
+      return {
+        title: index === 0 ? "ホーム" : `ページ${index + 1}`,
+        slug: slugForPage(index),
+        siteName,
+        catchText: "住みよいまちづくりのために、地域の情報をわかりやすくお届けします。",
+        photoUrls: ["", "", ""],
+        templateId: "blank",
+        customHeading: "",
+        customText: "",
+        notices: [
+          { title: "町内清掃のお知らせ", body: "7月20日朝8時より町内清掃を行います。公民館前に集合してください。" },
+          { title: "夏祭りのご案内", body: "8月3日午後5時より、公民館前広場で夏祭りを開催します。" },
+          { title: "防災訓練について", body: "9月1日に防災訓練を行います。詳細は回覧板でお知らせします。" }
+        ],
+        scheduleText: "毎月第1日曜日: 町内清掃 / 毎月15日: 回覧板配布 / 9月1日: 防災訓練",
+        contactText: "お問い合わせは自治会役員または班長までお願いします。",
+        extraBlocks: []
+      };
+    }
+
+    function collectPageData() {
+      const notices = [0, 1, 2].map((index) => ({
+        title: document.querySelector(`[data-notice-title="${index}"]`).value,
+        body: document.querySelector(`[data-notice-body="${index}"]`).value
+      }));
+      const page = state.pages[state.currentPageIndex] || defaultPage(state.currentPageIndex);
+      return {
+        ...page,
+        title: els.pageTitle.value.trim() || `ページ${state.currentPageIndex + 1}`,
+        slug: slugForPage(state.currentPageIndex),
+        siteName: els.siteName.value,
+        catchText: els.catchText.value,
+        photoUrls: [els.photoUrl1.value, els.photoUrl2.value, els.photoUrl3.value],
+        templateId: els.templateSelect.value,
+        customHeading: els.customHeading.value,
+        customText: els.customText.value,
+        notices,
+        scheduleText: els.scheduleText.value,
+        contactText: els.contactText.value,
+        extraBlocks: cloneData(state.extraBlocks)
+      };
+    }
+
+    function saveCurrentPage() {
+      if (state.isLoadingPage || !state.pages.length) return;
+      state.pages[state.currentPageIndex] = collectPageData();
+    }
+
+    function applyPageData(page) {
+      state.isLoadingPage = true;
+      els.pageTitle.value = page.title || "ホーム";
+      els.siteName.value = page.siteName || "みどり町自治会";
+      els.catchText.value = page.catchText || "";
+      els.photoUrl1.value = page.photoUrls?.[0] || "";
+      els.photoUrl2.value = page.photoUrls?.[1] || "";
+      els.photoUrl3.value = page.photoUrls?.[2] || "";
+      els.templateSelect.value = page.templateId || "blank";
+      els.customHeading.value = page.customHeading || "";
+      els.customText.value = page.customText || "";
+      (page.notices || []).slice(0, 3).forEach((notice, index) => {
+        document.querySelector(`[data-notice-title="${index}"]`).value = notice.title || "";
+        document.querySelector(`[data-notice-body="${index}"]`).value = notice.body || "";
+      });
+      els.scheduleText.value = page.scheduleText || "";
+      els.contactText.value = page.contactText || "";
+      state.extraBlocks = cloneData(page.extraBlocks || []);
+      state.isLoadingPage = false;
+    }
+
+    function renderPageTabs() {
+      els.pageTabs.innerHTML = state.pages.map((page, index) => `
+        <button class="page-tab ${index === state.currentPageIndex ? "active" : ""}" type="button" data-page-index="${index}">
+          ${escapeHtml(page.title || `ページ${index + 1}`)}
+        </button>
+      `).join("");
+      els.deletePageBtn.disabled = state.pages.length <= 1;
+    }
+
+    function initializePages() {
+      state.pages = [defaultPage(0)];
+      applyPageData(state.pages[0]);
+      renderPageTabs();
+    }
+
+    function pageNavMarkup(activeIndex = state.currentPageIndex) {
+      const links = state.pages.map((page, index) => {
+        const title = escapeHtml(page.title || `ページ${index + 1}`);
+        const href = escapeHtml(slugForPage(index));
+        return `<a class="${index === activeIndex ? "active" : ""}" href="${href}">${title}</a>`;
+      }).join("");
+      return `<nav class="site-nav ${els.navPosition.value === "left" ? "site-nav-left" : "site-nav-top"}">${links}</nav>`;
     }
 
     function updateVisibleInputs() {
@@ -1140,8 +1366,10 @@
 
       if (template.id === "blank") {
         return `
+          ${pageNavMarkup()}
           <header>
             <h1>${siteName}</h1>
+            <span class="page-title-label">${escapeHtml(els.pageTitle.value || "ホーム")}</span>
           </header>
           <main>
             ${extraBlocksMarkup(context)}
@@ -1150,6 +1378,7 @@
       }
 
       return `
+        ${pageNavMarkup()}
         <header>
           <nav>
             <span>お知らせ</span>
@@ -1158,6 +1387,7 @@
             <span>連絡先</span>
           </nav>
           <h1>${siteName}</h1>
+          <span class="page-title-label">${escapeHtml(els.pageTitle.value || "ホーム")}</span>
           <span class="template-note">${escapeHtml(template.note)}</span>
         </header>
         <main>
@@ -1168,9 +1398,10 @@
     }
 
     function buildExportHtml() {
-      const title = escapeHtml(els.siteName.value || "自治会ホームページ");
+      const title = escapeHtml(`${els.siteName.value || "自治会ホームページ"} - ${els.pageTitle.value || "ホーム"}`);
       const template = currentTemplate();
       const photoUrl = escapeHtml(primaryPhotoUrl() || placeholderPhoto());
+      const navClass = els.navPosition.value === "left" ? "nav-left" : "nav-top";
       return `<!doctype html>
 <html lang="ja">
 <head>
@@ -1179,7 +1410,7 @@
   <title>${title}</title>
   <link rel="stylesheet" href="styles.css">
 </head>
-<body class="${template.className}" style="--preview-photo: url('${photoUrl}');">
+<body class="${template.className} ${navClass}" style="--preview-photo: url('${photoUrl}');">
 ${buildPreviewHtml()}
 </body>
 </html>`;
@@ -1207,6 +1438,66 @@ nav {
   margin-bottom: 24px;
   color: #245f43;
   font-weight: 800;
+}
+
+.site-nav {
+  position: fixed;
+  z-index: 20;
+  background: rgba(255,255,255,.96);
+  border: 1px solid #d8e0e7;
+  box-shadow: 0 8px 24px rgba(31,41,51,.12);
+}
+
+.site-nav a {
+  display: inline-block;
+  border-radius: 999px;
+  color: #245f43;
+  background: #e8f3ed;
+  padding: 8px 13px;
+  text-decoration: none;
+  font-weight: 800;
+}
+
+.site-nav a.active {
+  color: #fff;
+  background: #2f7d57;
+}
+
+body.nav-top {
+  padding-top: 62px;
+}
+
+body.nav-top .site-nav {
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  border-width: 0 0 1px;
+}
+
+body.nav-left {
+  padding-left: 168px;
+}
+
+body.nav-left .site-nav {
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 168px;
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding: 16px 10px;
+  border-width: 0 1px 0 0;
+}
+
+body.nav-left .site-nav a {
+  border-radius: 8px;
+  text-align: center;
 }
 
 h1 {
@@ -1432,6 +1723,21 @@ main {
 }
 
 @media (max-width: 760px) {
+  body.nav-left {
+    padding-left: 0;
+    padding-top: 62px;
+  }
+
+  body.nav-left .site-nav {
+    right: 0;
+    bottom: auto;
+    width: auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    border-width: 0 0 1px;
+  }
+
   .cards,
   .feature-row,
   .feature-row.reverse,
@@ -2065,13 +2371,15 @@ exports.deleteUserByAdmin = onCall(async (request) => {
     }
 
     function render(skipAddedBlocks = false) {
+      saveCurrentPage();
       const template = currentTemplate();
       const previewPhoto = escapeHtml(primaryPhotoUrl() || placeholderPhoto());
       updateVisibleInputs();
+      renderPageTabs();
       state.html = buildExportHtml();
       state.css = buildExportCss();
       state.blockHtml = buildPeraichiLikeHtml();
-      els.preview.className = `site-preview ${template.className}`;
+      els.preview.className = `site-preview ${template.className} ${els.navPosition.value === "left" ? "nav-left" : "nav-top"}`;
       els.preview.style.setProperty("--preview-photo", `url('${previewPhoto}')`);
       els.preview.innerHTML = buildPreviewHtml();
       els.codeOutput.textContent = state.activeTab === "html" ? state.html : state.activeTab === "css" ? state.css : state.blockHtml;
@@ -2160,11 +2468,28 @@ exports.deleteUserByAdmin = onCall(async (request) => {
       return new Blob([...chunks, ...central, end], { type: "application/zip" });
     }
 
+    function buildPageHtmlFiles() {
+      saveCurrentPage();
+      const originalIndex = state.currentPageIndex;
+      const files = state.pages.map((page, index) => {
+        state.currentPageIndex = index;
+        applyPageData(page);
+        return { name: slugForPage(index), content: buildExportHtml() };
+      });
+      state.currentPageIndex = originalIndex;
+      applyPageData(state.pages[originalIndex]);
+      renderPageTabs();
+      return files;
+    }
+
     function downloadZip() {
       render();
+      const pageFiles = buildPageHtmlFiles();
       const readme = `自治会ホームページ一式
 
 index.html と styles.css を同じフォルダに置くと表示できます。
+2ページ目以降がある場合は page-2.html、page-3.html のように入っています。
+各ページ上部または左側のリンクバーからページ移動できます。
 peraichi-like.html は、ペライチ風の単体HTMLです。
 auth-sample.html は、利用者用の登録・ログイン画面サンプルです。
 admin.html は、管理者専用の別画面サンプルです。
@@ -2186,7 +2511,7 @@ functions/index.js にCloud Functionsの雛形を入れています。
 本番ではFirebase Blazeプラン、Firebase CLIログイン、functionsのデプロイが必要です。
 `;
       const zip = makeZip([
-        { name: "index.html", content: state.html },
+        ...pageFiles,
         { name: "styles.css", content: state.css },
         { name: "peraichi-like.html", content: state.blockHtml },
         { name: "auth-sample.html", content: buildAuthSampleHtml() },
@@ -2240,6 +2565,32 @@ functions/index.js にCloud Functionsの雛形を入れています。
           { text: "", url: "" }
         ] }
       ];
+      render();
+    });
+
+    els.pageTabs.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-page-index]");
+      if (!button) return;
+      saveCurrentPage();
+      state.currentPageIndex = Number(button.dataset.pageIndex);
+      applyPageData(state.pages[state.currentPageIndex]);
+      render();
+    });
+
+    els.addPageBtn.addEventListener("click", () => {
+      saveCurrentPage();
+      const page = defaultPage(state.pages.length, els.siteName.value || "みどり町自治会");
+      state.pages.push(page);
+      state.currentPageIndex = state.pages.length - 1;
+      applyPageData(page);
+      render();
+    });
+
+    els.deletePageBtn.addEventListener("click", () => {
+      if (state.pages.length <= 1) return;
+      state.pages.splice(state.currentPageIndex, 1);
+      state.currentPageIndex = Math.max(0, state.currentPageIndex - 1);
+      applyPageData(state.pages[state.currentPageIndex]);
       render();
     });
 
@@ -2299,6 +2650,7 @@ functions/index.js にCloud Functionsの雛形を入れています。
     });
 
     initializeTemplates();
+    initializePages();
     render();
   </script>
 </body>
