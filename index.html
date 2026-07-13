@@ -158,6 +158,31 @@
       background: #fbfcfd;
     }
 
+    .compact-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .theme-swatches {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .theme-swatch {
+      width: 34px;
+      height: 34px;
+      border: 2px solid var(--line);
+      border-radius: 999px;
+      background: var(--swatch, #2f7d57);
+      box-shadow: inset 0 0 0 4px #fff;
+    }
+
+    .theme-swatch.active {
+      border-color: #111827;
+    }
+
     .page-tabs {
       display: flex;
       gap: 6px;
@@ -256,6 +281,13 @@
       grid-template-columns: 1fr auto;
       align-items: center;
       gap: 8px;
+    }
+
+    .block-tools {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
     }
 
     .block-fields {
@@ -414,6 +446,15 @@
       padding: 16px 30px 24px;
       display: grid;
       gap: 12px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .site-preview main > * {
+      grid-column: 1 / -1;
+    }
+
+    .site-preview main > .block-half {
+      grid-column: span 1;
     }
 
     .hero-photo {
@@ -499,6 +540,18 @@
 
     .text-heading-only {
       padding: 0;
+    }
+
+    .text-block a,
+    .feature-text a,
+    .linked-photo {
+      color: var(--green-dark);
+      font-weight: 900;
+    }
+
+    .linked-photo {
+      display: block;
+      text-decoration: none;
     }
 
     .cards {
@@ -817,6 +870,28 @@
           </div>
         </div>
 
+        <div class="section-box">
+          <label>全体の色合い</label>
+          <div class="theme-swatches" id="themeSwatches"></div>
+          <select id="themeSelect">
+            <option value="green">緑</option>
+            <option value="blue">青</option>
+            <option value="red">赤</option>
+            <option value="orange">オレンジ</option>
+            <option value="purple">紫</option>
+            <option value="gray">落ち着いた灰色</option>
+          </select>
+        </div>
+
+        <div class="section-box">
+          <label>作りかけ保存・読み込み</label>
+          <div class="compact-row">
+            <button class="btn secondary" id="saveProjectBtn" type="button">設定を保存</button>
+            <button class="btn secondary" id="loadProjectBtn" type="button">設定を読み込む</button>
+          </div>
+          <input id="projectFileInput" type="file" accept="application/json,.json" hidden>
+        </div>
+
         <div class="field">
           <label for="siteName">自治会名</label>
           <input id="siteName" value="みどり町自治会">
@@ -925,7 +1000,8 @@
       extraBlocks: [],
       pages: [],
       currentPageIndex: 0,
-      isLoadingPage: false
+      isLoadingPage: false,
+      themeId: "green"
     };
 
     const templates = [
@@ -949,6 +1025,15 @@
       { id: "layout", name: "配置" }
     ];
 
+    const themes = {
+      green: { name: "緑", main: "#2f7d57", dark: "#245f43", soft: "#e8f3ed", accent: "#c88a2d", blue: "#2f6f9f", softBlue: "#e8f0f7", softGold: "#fbf2df" },
+      blue: { name: "青", main: "#2563eb", dark: "#1e3a8a", soft: "#eaf1ff", accent: "#0ea5e9", blue: "#2563eb", softBlue: "#e0f2fe", softGold: "#eef6ff" },
+      red: { name: "赤", main: "#dc2626", dark: "#991b1b", soft: "#fff0f0", accent: "#f97316", blue: "#b91c1c", softBlue: "#fee2e2", softGold: "#fff7ed" },
+      orange: { name: "オレンジ", main: "#ea580c", dark: "#9a3412", soft: "#fff3e8", accent: "#ca8a04", blue: "#c2410c", softBlue: "#ffedd5", softGold: "#fef3c7" },
+      purple: { name: "紫", main: "#7c3aed", dark: "#4c1d95", soft: "#f3edff", accent: "#db2777", blue: "#6d28d9", softBlue: "#ede9fe", softGold: "#fdf2f8" },
+      gray: { name: "落ち着いた灰色", main: "#475569", dark: "#1f2937", soft: "#f1f5f9", accent: "#64748b", blue: "#334155", softBlue: "#e2e8f0", softGold: "#f8fafc" }
+    };
+
     const extraBlockTypes = [
       { id: "headingOnly", category: "basic", name: "見出しだけ" },
       { id: "textOnly", category: "basic", name: "本文だけ" },
@@ -969,6 +1054,11 @@
       deletePageBtn: document.getElementById("deletePageBtn"),
       pageTitle: document.getElementById("pageTitle"),
       navPosition: document.getElementById("navPosition"),
+      themeSelect: document.getElementById("themeSelect"),
+      themeSwatches: document.getElementById("themeSwatches"),
+      saveProjectBtn: document.getElementById("saveProjectBtn"),
+      loadProjectBtn: document.getElementById("loadProjectBtn"),
+      projectFileInput: document.getElementById("projectFileInput"),
       siteName: document.getElementById("siteName"),
       catchText: document.getElementById("catchText"),
       photoUrl1: document.getElementById("photoUrl1"),
@@ -1038,6 +1128,10 @@
         type,
         heading: label,
         text: "",
+        width: "full",
+        textLinkText: "",
+        textLinkUrl: "",
+        photoLinkUrl: "",
         links: [
           { text: "PDFを見る", url: "" },
           { text: "", url: "" },
@@ -1048,6 +1142,34 @@
 
     function cloneData(value) {
       return JSON.parse(JSON.stringify(value));
+    }
+
+    function currentTheme() {
+      return themes[state.themeId] || themes.green;
+    }
+
+    function applyTheme(themeId = state.themeId) {
+      state.themeId = themes[themeId] ? themeId : "green";
+      const theme = currentTheme();
+      const root = document.documentElement;
+      root.style.setProperty("--green", theme.main);
+      root.style.setProperty("--green-dark", theme.dark);
+      root.style.setProperty("--soft-green", theme.soft);
+      root.style.setProperty("--gold", theme.accent);
+      root.style.setProperty("--blue", theme.blue);
+      root.style.setProperty("--soft-blue", theme.softBlue);
+      root.style.setProperty("--soft-gold", theme.softGold);
+      els.themeSelect.value = state.themeId;
+      els.themeSwatches.querySelectorAll(".theme-swatch").forEach((button) => {
+        button.classList.toggle("active", button.dataset.theme === state.themeId);
+      });
+    }
+
+    function initializeThemes() {
+      els.themeSwatches.innerHTML = Object.entries(themes).map(([id, theme]) => `
+        <button class="theme-swatch ${id === state.themeId ? "active" : ""}" type="button" data-theme="${id}" title="${theme.name}" style="--swatch: ${theme.main}"></button>
+      `).join("");
+      applyTheme(state.themeId);
     }
 
     function slugForPage(index) {
@@ -1101,6 +1223,32 @@
     function saveCurrentPage() {
       if (state.isLoadingPage || !state.pages.length) return;
       state.pages[state.currentPageIndex] = collectPageData();
+    }
+
+    function projectData() {
+      saveCurrentPage();
+      return {
+        version: 1,
+        themeId: state.themeId,
+        navPosition: els.navPosition.value,
+        currentPageIndex: state.currentPageIndex,
+        pages: cloneData(state.pages)
+      };
+    }
+
+    function loadProjectData(data) {
+      if (!data || !Array.isArray(data.pages) || !data.pages.length) {
+        els.status.textContent = "読み込める設定ファイルではありません";
+        return;
+      }
+      state.themeId = themes[data.themeId] ? data.themeId : "green";
+      els.navPosition.value = data.navPosition === "left" ? "left" : "top";
+      state.pages = cloneData(data.pages);
+      state.currentPageIndex = Math.min(Math.max(Number(data.currentPageIndex) || 0, 0), state.pages.length - 1);
+      applyTheme(state.themeId);
+      applyPageData(state.pages[state.currentPageIndex]);
+      render();
+      els.status.textContent = "設定を読み込みました";
     }
 
     function applyPageData(page) {
@@ -1193,6 +1341,23 @@
       `;
     }
 
+    function blockClass(block, baseClass = "") {
+      return `${baseClass} ${block?.width === "half" ? "block-half" : ""}`.trim();
+    }
+
+    function textLinkMarkup(block) {
+      if (!block?.textLinkText && !block?.textLinkUrl) return "";
+      const text = escapeHtml(block.textLinkText || "詳しく見る");
+      const url = escapeHtml(block.textLinkUrl || "#");
+      return `<p class="text-link-line"><a href="${url}" target="_blank" rel="noopener">${text}</a></p>`;
+    }
+
+    function wrapPhotoLink(markup, block) {
+      const url = String(block?.photoLinkUrl || "").trim();
+      if (!url) return markup;
+      return `<a class="${blockClass(block, "linked-photo")}" href="${escapeHtml(url)}" target="_blank" rel="noopener">${markup}</a>`;
+    }
+
     function noticesCardsMarkup(notices) {
       const cards = notices.map((notice) => `
         <article class="preview-card">
@@ -1247,17 +1412,17 @@
 
     function headingOnlyMarkup(block) {
       const custom = customHeadingText(block);
-      return `<section class="text-block text-heading-only"><h2>${custom.heading}</h2></section>`;
+      return `<section class="${blockClass(block, "text-block text-heading-only")}"><h2>${custom.heading}</h2>${textLinkMarkup(block)}</section>`;
     }
 
     function textOnlyMarkup(block) {
       const custom = customHeadingText(block);
-      return `<section class="text-block text-only"><p>${custom.text}</p></section>`;
+      return `<section class="${blockClass(block, "text-block text-only")}"><p>${custom.text}</p>${textLinkMarkup(block)}</section>`;
     }
 
     function headingTextMarkup(block) {
       const custom = customHeadingText(block);
-      return `<section class="text-block"><h2>${custom.heading}</h2><p>${custom.text}</p></section>`;
+      return `<section class="${blockClass(block, "text-block")}"><h2>${custom.heading}</h2><p>${custom.text}</p>${textLinkMarkup(block)}</section>`;
     }
 
     function recentInfoMarkup(context) {
@@ -1296,14 +1461,14 @@
 
     function linksBlockMarkup(block) {
       const custom = customHeadingText(block);
-      return `<section class="feature-text"><h2>${custom.heading}</h2><p>${custom.text}</p>${linkButtonsMarkup(block)}</section>`;
+      return `<section class="${blockClass(block, "feature-text")}"><h2>${custom.heading}</h2><p>${custom.text}</p>${linkButtonsMarkup(block)}</section>`;
     }
 
     function photoTextMarkup(photoUrls, siteName, block, reverse = false) {
       const custom = customHeadingText(block);
       const photo = photoMarkup(photoUrls, siteName);
       const text = `<div class="feature-text"><h2>${custom.heading}</h2><p>${custom.text}</p></div>`;
-      return `<section class="feature-row ${reverse ? "reverse" : ""}">${reverse ? `${text}${photo}` : `${photo}${text}`}</section>`;
+      return `<section class="${blockClass(block, `feature-row ${reverse ? "reverse" : ""}`)}">${reverse ? `${text}${wrapPhotoLink(photo, block)}` : `${wrapPhotoLink(photo, block)}${text}`}</section>`;
     }
 
     function extraBlockMarkup(block, context) {
@@ -1312,7 +1477,7 @@
       if (blockType === "textOnly") return textOnlyMarkup(block);
       if (blockType === "headingText") return headingTextMarkup(block);
       if (blockType === "pdfLinks" || blockType === "buttonLinks") return linksBlockMarkup(block);
-      if (blockType === "photo") return context.photoBlock;
+      if (blockType === "photo") return wrapPhotoLink(`<section class="${blockClass(block)}">${context.photoBlock}</section>`, block);
       if (blockType === "photoTextLeft") return photoTextMarkup(context.photoUrls, context.siteName, block, false);
       if (blockType === "textPhotoRight") return photoTextMarkup(context.photoUrls, context.siteName, block, true);
       if (blockType === "blankHeading") return blankHeadingMarkup();
@@ -1342,15 +1507,32 @@
             const needsHeading = ["headingOnly", "headingText", "photoTextLeft", "textPhotoRight", "pdfLinks", "buttonLinks"].includes(block.type);
             const needsText = ["textOnly", "headingText", "photoTextLeft", "textPhotoRight", "pdfLinks", "buttonLinks"].includes(block.type);
             const needsLinks = ["pdfLinks", "buttonLinks"].includes(block.type);
+            const needsTextLink = ["headingOnly", "textOnly", "headingText", "photoTextLeft", "textPhotoRight"].includes(block.type);
+            const needsPhotoLink = ["photo", "photoTextLeft", "textPhotoRight"].includes(block.type);
             return `
               <div class="added-block-item">
                 <div class="added-block-title">
                   <span>${index + 1}. ${escapeHtml(type ? type.name : block.type)}</span>
-                  <button class="small-btn" type="button" data-remove-block="${index}">削除</button>
+                  <div class="block-tools">
+                    <button class="small-btn" type="button" data-move-block="${index}:up">上へ</button>
+                    <button class="small-btn" type="button" data-move-block="${index}:down">下へ</button>
+                    <button class="small-btn" type="button" data-remove-block="${index}">削除</button>
+                  </div>
                 </div>
                 <div class="block-fields">
+                  <select data-block-field="${index}:width">
+                    <option value="full" ${block.width !== "half" ? "selected" : ""}>幅いっぱい</option>
+                    <option value="half" ${block.width === "half" ? "selected" : ""}>半分幅</option>
+                  </select>
                   ${needsHeading ? `<input data-block-field="${index}:heading" value="${escapeHtml(block.heading)}" placeholder="見出し">` : ""}
                   ${needsText ? `<textarea rows="1" data-block-field="${index}:text" placeholder="本文">${escapeHtml(block.text)}</textarea>` : ""}
+                  ${needsTextLink ? `
+                    <div class="link-grid">
+                      <input data-block-field="${index}:textLinkText" value="${escapeHtml(block.textLinkText || "")}" placeholder="文字リンクの表示名">
+                      <input data-block-field="${index}:textLinkUrl" value="${escapeHtml(block.textLinkUrl || "")}" placeholder="文字リンクURL">
+                    </div>
+                  ` : ""}
+                  ${needsPhotoLink ? `<input data-block-field="${index}:photoLinkUrl" value="${escapeHtml(block.photoLinkUrl || "")}" placeholder="写真を押した時のリンクURL">` : ""}
                   ${needsLinks ? (block.links || []).slice(0, 3).map((link, linkIndex) => `
                     <div class="link-grid">
                       <input data-block-field="${index}:links.${linkIndex}.text" value="${escapeHtml(link.text)}" placeholder="リンク文字 ${linkIndex + 1}">
@@ -1463,6 +1645,7 @@ ${buildPreviewHtml()}
     }
 
     function buildExportCss() {
+      const theme = currentTheme();
       return `body {
   margin: 0;
   color: #1f2933;
@@ -1569,7 +1752,16 @@ main {
   margin: 0 auto;
   padding: 18px 0 32px;
   display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
+}
+
+main > * {
+  grid-column: 1 / -1;
+}
+
+main > .block-half {
+  grid-column: span 1;
 }
 
 .hero-photo {
@@ -1666,6 +1858,18 @@ main {
 
 .text-heading-only {
   padding: 0;
+}
+
+.text-block a,
+.feature-text a,
+.linked-photo {
+  color: #245f43;
+  font-weight: 800;
+}
+
+.linked-photo {
+  display: block;
+  text-decoration: none;
 }
 
 .cards {
@@ -1821,7 +2025,19 @@ main {
   .photo-gallery.count-2 {
     grid-template-columns: 1fr;
   }
-}`;
+
+  main > .block-half {
+    grid-column: 1 / -1;
+  }
+}`
+        .replaceAll("#2f7d57", theme.main)
+        .replaceAll("#245f43", theme.dark)
+        .replaceAll("#173d2b", theme.dark)
+        .replaceAll("#e8f3ed", theme.soft)
+        .replaceAll("#c88a2d", theme.accent)
+        .replaceAll("#2f6f9f", theme.blue)
+        .replaceAll("#e8f0f7", theme.softBlue)
+        .replaceAll("#fbf2df", theme.softGold);
     }
 
     function firebaseConfig() {
@@ -2623,6 +2839,33 @@ functions/index.js にCloud Functionsの雛形を入れています。
       download(code.filename, code.text);
     });
     document.getElementById("downloadZipBtn").addEventListener("click", downloadZip);
+    els.themeSelect.addEventListener("change", () => {
+      applyTheme(els.themeSelect.value);
+      render();
+    });
+    els.themeSwatches.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-theme]");
+      if (!button) return;
+      applyTheme(button.dataset.theme);
+      render();
+    });
+    els.saveProjectBtn.addEventListener("click", () => {
+      const site = (els.siteName.value || "jichikai").replace(/[\\/:*?"<>|]/g, "");
+      download(`${site}-settings.json`, JSON.stringify(projectData(), null, 2));
+      els.status.textContent = "設定を保存しました";
+    });
+    els.loadProjectBtn.addEventListener("click", () => els.projectFileInput.click());
+    els.projectFileInput.addEventListener("change", async () => {
+      const file = els.projectFileInput.files?.[0];
+      if (!file) return;
+      try {
+        loadProjectData(JSON.parse(await file.text()));
+      } catch (error) {
+        els.status.textContent = "設定ファイルを読み込めませんでした";
+      } finally {
+        els.projectFileInput.value = "";
+      }
+    });
     document.getElementById("sampleBtn").addEventListener("click", () => {
       els.siteName.value = "さくら台自治会";
       els.catchText.value = "地域の行事、防災、回覧板のお知らせをまとめて掲載しています。";
@@ -2697,6 +2940,19 @@ functions/index.js にCloud Functionsの雛形を入れています。
     });
 
     els.addedBlocks.addEventListener("click", (event) => {
+      const moveButton = event.target.closest("[data-move-block]");
+      if (moveButton) {
+        event.preventDefault();
+        event.stopPropagation();
+        const [indexText, direction] = moveButton.dataset.moveBlock.split(":");
+        const index = Number(indexText);
+        const nextIndex = direction === "up" ? index - 1 : index + 1;
+        if (nextIndex < 0 || nextIndex >= state.extraBlocks.length) return;
+        const [block] = state.extraBlocks.splice(index, 1);
+        state.extraBlocks.splice(nextIndex, 0, block);
+        render();
+        return;
+      }
       const button = event.target.closest("[data-remove-block]");
       if (!button) return;
       event.preventDefault();
@@ -2715,7 +2971,7 @@ functions/index.js にCloud Functionsの雛形を入れています。
       const [indexText, path] = input.dataset.blockField.split(":");
       const block = state.extraBlocks[Number(indexText)];
       if (!block) return;
-      if (path === "heading" || path === "text") {
+      if (["heading", "text", "width", "textLinkText", "textLinkUrl", "photoLinkUrl"].includes(path)) {
         block[path] = input.value;
       } else if (path.startsWith("links.")) {
         const [, linkIndexText, key] = path.split(".");
@@ -2739,6 +2995,7 @@ functions/index.js にCloud Functionsの雛形を入れています。
     });
 
     initializeTemplates();
+    initializeThemes();
     initializePages();
     render();
   </script>
