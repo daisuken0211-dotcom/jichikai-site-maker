@@ -1,0 +1,2028 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>自治会ホームページ ソースコード生成 試作品</title>
+  <style>
+    :root {
+      --ink: #1f2933;
+      --muted: #64748b;
+      --line: #d8e0e7;
+      --paper: #f7f5ef;
+      --panel: #ffffff;
+      --green: #2f7d57;
+      --green-dark: #245f43;
+      --gold: #c88a2d;
+      --blue: #2f6f9f;
+      --soft-green: #e8f3ed;
+      --soft-blue: #e8f0f7;
+      --soft-gold: #fbf2df;
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", "YuGothic", "Noto Sans JP", Meiryo, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      line-height: 1.65;
+    }
+
+    button,
+    input,
+    textarea,
+    select {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 14px 20px;
+      background: #fff;
+      border-bottom: 1px solid var(--line);
+      position: sticky;
+      top: 0;
+      z-index: 3;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 900;
+      font-size: 20px;
+    }
+
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: var(--green);
+      color: #fff;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(340px, 430px) minmax(0, 1fr);
+      gap: 14px;
+      width: min(1500px, calc(100% - 20px));
+      margin: 14px auto 28px;
+    }
+
+    .panel {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 10px 24px rgba(31, 41, 51, .08);
+      overflow: hidden;
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      background: #fff;
+      font-weight: 900;
+    }
+
+    .form {
+      padding: 14px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+    }
+
+    label {
+      font-weight: 900;
+      color: #334155;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      border: 2px solid var(--line);
+      border-radius: 8px;
+      padding: 10px 12px;
+      background: #fff;
+      color: var(--ink);
+    }
+
+    textarea {
+      min-height: 82px;
+      resize: vertical;
+    }
+
+    .section-box {
+      display: grid;
+      gap: 8px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfd;
+    }
+
+    .add-block-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+    }
+
+    .added-blocks {
+      display: grid;
+      gap: 8px;
+    }
+
+    .added-block-item {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 8px;
+      background: #fff;
+      font-weight: 800;
+    }
+
+    .small-btn {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: #334155;
+      font-weight: 900;
+      min-height: 36px;
+      padding: 4px 10px;
+    }
+
+    .button-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .btn {
+      min-height: 46px;
+      border: 2px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: #334155;
+      font-weight: 900;
+      padding: 8px 12px;
+    }
+
+    .btn.primary {
+      border-color: var(--green);
+      background: var(--green);
+      color: #fff;
+    }
+
+    .btn.secondary {
+      border-color: #bfd3e5;
+      background: var(--soft-blue);
+      color: #244661;
+    }
+
+    .preview-wrap {
+      background: #edf1f4;
+      padding: 12px;
+      overflow: auto;
+    }
+
+    .site-preview {
+      width: min(100%, 980px);
+      margin: 0 auto;
+      background: #fff;
+      border: 1px solid #cfd8e3;
+      box-shadow: 0 12px 28px rgba(31, 41, 51, .10);
+    }
+
+    .site-preview header {
+      background: var(--soft-green);
+      border-bottom: 1px solid #c7dfd2;
+      padding: 30px;
+    }
+
+    .site-preview nav {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 22px;
+      font-weight: 900;
+      color: var(--green-dark);
+    }
+
+    .site-preview h1 {
+      margin: 0;
+      font-size: 40px;
+      line-height: 1.2;
+      color: #173d2b;
+    }
+
+    .site-preview .lead {
+      margin: 10px 0 0;
+      font-size: 18px;
+      color: #334155;
+    }
+
+    .site-preview main {
+      padding: 24px 30px 34px;
+      display: grid;
+      gap: 22px;
+    }
+
+    .hero-photo {
+      min-height: 220px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #dfe9e3, #e8f0f7);
+      display: grid;
+      place-items: center;
+      color: #475569;
+      font-weight: 900;
+      overflow: hidden;
+    }
+
+    .hero-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .template-note {
+      display: inline-block;
+      margin-top: 10px;
+      border-radius: 999px;
+      background: #fff;
+      border: 1px solid #c7dfd2;
+      color: var(--green-dark);
+      padding: 4px 10px;
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .feature-row {
+      display: grid;
+      grid-template-columns: .9fr 1.1fr;
+      gap: 16px;
+      align-items: stretch;
+    }
+
+    .feature-row.reverse {
+      grid-template-columns: 1.1fr .9fr;
+    }
+
+    .feature-text {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+      background: #fff;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .preview-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      background: #fff;
+    }
+
+    .preview-card h3 {
+      margin: 0 0 8px;
+      color: var(--green-dark);
+    }
+
+    .preview-card p {
+      margin: 0;
+      color: #475569;
+    }
+
+    .band {
+      border-left: 6px solid var(--gold);
+      background: var(--soft-gold);
+      padding: 14px 16px;
+      font-weight: 800;
+    }
+
+    .notice-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border: 1px solid var(--line);
+    }
+
+    .notice-table th,
+    .notice-table td {
+      border-bottom: 1px solid var(--line);
+      padding: 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .notice-table th {
+      width: 88px;
+      color: var(--green-dark);
+      background: #f1f5f3;
+    }
+
+    .photo-gallery {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .photo-gallery.count-1 {
+      grid-template-columns: 1fr;
+    }
+
+    .photo-gallery.count-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .photo-gallery .hero-photo {
+      min-height: 210px;
+    }
+
+    .join-panel {
+      border: 2px solid var(--gold);
+      border-radius: 8px;
+      background: var(--soft-gold);
+      padding: 18px;
+    }
+
+    .alert-panel {
+      border: 2px solid #9fc2dc;
+      border-radius: 8px;
+      background: #e8f0f7;
+      padding: 18px;
+    }
+
+    .extra-divider {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 12px;
+      align-items: center;
+      color: var(--muted);
+      font-weight: 900;
+    }
+
+    .extra-divider::before,
+    .extra-divider::after {
+      content: "";
+      height: 1px;
+      background: var(--line);
+    }
+
+    .site-preview.t-photo-hero header {
+      color: #fff;
+      background: linear-gradient(rgba(31,41,51,.35), rgba(31,41,51,.48)), var(--preview-photo), #2f7d57;
+      background-size: cover;
+      background-position: center;
+      min-height: 360px;
+      display: grid;
+      align-content: center;
+    }
+
+    .site-preview.t-photo-hero header h1,
+    .site-preview.t-photo-hero header .lead,
+    .site-preview.t-photo-hero header nav {
+      color: #fff;
+      text-shadow: 0 2px 12px rgba(0,0,0,.25);
+    }
+
+    .site-preview.t-compact main {
+      gap: 12px;
+      padding: 18px 22px 24px;
+    }
+
+    .site-preview.t-compact .hero-photo {
+      min-height: 140px;
+    }
+
+    .site-preview.t-blank header {
+      background: #fff;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .site-preview.t-blank main {
+      min-height: 360px;
+    }
+
+    .site-preview.t-magazine h2 {
+      border-left: 0;
+      border-top: 3px solid var(--green);
+      border-bottom: 1px solid var(--line);
+      padding: 8px 0;
+      text-align: center;
+    }
+
+    .code-panel {
+      margin-top: 14px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      padding: 10px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .tab {
+      border: 2px solid var(--line);
+      background: #fff;
+      border-radius: 8px;
+      padding: 7px 12px;
+      font-weight: 900;
+    }
+
+    .tab.active {
+      border-color: var(--green);
+      background: var(--soft-green);
+      color: var(--green-dark);
+    }
+
+    pre {
+      margin: 0;
+      max-height: 360px;
+      overflow: auto;
+      padding: 14px;
+      background: #111827;
+      color: #e5e7eb;
+      font-size: 13px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .status {
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .auth-summary {
+      display: grid;
+      gap: 8px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #f8fafc;
+      color: #475569;
+      font-weight: 800;
+    }
+
+    .auth-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .auth-note {
+      border-left: 5px solid var(--blue);
+      background: var(--soft-blue);
+      padding: 10px 12px;
+      color: #244661;
+      font-weight: 800;
+    }
+
+    .auth-preview {
+      display: grid;
+      gap: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      padding: 12px;
+    }
+
+    .login-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      background: #fff;
+    }
+
+    .login-card h3 {
+      margin: 0 0 8px;
+      color: var(--green-dark);
+    }
+
+    .admin-list {
+      display: grid;
+      gap: 7px;
+    }
+
+    .admin-user {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: center;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfd;
+      font-weight: 800;
+    }
+
+    @media (max-width: 960px) {
+      .workspace,
+      .cards,
+      .feature-row,
+      .feature-row.reverse,
+      .photo-gallery,
+      .photo-gallery.count-2,
+      .auth-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">町</span>自治会ホームページ生成</div>
+    <div class="top-actions">
+      <button class="small-btn" id="authPresetBtn" type="button">認証設定</button>
+      <div class="status" id="status">HTML/CSSを生成できます</div>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <section class="panel">
+      <div class="panel-head">はめ込む内容</div>
+      <div class="form">
+        <div class="field">
+          <label for="siteName">自治会名</label>
+          <input id="siteName" value="みどり町自治会">
+        </div>
+
+        <div class="field">
+          <label for="catchText">最初に見せる言葉</label>
+          <textarea id="catchText">住みよいまちづくりのために、地域の情報をわかりやすくお届けします。</textarea>
+        </div>
+
+        <div class="section-box">
+          <label>写真URL 最大3枚</label>
+          <input id="photoUrl1" placeholder="写真1 https://example.com/photo1.jpg">
+          <input id="photoUrl2" placeholder="写真2 https://example.com/photo2.jpg">
+          <input id="photoUrl3" placeholder="写真3 https://example.com/photo3.jpg">
+        </div>
+
+        <div class="field">
+          <label for="templateSelect">表示テンプレート</label>
+          <select id="templateSelect"></select>
+        </div>
+
+        <div class="section-box">
+          <label for="extraBlockSelect">この下に追加するブロック</label>
+          <div class="add-block-row">
+            <select id="extraBlockSelect"></select>
+            <button class="small-btn" id="addBlockBtn" type="button">追加</button>
+          </div>
+          <div class="added-blocks" id="addedBlocks"></div>
+        </div>
+
+        <div class="section-box">
+          <label>白紙ブロック用の見出し・本文</label>
+          <input id="customHeading" placeholder="例: 自治会の活動紹介">
+          <textarea id="customText" placeholder="ここに自由に文章を入れます。写真左・文字右などの追加ブロックにも使えます。"></textarea>
+        </div>
+
+        <div class="section-box">
+          <label>お知らせ 1</label>
+          <input data-notice-title="0" value="町内清掃のお知らせ">
+          <textarea data-notice-body="0">7月20日朝8時より町内清掃を行います。公民館前に集合してください。</textarea>
+        </div>
+
+        <div class="section-box">
+          <label>お知らせ 2</label>
+          <input data-notice-title="1" value="夏祭りのご案内">
+          <textarea data-notice-body="1">8月3日午後5時より、公民館前広場で夏祭りを開催します。</textarea>
+        </div>
+
+        <div class="section-box">
+          <label>お知らせ 3</label>
+          <input data-notice-title="2" value="防災訓練について">
+          <textarea data-notice-body="2">9月1日に防災訓練を行います。詳細は回覧板でお知らせします。</textarea>
+        </div>
+
+        <div class="field">
+          <label for="scheduleText">行事予定</label>
+          <textarea id="scheduleText">毎月第1日曜日: 町内清掃 / 毎月15日: 回覧板配布 / 9月1日: 防災訓練</textarea>
+        </div>
+
+        <div class="field">
+          <label for="contactText">連絡先</label>
+          <textarea id="contactText">お問い合わせは自治会役員または班長までお願いします。</textarea>
+        </div>
+
+        <div class="button-row">
+          <button class="btn primary" id="generateBtn" type="button">ソースを作る</button>
+          <button class="btn secondary" id="sampleBtn" type="button">例を入れる</button>
+        </div>
+
+        <div class="section-box" id="authSettings">
+          <label>認証設定 Firebase</label>
+          <div class="auth-summary">
+            <span>メールアドレス、パスワード、使用者氏名で登録します。</span>
+            <span>登録後は確認メールを送り、本人確認後に利用可能にします。</span>
+            <span>管理者はFirebase管理画面または管理者機能から利用者を削除できます。</span>
+          </div>
+          <div class="auth-grid">
+            <input id="firebaseApiKey" placeholder="apiKey">
+            <input id="firebaseAuthDomain" placeholder="authDomain">
+            <input id="firebaseProjectId" placeholder="projectId">
+            <input id="firebaseStorageBucket" placeholder="storageBucket">
+            <input id="firebaseMessagingSenderId" placeholder="messagingSenderId">
+            <input id="firebaseAppId" placeholder="appId">
+          </div>
+          <input id="adminEmail" placeholder="管理者メールアドレス 例: admin@example.com">
+          <input id="adminPassword" type="password" placeholder="管理者専用パスワード">
+          <div class="auth-note">利用者画面と管理者画面は分けます。利用者は自分の作成データだけ、管理者は別URLで管理者パスワードを入れて利用者削除を行う想定です。</div>
+        </div>
+
+        <div class="button-row">
+          <button class="btn secondary" id="copyHtmlBtn" type="button">表示中コードをコピー</button>
+          <button class="btn secondary" id="downloadHtmlBtn" type="button">表示中コードを保存</button>
+        </div>
+
+        <button class="btn primary" id="downloadZipBtn" type="button">HTML一式をZIPで保存</button>
+      </div>
+    </section>
+
+    <section>
+      <section class="panel">
+        <div class="panel-head">プレビュー</div>
+        <div class="preview-wrap">
+          <div class="site-preview" id="preview"></div>
+        </div>
+      </section>
+
+      <section class="panel code-panel">
+        <div class="panel-head">吐き出されるソースコード</div>
+        <div class="tabs">
+          <button class="tab active" data-code-tab="html" type="button">index.html</button>
+          <button class="tab" data-code-tab="css" type="button">styles.css</button>
+          <button class="tab" data-code-tab="blockHtml" type="button">ペライチ風HTML</button>
+        </div>
+        <pre id="codeOutput"></pre>
+      </section>
+
+      <section class="panel code-panel">
+        <div class="panel-head">認証画面イメージ</div>
+        <div class="form auth-preview">
+          <div class="login-card">
+            <h3>利用者登録</h3>
+            <input placeholder="使用者氏名">
+            <input placeholder="メールアドレス">
+            <input placeholder="パスワード">
+            <button class="btn primary" type="button">確認メールを送る</button>
+          </div>
+          <div class="login-card">
+            <h3>利用者ログイン後</h3>
+            <p>自分が作った自治会ホームページだけを表示します。</p>
+            <button class="btn secondary" type="button">自分のホームページを開く</button>
+          </div>
+          <div class="login-card">
+            <h3>管理者画面 別URL</h3>
+            <input placeholder="管理者メールアドレス">
+            <input placeholder="管理者専用パスワード">
+            <button class="btn primary" type="button">管理画面に入る</button>
+          </div>
+          <div class="login-card">
+            <h3>管理者だけが見える一覧</h3>
+            <div class="admin-list">
+              <div class="admin-user"><span>田中 太郎 / tanaka@example.com</span><button class="small-btn" type="button">強制削除</button></div>
+              <div class="admin-user"><span>佐藤 花子 / sato@example.com</span><button class="small-btn" type="button">強制削除</button></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const state = {
+      activeTab: "html",
+      html: "",
+      css: "",
+      blockHtml: "",
+      extraBlocks: []
+    };
+
+    const templates = [
+      { id: "standard", name: "1. 標準", note: "写真上・お知らせ3枚", className: "t-standard" },
+      { id: "photoHero", name: "2. 写真大きめ", note: "写真を最初に大きく表示", className: "t-photo-hero" },
+      { id: "photoLeft", name: "3. 写真左", note: "写真左・説明右", className: "t-photo-left" },
+      { id: "photoRight", name: "4. 写真右", note: "説明左・写真右", className: "t-photo-right" },
+      { id: "newsFirst", name: "5. お知らせ優先", note: "お知らせを最初に表示", className: "t-news-first" },
+      { id: "scheduleFirst", name: "6. 行事予定優先", note: "年間予定を目立たせる", className: "t-schedule-first" },
+      { id: "tableNews", name: "7. 表形式", note: "お知らせを表で表示", className: "t-table-news" },
+      { id: "joinFocus", name: "8. 会員募集", note: "入会案内を強める", className: "t-join-focus" },
+      { id: "disaster", name: "9. 防災重視", note: "防災・重要情報向け", className: "t-disaster" },
+      { id: "compact", name: "10. コンパクト", note: "短く一覧向け", className: "t-compact t-magazine" },
+      { id: "blank", name: "11. 白紙", note: "見出しから自由に作成", className: "t-blank" }
+    ];
+
+    const extraBlockTypes = [
+      { id: "photo", name: "写真ブロック" },
+      { id: "photoTextLeft", name: "写真左・文字右" },
+      { id: "textPhotoRight", name: "文字左・写真右" },
+      { id: "blankHeading", name: "白紙から見出し" },
+      { id: "newsCards", name: "お知らせカード" },
+      { id: "newsTable", name: "お知らせ表" },
+      { id: "schedule", name: "行事予定" },
+      { id: "join", name: "会員募集" },
+      { id: "disaster", name: "防災情報" },
+      { id: "contact", name: "連絡先" },
+      { id: "about", name: "自治会について" }
+    ];
+
+    const els = {
+      siteName: document.getElementById("siteName"),
+      catchText: document.getElementById("catchText"),
+      photoUrl1: document.getElementById("photoUrl1"),
+      photoUrl2: document.getElementById("photoUrl2"),
+      photoUrl3: document.getElementById("photoUrl3"),
+      templateSelect: document.getElementById("templateSelect"),
+      extraBlockSelect: document.getElementById("extraBlockSelect"),
+      addedBlocks: document.getElementById("addedBlocks"),
+      customHeading: document.getElementById("customHeading"),
+      customText: document.getElementById("customText"),
+      scheduleText: document.getElementById("scheduleText"),
+      contactText: document.getElementById("contactText"),
+      preview: document.getElementById("preview"),
+      codeOutput: document.getElementById("codeOutput"),
+      status: document.getElementById("status"),
+      firebaseApiKey: document.getElementById("firebaseApiKey"),
+      firebaseAuthDomain: document.getElementById("firebaseAuthDomain"),
+      firebaseProjectId: document.getElementById("firebaseProjectId"),
+      firebaseStorageBucket: document.getElementById("firebaseStorageBucket"),
+      firebaseMessagingSenderId: document.getElementById("firebaseMessagingSenderId"),
+      firebaseAppId: document.getElementById("firebaseAppId"),
+      adminEmail: document.getElementById("adminEmail"),
+      adminPassword: document.getElementById("adminPassword")
+    };
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function collectNotices() {
+      return [0, 1, 2].map((index) => ({
+        title: document.querySelector(`[data-notice-title="${index}"]`).value.trim(),
+        body: document.querySelector(`[data-notice-body="${index}"]`).value.trim()
+      })).filter((notice) => notice.title || notice.body);
+    }
+
+    function currentTemplate() {
+      return templates.find((template) => template.id === els.templateSelect.value) || templates[0];
+    }
+
+    function initializeTemplates() {
+      els.templateSelect.innerHTML = templates.map((template) => `<option value="${template.id}">${template.name} - ${template.note}</option>`).join("");
+      els.templateSelect.value = templates[0].id;
+      els.extraBlockSelect.innerHTML = extraBlockTypes.map((block) => `<option value="${block.id}">${block.name}</option>`).join("");
+    }
+
+    function placeholderPhoto() {
+      return "https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1400&q=80";
+    }
+
+    function collectPhotoUrls() {
+      return [els.photoUrl1.value, els.photoUrl2.value, els.photoUrl3.value]
+        .map((url) => url.trim())
+        .filter(Boolean)
+        .slice(0, 3);
+    }
+
+    function primaryPhotoUrl() {
+      return collectPhotoUrls()[0] || "";
+    }
+
+    function photoMarkup(photoUrls, siteName) {
+      const photos = photoUrls.length ? photoUrls : [];
+      if (!photos.length) {
+        return `<div class="hero-photo">ここに自治会の写真が入ります</div>`;
+      }
+      return `
+        <div class="photo-gallery count-${photos.length}">
+          ${photos.map((url, index) => `<div class="hero-photo"><img src="${escapeHtml(url)}" alt="${siteName}の写真 ${index + 1}"></div>`).join("")}
+        </div>
+      `;
+    }
+
+    function noticesCardsMarkup(notices) {
+      const cards = notices.map((notice) => `
+        <article class="preview-card">
+          <h3>${escapeHtml(notice.title || "お知らせ")}</h3>
+          <p>${escapeHtml(notice.body)}</p>
+        </article>
+      `).join("");
+      return `<section><h2>お知らせ</h2><div class="cards">${cards}</div></section>`;
+    }
+
+    function noticesTableMarkup(notices) {
+      const rows = notices.map((notice, index) => `
+        <tr>
+          <th>${index + 1}</th>
+          <td><strong>${escapeHtml(notice.title || "お知らせ")}</strong><br>${escapeHtml(notice.body)}</td>
+        </tr>
+      `).join("");
+      return `<section><h2>お知らせ</h2><table class="notice-table">${rows}</table></section>`;
+    }
+
+    function scheduleMarkup() {
+      return `<section class="band">行事予定: ${escapeHtml(els.scheduleText.value)}</section>`;
+    }
+
+    function contactMarkup() {
+      return `<section><h2>連絡先</h2><p>${escapeHtml(els.contactText.value)}</p></section>`;
+    }
+
+    function joinMarkup() {
+      return `<section class="join-panel"><h2>入会を希望される方へ</h2><p>地域のつながり、防災、行事参加のために、自治会への加入をお待ちしています。</p></section>`;
+    }
+
+    function disasterMarkup() {
+      return `<section class="alert-panel"><h2>防災・重要情報</h2><p>災害時の集合場所、避難情報、安否確認の方法をこの欄に掲載できます。</p></section>`;
+    }
+
+    function aboutMarkup(catchText) {
+      return `<section class="feature-text"><h2>自治会について</h2><p>${catchText}</p></section>`;
+    }
+
+    function customHeadingText() {
+      return {
+        heading: escapeHtml(els.customHeading.value.trim() || "新しい見出し"),
+        text: escapeHtml(els.customText.value.trim() || "ここに本文を入れます。")
+      };
+    }
+
+    function blankHeadingMarkup() {
+      const custom = customHeadingText();
+      return `<section class="feature-text"><h2>${custom.heading}</h2><p>${custom.text}</p></section>`;
+    }
+
+    function photoTextMarkup(photoUrls, siteName, reverse = false) {
+      const custom = customHeadingText();
+      const photo = photoMarkup(photoUrls, siteName);
+      const text = `<div class="feature-text"><h2>${custom.heading}</h2><p>${custom.text}</p></div>`;
+      return `<section class="feature-row ${reverse ? "reverse" : ""}">${reverse ? `${text}${photo}` : `${photo}${text}`}</section>`;
+    }
+
+    function extraBlockMarkup(blockType, context) {
+      if (blockType === "photo") return context.photoBlock;
+      if (blockType === "photoTextLeft") return photoTextMarkup(context.photoUrls, context.siteName, false);
+      if (blockType === "textPhotoRight") return photoTextMarkup(context.photoUrls, context.siteName, true);
+      if (blockType === "blankHeading") return blankHeadingMarkup();
+      if (blockType === "newsCards") return context.noticeCards;
+      if (blockType === "newsTable") return context.noticeTable;
+      if (blockType === "schedule") return scheduleMarkup();
+      if (blockType === "join") return joinMarkup();
+      if (blockType === "disaster") return disasterMarkup();
+      if (blockType === "contact") return contactMarkup();
+      if (blockType === "about") return aboutMarkup(context.catchText);
+      return "";
+    }
+
+    function extraBlocksMarkup(context) {
+      if (!state.extraBlocks.length) return "";
+      return `
+        <div class="extra-divider">追加ブロック</div>
+        ${state.extraBlocks.map((block) => extraBlockMarkup(block.type, context)).join("")}
+      `;
+    }
+
+    function renderAddedBlocks() {
+      els.addedBlocks.innerHTML = state.extraBlocks.length
+        ? state.extraBlocks.map((block, index) => {
+            const type = extraBlockTypes.find((item) => item.id === block.type);
+            return `
+              <div class="added-block-item">
+                <span>${index + 1}. ${escapeHtml(type ? type.name : block.type)}</span>
+                <button class="small-btn" type="button" data-remove-block="${index}">削除</button>
+              </div>
+            `;
+          }).join("")
+        : `<div class="status">まだ追加ブロックはありません</div>`;
+    }
+
+    function buildPreviewHtml() {
+      const siteName = escapeHtml(els.siteName.value || "自治会");
+      const catchText = escapeHtml(els.catchText.value);
+      const photoUrls = collectPhotoUrls();
+      const notices = collectNotices();
+      const template = currentTemplate();
+      const noticeBlock = template.id === "tableNews" ? noticesTableMarkup(notices) : noticesCardsMarkup(notices);
+      const noticeCards = noticesCardsMarkup(notices);
+      const noticeTable = noticesTableMarkup(notices);
+      const photoBlock = photoMarkup(photoUrls, siteName);
+      const context = { siteName, catchText, photoUrls, photoBlock, noticeCards, noticeTable };
+      let bodyBlocks = "";
+
+      if (template.id === "photoLeft" || template.id === "photoRight") {
+        bodyBlocks = `
+          <section class="feature-row ${template.id === "photoRight" ? "reverse" : ""}">
+            ${template.id === "photoRight" ? `<div class="feature-text"><h2>自治会について</h2><p>${catchText}</p></div>${photoBlock}` : `${photoBlock}<div class="feature-text"><h2>自治会について</h2><p>${catchText}</p></div>`}
+          </section>
+          ${noticeBlock}
+          ${scheduleMarkup()}
+          ${contactMarkup()}
+        `;
+      } else if (template.id === "newsFirst") {
+        bodyBlocks = `${noticeBlock}${photoBlock}${scheduleMarkup()}${contactMarkup()}`;
+      } else if (template.id === "scheduleFirst") {
+        bodyBlocks = `${scheduleMarkup()}${noticeBlock}${photoBlock}${contactMarkup()}`;
+      } else if (template.id === "joinFocus") {
+        bodyBlocks = `${joinMarkup()}${photoBlock}${noticeBlock}${scheduleMarkup()}${contactMarkup()}`;
+      } else if (template.id === "disaster") {
+        bodyBlocks = `${disasterMarkup()}${noticeBlock}${scheduleMarkup()}${photoBlock}${contactMarkup()}`;
+      } else if (template.id === "compact") {
+        bodyBlocks = `${noticeBlock}${scheduleMarkup()}${contactMarkup()}`;
+      } else if (template.id === "blank") {
+        bodyBlocks = `${blankHeadingMarkup()}`;
+      } else {
+        bodyBlocks = `${photoBlock}${noticeBlock}${scheduleMarkup()}${contactMarkup()}`;
+      }
+
+      return `
+        <header>
+          <nav>
+            <span>お知らせ</span>
+            <span>行事予定</span>
+            <span>防災情報</span>
+            <span>連絡先</span>
+          </nav>
+          <h1>${siteName}</h1>
+          <p class="lead">${catchText}</p>
+          <span class="template-note">${escapeHtml(template.note)}</span>
+        </header>
+        <main>
+          ${bodyBlocks}
+          ${extraBlocksMarkup(context)}
+        </main>
+      `;
+    }
+
+    function buildExportHtml() {
+      const title = escapeHtml(els.siteName.value || "自治会ホームページ");
+      const template = currentTemplate();
+      const photoUrl = escapeHtml(primaryPhotoUrl() || placeholderPhoto());
+      return `<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>${title}</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="${template.className}" style="--preview-photo: url('${photoUrl}');">
+${buildPreviewHtml()}
+</body>
+</html>`;
+    }
+
+    function buildExportCss() {
+      return `body {
+  margin: 0;
+  color: #1f2933;
+  background: #f7f5ef;
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", "YuGothic", "Noto Sans JP", Meiryo, sans-serif;
+  line-height: 1.75;
+}
+
+header {
+  background: #e8f3ed;
+  border-bottom: 1px solid #c7dfd2;
+  padding: 40px min(6vw, 56px);
+}
+
+nav {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+  color: #245f43;
+  font-weight: 800;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(32px, 5vw, 56px);
+  color: #173d2b;
+}
+
+h2 {
+  margin: 0 0 14px;
+  border-left: 8px solid #2f7d57;
+  padding-left: 12px;
+}
+
+.lead {
+  max-width: 760px;
+  margin: 12px 0 0;
+  font-size: 20px;
+}
+
+main {
+  width: min(1080px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 28px 0 44px;
+  display: grid;
+  gap: 28px;
+}
+
+.hero-photo {
+  min-height: 260px;
+  border-radius: 8px;
+  background: #e8f0f7;
+  display: grid;
+  place-items: center;
+  color: #475569;
+  font-weight: 800;
+  overflow: hidden;
+}
+
+.hero-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.photo-gallery {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.photo-gallery.count-1 {
+  grid-template-columns: 1fr;
+}
+
+.photo-gallery.count-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.photo-gallery .hero-photo {
+  min-height: 210px;
+}
+
+.template-note {
+  display: inline-block;
+  margin-top: 10px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid #c7dfd2;
+  color: #245f43;
+  padding: 4px 10px;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.feature-row {
+  display: grid;
+  grid-template-columns: .9fr 1.1fr;
+  gap: 16px;
+  align-items: stretch;
+}
+
+.feature-row.reverse {
+  grid-template-columns: 1.1fr .9fr;
+}
+
+.feature-text {
+  border: 1px solid #d8e0e7;
+  border-radius: 8px;
+  padding: 16px;
+  background: #fff;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.preview-card {
+  background: #fff;
+  border: 1px solid #d8e0e7;
+  border-radius: 8px;
+  padding: 18px;
+}
+
+.preview-card h3 {
+  margin: 0 0 8px;
+  color: #245f43;
+}
+
+.preview-card p {
+  margin: 0;
+}
+
+.band {
+  border-left: 8px solid #c88a2d;
+  background: #fbf2df;
+  padding: 16px 18px;
+  font-weight: 800;
+}
+
+.notice-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border: 1px solid #d8e0e7;
+}
+
+.notice-table th,
+.notice-table td {
+  border-bottom: 1px solid #d8e0e7;
+  padding: 10px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.notice-table th {
+  width: 88px;
+  color: #245f43;
+  background: #f1f5f3;
+}
+
+.join-panel {
+  border: 2px solid #c88a2d;
+  border-radius: 8px;
+  background: #fbf2df;
+  padding: 18px;
+}
+
+.alert-panel {
+  border: 2px solid #9fc2dc;
+  border-radius: 8px;
+  background: #e8f0f7;
+  padding: 18px;
+}
+
+.t-photo-hero header {
+  color: #fff;
+  background: linear-gradient(rgba(31,41,51,.35), rgba(31,41,51,.48)), var(--preview-photo), #2f7d57;
+  background-size: cover;
+  background-position: center;
+  min-height: 360px;
+  display: grid;
+  align-content: center;
+}
+
+.t-photo-hero header h1,
+.t-photo-hero header .lead,
+.t-photo-hero header nav {
+  color: #fff;
+  text-shadow: 0 2px 12px rgba(0,0,0,.25);
+}
+
+.t-compact main {
+  gap: 12px;
+  padding: 18px 0 24px;
+}
+
+.t-compact .hero-photo {
+  min-height: 140px;
+}
+
+.t-blank header {
+  background: #fff;
+  border-bottom: 1px solid #d8e0e7;
+}
+
+.t-blank main {
+  min-height: 360px;
+}
+
+.t-magazine h2 {
+  border-left: 0;
+  border-top: 3px solid #2f7d57;
+  border-bottom: 1px solid #d8e0e7;
+  padding: 8px 0;
+  text-align: center;
+}
+
+@media (max-width: 760px) {
+  .cards,
+  .feature-row,
+  .feature-row.reverse,
+  .photo-gallery,
+  .photo-gallery.count-2 {
+    grid-template-columns: 1fr;
+  }
+}`;
+    }
+
+    function firebaseConfig() {
+      return {
+        apiKey: els.firebaseApiKey.value.trim() || "YOUR_API_KEY",
+        authDomain: els.firebaseAuthDomain.value.trim() || "YOUR_PROJECT.firebaseapp.com",
+        projectId: els.firebaseProjectId.value.trim() || "YOUR_PROJECT_ID",
+        storageBucket: els.firebaseStorageBucket.value.trim() || "YOUR_PROJECT.appspot.com",
+        messagingSenderId: els.firebaseMessagingSenderId.value.trim() || "YOUR_SENDER_ID",
+        appId: els.firebaseAppId.value.trim() || "YOUR_APP_ID"
+      };
+    }
+
+    function buildFirebaseJson() {
+      return `{
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**",
+      "functions/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  },
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "functions": {
+    "source": "functions"
+  }
+}
+`;
+    }
+
+    function buildFirebaserc() {
+      const projectId = firebaseConfig().projectId;
+      return `{
+  "projects": {
+    "default": "${projectId}"
+  }
+}
+`;
+    }
+
+    function buildFirestoreRules() {
+      return `rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    match /sites/{siteId} {
+      allow create: if signedIn() && request.resource.data.ownerUid == request.auth.uid;
+      allow read, update, delete: if signedIn() && resource.data.ownerUid == request.auth.uid;
+    }
+  }
+}
+`;
+    }
+
+    function buildAuthAppJs() {
+      const config = firebaseConfig();
+      return `import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  sendEmailVerification,
+  updateProfile,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import {
+  getFirestore,
+  doc,
+  setDoc,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+const firebaseConfig = ${JSON.stringify(config, null, 2)};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const statusEl = document.querySelector("[data-auth-status]");
+const registerForm = document.querySelector("[data-register-form]");
+const loginForm = document.querySelector("[data-login-form]");
+const logoutBtn = document.querySelector("[data-logout]");
+
+function setStatus(message) {
+  if (statusEl) statusEl.textContent = message;
+}
+
+registerForm?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const form = new FormData(registerForm);
+  const name = String(form.get("name") || "").trim();
+  const email = String(form.get("email") || "").trim();
+  const password = String(form.get("password") || "");
+
+  const result = await createUserWithEmailAndPassword(auth, email, password);
+  await updateProfile(result.user, { displayName: name });
+  await setDoc(doc(db, "users", result.user.uid), {
+    name,
+    email,
+    role: "user",
+    createdAt: serverTimestamp()
+  });
+  await sendEmailVerification(result.user);
+  setStatus("確認メールを送りました。メール内のリンクを押してからログインしてください。");
+});
+
+loginForm?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const form = new FormData(loginForm);
+  await signInWithEmailAndPassword(auth, String(form.get("email") || ""), String(form.get("password") || ""));
+});
+
+logoutBtn?.addEventListener("click", () => signOut(auth));
+
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    document.body.dataset.login = "guest";
+    setStatus("ログインしていません");
+    return;
+  }
+  document.body.dataset.login = "user";
+  setStatus(user.emailVerified ? "ログイン中" : "メール確認がまだ終わっていません");
+});
+`;
+    }
+
+    function buildAdminAppJs() {
+      const config = firebaseConfig();
+      return `import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import {
+  getFunctions,
+  httpsCallable
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-functions.js";
+
+const firebaseConfig = ${JSON.stringify(config, null, 2)};
+
+const app = initializeApp(firebaseConfig);
+const functions = getFunctions(app);
+const listUsersByAdmin = httpsCallable(functions, "listUsersByAdmin");
+const deleteUserByAdmin = httpsCallable(functions, "deleteUserByAdmin");
+
+const gate = document.querySelector("[data-admin-gate]");
+const panel = document.querySelector("[data-admin-panel]");
+const form = document.querySelector("[data-admin-login]");
+const statusEl = document.querySelector("[data-admin-status]");
+const usersEl = document.querySelector("[data-admin-users]");
+let adminPassword = "";
+
+function setStatus(message) {
+  if (statusEl) statusEl.textContent = message;
+}
+
+function renderUsers(users) {
+  usersEl.innerHTML = users.map((user) => \`
+    <div class="user-row">
+      <span><strong>\${user.displayName || "氏名未設定"}</strong><br>\${user.email || ""}</span>
+      <button type="button" data-delete-uid="\${user.uid}">強制削除</button>
+    </div>
+  \`).join("");
+}
+
+async function refreshUsers() {
+  const result = await listUsersByAdmin({ adminPassword });
+  renderUsers(result.data.users || []);
+}
+
+form?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const data = new FormData(form);
+  adminPassword = String(data.get("adminPassword") || "");
+  try {
+    await refreshUsers();
+    gate.hidden = true;
+    panel.hidden = false;
+    setStatus("管理画面に入りました");
+  } catch (error) {
+    setStatus("管理者パスワードが違うか、Functionsが未設定です");
+  }
+});
+
+usersEl?.addEventListener("click", async (event) => {
+  const button = event.target.closest("[data-delete-uid]");
+  if (!button) return;
+  await deleteUserByAdmin({ adminPassword, uid: button.dataset.deleteUid });
+  setStatus("利用者を削除しました");
+  await refreshUsers();
+});
+`;
+    }
+
+    function buildAuthSampleHtml() {
+      return `<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>自治会ホームページ生成 認証サンプル</title>
+  <style>
+    body { margin: 0; background: #f7f5ef; color: #1f2933; font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", Meiryo, sans-serif; line-height: 1.7; }
+    main { width: min(920px, calc(100% - 28px)); margin: 28px auto; display: grid; gap: 14px; }
+    section { background: #fff; border: 1px solid #d8e0e7; border-radius: 8px; padding: 18px; }
+    form { display: grid; gap: 10px; }
+    input, button { font: inherit; border-radius: 8px; padding: 10px 12px; }
+    input { border: 2px solid #d8e0e7; }
+    button { border: 2px solid #2f7d57; background: #2f7d57; color: #fff; font-weight: 800; }
+    [data-login="guest"] .user-only { display: none; }
+  </style>
+</head>
+<body data-login="guest">
+  <main>
+    <section>
+      <h1>自治会ホームページ生成 認証サンプル</h1>
+      <p data-auth-status>ログインしていません</p>
+    </section>
+    <section>
+      <h2>利用者登録</h2>
+      <form data-register-form>
+        <input name="name" placeholder="使用者氏名" required>
+        <input name="email" type="email" placeholder="メールアドレス" required>
+        <input name="password" type="password" placeholder="パスワード" required minlength="6">
+        <button type="submit">確認メールを送る</button>
+      </form>
+    </section>
+    <section>
+      <h2>ログイン</h2>
+      <form data-login-form>
+        <input name="email" type="email" placeholder="メールアドレス" required>
+        <input name="password" type="password" placeholder="パスワード" required>
+        <button type="submit">ログイン</button>
+      </form>
+    </section>
+    <section class="user-only">
+      <h2>自分の作成データ</h2>
+      <p>ここにログイン中の利用者が作ったホームページだけを表示します。</p>
+      <button type="button" data-logout>ログアウト</button>
+    </section>
+  </main>
+  <script type="module" src="auth-app.js"><\/script>
+</body>
+</html>`;
+    }
+
+    function buildAdminSampleHtml() {
+      return `<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>自治会ホームページ生成 管理者画面</title>
+  <style>
+    body { margin: 0; background: #f7f5ef; color: #1f2933; font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", Meiryo, sans-serif; line-height: 1.7; }
+    main { width: min(920px, calc(100% - 28px)); margin: 28px auto; display: grid; gap: 14px; }
+    section { background: #fff; border: 1px solid #d8e0e7; border-radius: 8px; padding: 18px; }
+    form { display: grid; gap: 10px; }
+    input, button { font: inherit; border-radius: 8px; padding: 10px 12px; }
+    input { border: 2px solid #d8e0e7; }
+    button { border: 2px solid #2f7d57; background: #2f7d57; color: #fff; font-weight: 800; }
+    .user-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; border: 1px solid #d8e0e7; border-radius: 8px; padding: 10px; margin-top: 8px; }
+    .user-row button { border-color: #b91c1c; background: #b91c1c; }
+  </style>
+</head>
+<body>
+  <main>
+    <section>
+      <h1>管理者画面</h1>
+      <p data-admin-status>管理者パスワードを入力してください</p>
+    </section>
+    <section data-admin-gate>
+      <h2>管理者ログイン</h2>
+      <form data-admin-login>
+        <input name="adminPassword" type="password" placeholder="管理者専用パスワード" required>
+        <button type="submit">管理画面に入る</button>
+      </form>
+    </section>
+    <section data-admin-panel hidden>
+      <h2>利用者一覧</h2>
+      <div data-admin-users></div>
+    </section>
+  </main>
+  <script type="module" src="admin-app.js"><\/script>
+</body>
+</html>`;
+    }
+
+    function buildFunctionsPackageJson() {
+      return `{
+  "name": "jichikai-admin-functions",
+  "private": true,
+  "engines": {
+    "node": "20"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "firebase-admin": "^12.5.0",
+    "firebase-functions": "^5.0.1"
+  }
+}
+`;
+    }
+
+    function buildFunctionsIndexJs() {
+      const adminPassword = els.adminPassword.value.trim() || "CHANGE_THIS_ADMIN_PASSWORD";
+      return `const admin = require("firebase-admin");
+const { onCall, HttpsError } = require("firebase-functions/v2/https");
+
+admin.initializeApp();
+
+function assertAdmin(request) {
+  const adminPassword = process.env.ADMIN_PASSWORD || "${escapeHtml(adminPassword)}";
+  if (request.data.adminPassword !== adminPassword) {
+    throw new HttpsError("permission-denied", "管理者だけが削除できます。");
+  }
+}
+
+exports.listUsersByAdmin = onCall(async (request) => {
+  assertAdmin(request);
+  const result = await admin.auth().listUsers(1000);
+  return {
+    users: result.users.map((user) => ({
+      uid: user.uid,
+      email: user.email || "",
+      displayName: user.displayName || "",
+      disabled: user.disabled
+    }))
+  };
+});
+
+exports.deleteUserByAdmin = onCall(async (request) => {
+  assertAdmin(request);
+
+  const uid = String(request.data.uid || "");
+  if (!uid) {
+    throw new HttpsError("invalid-argument", "削除する利用者IDが必要です。");
+  }
+
+  await admin.auth().deleteUser(uid);
+  await admin.firestore().collection("users").doc(uid).delete();
+  return { ok: true };
+});
+`;
+    }
+
+    function buildPeraichiLikeHtml() {
+      const siteName = escapeHtml(els.siteName.value || "自治会");
+      const catchText = escapeHtml(els.catchText.value);
+      const photoUrls = collectPhotoUrls().map(escapeHtml);
+      const photoUrl = photoUrls[0] || "";
+      const template = currentTemplate();
+      const notices = collectNotices();
+      const noticeRows = notices.map((notice, index) => `
+              <tr class="pera1-sortable-item pera1-removable" data-structure="e-tr">
+                <th data-structure="e-th" class="pera1-editable">${index + 1}</th>
+                <td data-structure="e-td" class="pera1-editable"><strong>${escapeHtml(notice.title || "お知らせ")}</strong><br>${escapeHtml(notice.body)}</td>
+              </tr>`).join("");
+      const extraSections = buildPeraichiExtraSections({ siteName, catchText, photoUrl, photoUrls, noticeRows });
+
+      return `<!DOCTYPE html>
+<html lang="ja">
+<head prefix="og: http://ogp.me/ns# website: http://ogp.me/ns/website#">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>${siteName}</title>
+  <meta name="description" content="${siteName}の自治会ホームページです。お知らせ、行事予定、防災情報、加入案内を掲載しています。">
+  <style>
+    body { margin: 0; color: #333; background: #fff; font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", Meiryo, sans-serif; line-height: 1.8; }
+    .pera1-section { padding: 52px 20px; }
+    .c-wrapper { width: min(1040px, 100%); margin: 0 auto; }
+    .u-align-center { text-align: center; }
+    .m_navigation { position: sticky; top: 0; z-index: 10; background: rgba(255,255,255,.96); border-bottom: 1px solid #d8e0e7; padding: 12px 20px; }
+    .m_navigationMenu { display: flex; justify-content: center; gap: 18px; flex-wrap: wrap; padding: 0; margin: 0; list-style: none; font-weight: 700; }
+    .m_navigationMenu a { color: #245f43; text-decoration: none; }
+    .main-visual { min-height: 460px; display: grid; place-items: center; color: #fff; background: linear-gradient(rgba(31,41,51,.25), rgba(31,41,51,.45)), var(--hero-image), #2f7d57; background-size: cover; background-position: center; }
+    .main-visual h1 { margin: 0; font-size: clamp(38px, 7vw, 72px); text-shadow: 0 3px 16px rgba(0,0,0,.35); }
+    .main-visual p { font-size: 26px; font-weight: 800; }
+    .heading-dogear h2, .heading-line h2 { display: inline-block; margin: 0; font-size: clamp(26px, 4vw, 42px); color: #245f43; }
+    .heading-dogear h2 { border: 4px solid #8fc31f; padding: 12px 22px; background: #fff; }
+    .heading-line h2 { border-top: 3px solid #8fc31f; border-bottom: 3px solid #8fc31f; padding: 12px 24px; }
+    .sentence { font-size: 18px; max-width: 760px; margin: 0 auto; }
+    table { width: 100%; border-collapse: collapse; background: #fff; }
+    th, td { border-bottom: 1px solid #d8e0e7; padding: 16px; text-align: left; vertical-align: top; }
+    th { width: 80px; color: #245f43; }
+    .article-box { border: 1px solid #d8e0e7; padding: 24px; display: grid; grid-template-columns: .8fr 1fr; gap: 24px; align-items: center; }
+    .article-box img { width: 100%; border-radius: 8px; }
+    .photo-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    .photo-row.count-1 { grid-template-columns: 1fr; }
+    .photo-row.count-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .photo-row img { width: 100%; height: 220px; object-fit: cover; border-radius: 8px; }
+    .note { background: #fbf2df; border-left: 8px solid #c88a2d; padding: 24px; }
+    .faq-item { border: 1px solid #d8e0e7; padding: 18px; margin-top: 12px; }
+    .footer { background: #245f43; color: #fff; padding: 24px 20px; }
+    .template-label { display: inline-block; margin-top: 12px; padding: 6px 12px; border-radius: 999px; background: rgba(255,255,255,.9); color: #245f43; font-weight: 700; }
+    body.t-news-first #section-news { padding-top: 34px; }
+    body.t-join-focus #section-join { background: #fbf2df; }
+    body.t-disaster #section-schedule .note { background: #e8f0f7; border-left-color: #2f6f9f; }
+    body.t-compact .pera1-section { padding: 30px 20px; }
+    body.t-blank .main-visual { min-height: 260px; background: #fff; color: #245f43; }
+    body.t-blank .main-visual h1 { text-shadow: none; }
+    @media (max-width: 760px) { .article-box, .photo-row, .photo-row.count-2 { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body class="${template.className}" style="--hero-image: url('${photoUrl || placeholderPhoto()}');">
+  <div class="m_navigation pera1-section block" data-structure="b-header-nav-floating-btn--fixed-sp-menu-scroll" data-block-name="フローティングメニュー" id="section-nav">
+    <ul class="m_navigationMenu" data-textcolor="#333">
+      <li><a href="#section-about">自治会について</a></li>
+      <li><a href="#section-news">お知らせ</a></li>
+      <li><a href="#section-schedule">年間スケジュール</a></li>
+      <li><a href="#section-join">入会を希望される方へ</a></li>
+      <li><a href="#section-contact">問合せ</a></li>
+    </ul>
+  </div>
+
+  <div class="pera1-section block main-visual" data-structure="b-main-set-5--center" data-block-name="メイン(中央寄せ2)" id="section-main">
+    <div class="c-wrapper u-align-center">
+      <div class="pera1-editable" data-structure="e-text">自治会ホームページ</div>
+      <h1 class="pera1-editable" data-structure="e-heading">${siteName}</h1>
+      <p class="pera1-editable" data-structure="e-text">会員募集中</p>
+      <span class="template-label">${escapeHtml(template.name)} / ${escapeHtml(template.note)}</span>
+    </div>
+  </div>
+
+  <div class="pera1-section block heading-dogear" data-structure="b-heading-dogear" data-block-name="見出し(折り目)" id="section-about">
+    <div class="c-wrapper u-align-center"><h2 class="pera1-editable" data-structure="e-heading">自治会って何をしているところ？</h2></div>
+  </div>
+
+  <div class="pera1-section block" data-structure="b-sentence" data-block-name="文章" id="section-about-text">
+    <div class="c-wrapper"><div class="sentence pera1-editable" data-structure="e-text">${catchText}</div></div>
+  </div>
+
+  <div class="pera1-section block heading-line" data-structure="b-heading-origin-bdr--updown" data-block-name="見出し(手書き飾り)" id="section-news">
+    <div class="c-wrapper u-align-center"><h2 class="pera1-editable" data-structure="e-heading">${siteName}からのお知らせ</h2></div>
+  </div>
+
+  <div class="pera1-section block" data-structure="b-table--bdr-btm" data-block-name="表(下線のみ)" id="section-news-table">
+    <div class="c-wrapper">
+      <table data-structure="m-table">
+        <tbody class="pera1-sortable">${noticeRows}</tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="pera1-section block" data-structure="b-article-img-left--bdr" data-block-name="左画像(枠付)" id="section-activity">
+    <div class="c-wrapper">
+      <div class="article-box">
+        <div>${buildPeraichiPhotoRow(photoUrls, siteName)}</div>
+        <div>
+          <h2 class="pera1-editable" data-structure="e-heading">自治会活動・概要</h2>
+          <div class="pera1-editable" data-structure="e-text">清掃活動、防災訓練、季節の行事などを通じて、安心して暮らせる地域づくりを進めています。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pera1-section block" data-structure="b-sentence-card" data-block-name="カード型(背景色あり)" id="section-schedule">
+    <div class="c-wrapper"><div class="note pera1-editable" data-structure="e-text"><strong>年間スケジュール</strong><br>${escapeHtml(els.scheduleText.value)}</div></div>
+  </div>
+
+  <div class="pera1-section block" data-structure="b-premium-list-note" data-block-name="ノート" id="section-join">
+    <div class="c-wrapper">
+      <div class="note">
+        <h2 class="pera1-editable" data-structure="e-heading">自治会会員募集</h2>
+        <ul>
+          <li>地域の方とつながりができます。</li>
+          <li>災害時に助け合いやすくなります。</li>
+          <li>イベントや回覧板で情報を受け取れます。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="pera1-section block" data-structure="b-list-faq-accordion" data-block-name="よくある質問" id="section-faq">
+    <div class="c-wrapper">
+      <h2 class="u-align-center">よくある質問</h2>
+      <div class="faq-item"><strong>自治会費はどれくらいですか？</strong><br>地域によって異なります。詳しくは役員までお問い合わせください。</div>
+      <div class="faq-item"><strong>途中からでも入会できますか？</strong><br>いつでも入会できます。</div>
+    </div>
+  </div>
+
+  <div class="pera1-section block" data-structure="b-sentence-card" data-block-name="カード型(背景色あり)" id="section-contact">
+    <div class="c-wrapper"><div class="note pera1-editable" data-structure="e-text">${escapeHtml(els.contactText.value)}</div></div>
+  </div>
+
+  ${extraSections}
+
+  <footer class="footer pera1-section block" data-structure="b-footer" data-block-name="フッター" id="section-footer">
+    <div class="c-wrapper u-align-center">Copyright ${new Date().getFullYear()} ${siteName}</div>
+  </footer>
+</body>
+</html>`;
+    }
+
+    function buildPeraichiExtraSections(context) {
+      return state.extraBlocks.map((block, index) => {
+        const sectionId = `section-extra-${index + 1}`;
+        if (block.type === "photo") {
+          return `<div class="pera1-section block" data-structure="b-img" data-block-name="画像" id="${sectionId}">
+    <div class="c-wrapper u-align-center">${buildPeraichiPhotoRow(context.photoUrls || [], context.siteName)}</div>
+  </div>`;
+        }
+        if (block.type === "photoTextLeft" || block.type === "textPhotoRight") {
+          const custom = customHeadingText();
+          const photo = `<div>${buildPeraichiPhotoRow(context.photoUrls || [], context.siteName)}</div>`;
+          const text = `<div><h2 class="pera1-editable" data-structure="e-heading">${custom.heading}</h2><div class="pera1-editable" data-structure="e-text">${custom.text}</div></div>`;
+          return `<div class="pera1-section block" data-structure="b-article-img-left--bdr" data-block-name="左画像(枠付)" id="${sectionId}">
+    <div class="c-wrapper"><div class="article-box">${block.type === "textPhotoRight" ? `${text}${photo}` : `${photo}${text}`}</div></div>
+  </div>`;
+        }
+        if (block.type === "blankHeading") {
+          const custom = customHeadingText();
+          return `<div class="pera1-section block" data-structure="b-sentence" data-block-name="文章" id="${sectionId}">
+    <div class="c-wrapper"><h2 class="pera1-editable" data-structure="e-heading">${custom.heading}</h2><div class="sentence pera1-editable" data-structure="e-text">${custom.text}</div></div>
+  </div>`;
+        }
+        if (block.type === "newsCards" || block.type === "newsTable") {
+          return `<div class="pera1-section block" data-structure="b-table--bdr-btm" data-block-name="表(下線のみ)" id="${sectionId}">
+    <div class="c-wrapper"><table data-structure="m-table"><tbody class="pera1-sortable">${context.noticeRows}</tbody></table></div>
+  </div>`;
+        }
+        if (block.type === "schedule") {
+          return `<div class="pera1-section block" data-structure="b-sentence-card" data-block-name="カード型(背景色あり)" id="${sectionId}">
+    <div class="c-wrapper"><div class="note pera1-editable" data-structure="e-text"><strong>行事予定</strong><br>${escapeHtml(els.scheduleText.value)}</div></div>
+  </div>`;
+        }
+        if (block.type === "join") {
+          return `<div class="pera1-section block" data-structure="b-premium-list-note" data-block-name="ノート" id="${sectionId}">
+    <div class="c-wrapper"><div class="note"><h2 class="pera1-editable" data-structure="e-heading">自治会会員募集</h2><p>自治会への加入をお待ちしています。</p></div></div>
+  </div>`;
+        }
+        if (block.type === "disaster") {
+          return `<div class="pera1-section block" data-structure="b-sentence-card" data-block-name="カード型(背景色あり)" id="${sectionId}">
+    <div class="c-wrapper"><div class="note pera1-editable" data-structure="e-text"><strong>防災・重要情報</strong><br>避難場所、安否確認、防災訓練のお知らせを掲載できます。</div></div>
+  </div>`;
+        }
+        if (block.type === "contact") {
+          return `<div class="pera1-section block" data-structure="b-sentence-card" data-block-name="カード型(背景色あり)" id="${sectionId}">
+    <div class="c-wrapper"><div class="note pera1-editable" data-structure="e-text">${escapeHtml(els.contactText.value)}</div></div>
+  </div>`;
+        }
+        return `<div class="pera1-section block" data-structure="b-sentence" data-block-name="文章" id="${sectionId}">
+    <div class="c-wrapper"><div class="sentence pera1-editable" data-structure="e-text">${context.catchText}</div></div>
+  </div>`;
+      }).join("\n\n  ");
+    }
+
+    function buildPeraichiPhotoRow(photoUrls, siteName) {
+      if (!photoUrls.length) return `<div class="note">ここに写真を入れます</div>`;
+      return `<div class="photo-row count-${photoUrls.length}">
+        ${photoUrls.map((url, index) => `<img class="pera1-editable" src="${url}" alt="${siteName}の写真 ${index + 1}" data-structure="e-img">`).join("")}
+      </div>`;
+    }
+
+    function render() {
+      const template = currentTemplate();
+      const previewPhoto = escapeHtml(primaryPhotoUrl() || placeholderPhoto());
+      state.html = buildExportHtml();
+      state.css = buildExportCss();
+      state.blockHtml = buildPeraichiLikeHtml();
+      els.preview.className = `site-preview ${template.className}`;
+      els.preview.style.setProperty("--preview-photo", `url('${previewPhoto}')`);
+      els.preview.innerHTML = buildPreviewHtml();
+      els.codeOutput.textContent = state.activeTab === "html" ? state.html : state.activeTab === "css" ? state.css : state.blockHtml;
+      renderAddedBlocks();
+      els.status.textContent = "ソースを生成しました";
+    }
+
+    async function copyText(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+        els.status.textContent = "コピーしました";
+      } catch (error) {
+        els.status.textContent = "コピーできない場合はコード欄を選択してください";
+      }
+    }
+
+    function download(filename, text) {
+      const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function crc32(bytes) {
+      let crc = -1;
+      for (let i = 0; i < bytes.length; i += 1) {
+        crc ^= bytes[i];
+        for (let bit = 0; bit < 8; bit += 1) {
+          crc = (crc >>> 1) ^ (0xedb88320 & -(crc & 1));
+        }
+      }
+      return (crc ^ -1) >>> 0;
+    }
+
+    function u16(value) {
+      return [value & 255, (value >>> 8) & 255];
+    }
+
+    function u32(value) {
+      return [value & 255, (value >>> 8) & 255, (value >>> 16) & 255, (value >>> 24) & 255];
+    }
+
+    function dosTimeDate(date = new Date()) {
+      const time = (date.getHours() << 11) | (date.getMinutes() << 5) | Math.floor(date.getSeconds() / 2);
+      const day = Math.max(1, date.getDate());
+      const month = date.getMonth() + 1;
+      const year = Math.max(1980, date.getFullYear()) - 1980;
+      return { time, date: (year << 9) | (month << 5) | day };
+    }
+
+    function makeZip(files) {
+      const encoder = new TextEncoder();
+      const chunks = [];
+      const central = [];
+      let offset = 0;
+      const stamp = dosTimeDate();
+
+      files.forEach((file) => {
+        const nameBytes = encoder.encode(file.name);
+        const data = encoder.encode(file.content);
+        const crc = crc32(data);
+        const localHeader = new Uint8Array([
+          ...u32(0x04034b50), ...u16(20), ...u16(0), ...u16(0), ...u16(stamp.time), ...u16(stamp.date),
+          ...u32(crc), ...u32(data.length), ...u32(data.length), ...u16(nameBytes.length), ...u16(0)
+        ]);
+        chunks.push(localHeader, nameBytes, data);
+
+        const centralHeader = new Uint8Array([
+          ...u32(0x02014b50), ...u16(20), ...u16(20), ...u16(0), ...u16(0), ...u16(stamp.time), ...u16(stamp.date),
+          ...u32(crc), ...u32(data.length), ...u32(data.length), ...u16(nameBytes.length), ...u16(0), ...u16(0),
+          ...u16(0), ...u16(0), ...u32(0), ...u32(offset)
+        ]);
+        central.push(centralHeader, nameBytes);
+        offset += localHeader.length + nameBytes.length + data.length;
+      });
+
+      const centralSize = central.reduce((sum, chunk) => sum + chunk.length, 0);
+      const end = new Uint8Array([
+        ...u32(0x06054b50), ...u16(0), ...u16(0), ...u16(files.length), ...u16(files.length),
+        ...u32(centralSize), ...u32(offset), ...u16(0)
+      ]);
+
+      return new Blob([...chunks, ...central, end], { type: "application/zip" });
+    }
+
+    function downloadZip() {
+      render();
+      const readme = `自治会ホームページ一式
+
+index.html と styles.css を同じフォルダに置くと表示できます。
+peraichi-like.html は、ペライチ風の単体HTMLです。
+auth-sample.html は、利用者用の登録・ログイン画面サンプルです。
+admin.html は、管理者専用の別画面サンプルです。
+auth-app.js と admin-app.js にFirebase設定が入ります。
+
+WordPressでは、HTML部分をカスタムHTMLブロックへ、CSS部分を追加CSSへ入れる運用が考えられます。
+無料ホスティングでは、index.html と styles.css をアップロードしてください。
+
+Firebase Hostingへアップする場合:
+1. Firebase Consoleでプロジェクトを作ります。
+2. Authenticationで「メール/パスワード」を有効にします。
+3. Firestore Databaseを作ります。
+4. このZIPを展開し、firebase.json があるフォルダで firebase deploy を実行します。
+
+管理者による強制削除:
+functions/index.js にCloud Functionsの雛形を入れています。
+管理者画面は admin.html として利用者画面とは別にします。
+利用者側には利用者一覧や削除ボタンを表示しません。
+本番ではFirebase Blazeプラン、Firebase CLIログイン、functionsのデプロイが必要です。
+`;
+      const zip = makeZip([
+        { name: "index.html", content: state.html },
+        { name: "styles.css", content: state.css },
+        { name: "peraichi-like.html", content: state.blockHtml },
+        { name: "auth-sample.html", content: buildAuthSampleHtml() },
+        { name: "auth-app.js", content: buildAuthAppJs() },
+        { name: "admin.html", content: buildAdminSampleHtml() },
+        { name: "admin-app.js", content: buildAdminAppJs() },
+        { name: "firebase.json", content: buildFirebaseJson() },
+        { name: ".firebaserc", content: buildFirebaserc() },
+        { name: "firestore.rules", content: buildFirestoreRules() },
+        { name: "functions/package.json", content: buildFunctionsPackageJson() },
+        { name: "functions/index.js", content: buildFunctionsIndexJs() },
+        { name: "README.txt", content: readme }
+      ]);
+      const url = URL.createObjectURL(zip);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "jichikai-homepage.zip";
+      link.click();
+      URL.revokeObjectURL(url);
+      els.status.textContent = "ZIPを保存しました";
+    }
+
+    function currentCode() {
+      if (state.activeTab === "css") return { filename: "styles.css", text: state.css };
+      if (state.activeTab === "blockHtml") return { filename: "peraichi-like.html", text: state.blockHtml };
+      return { filename: "index.html", text: state.html };
+    }
+
+    document.getElementById("generateBtn").addEventListener("click", render);
+    document.getElementById("authPresetBtn").addEventListener("click", () => {
+      document.getElementById("authSettings").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    document.getElementById("copyHtmlBtn").addEventListener("click", () => copyText(currentCode().text));
+    document.getElementById("downloadHtmlBtn").addEventListener("click", () => {
+      const code = currentCode();
+      download(code.filename, code.text);
+    });
+    document.getElementById("downloadZipBtn").addEventListener("click", downloadZip);
+    document.getElementById("sampleBtn").addEventListener("click", () => {
+      els.siteName.value = "さくら台自治会";
+      els.catchText.value = "地域の行事、防災、回覧板のお知らせをまとめて掲載しています。";
+      els.photoUrl1.value = "";
+      els.photoUrl2.value = "";
+      els.photoUrl3.value = "";
+      els.customHeading.value = "自治会の活動紹介";
+      els.customText.value = "清掃活動、防災訓練、季節の行事などを通じて、安心して暮らせる地域づくりを進めています。";
+      els.scheduleText.value = "7月20日: 町内清掃 / 8月3日: 夏祭り / 9月1日: 防災訓練";
+      els.contactText.value = "ご不明点は各班長、または自治会役員までご連絡ください。";
+      state.extraBlocks = [
+        { type: "join" },
+        { type: "disaster" }
+      ];
+      render();
+    });
+
+    document.getElementById("addBlockBtn").addEventListener("click", () => {
+      state.extraBlocks.push({ type: els.extraBlockSelect.value });
+      render();
+    });
+
+    els.addedBlocks.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-remove-block]");
+      if (!button) return;
+      state.extraBlocks.splice(Number(button.dataset.removeBlock), 1);
+      render();
+    });
+
+    document.querySelectorAll(".tab").forEach((tab) => {
+      tab.addEventListener("click", () => {
+        state.activeTab = tab.dataset.codeTab;
+        document.querySelectorAll(".tab").forEach((item) => item.classList.toggle("active", item === tab));
+        render();
+      });
+    });
+
+    document.querySelectorAll("input, textarea, select").forEach((input) => {
+      input.addEventListener("input", render);
+    });
+
+    initializeTemplates();
+    render();
+  </script>
+</body>
+</html>
