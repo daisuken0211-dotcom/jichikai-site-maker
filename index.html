@@ -88,6 +88,7 @@
       gap: 14px;
       width: min(1500px, calc(100% - 20px));
       margin: 14px auto 28px;
+      align-items: start;
     }
 
     .panel {
@@ -96,6 +97,24 @@
       border-radius: 8px;
       box-shadow: 0 10px 24px rgba(31, 41, 51, .08);
       overflow: hidden;
+    }
+
+    .editor-panel {
+      position: sticky;
+      top: 82px;
+      display: flex;
+      flex-direction: column;
+      max-height: calc(100vh - 98px);
+    }
+
+    .editor-panel .panel-head {
+      flex: 0 0 auto;
+    }
+
+    .editor-panel .form {
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-gutter: stable;
     }
 
     .panel-head {
@@ -301,6 +320,12 @@
       gap: 8px;
     }
 
+    .block-panel-label {
+      color: #475569;
+      font-size: 13px;
+      font-weight: 900;
+    }
+
     .block-pick {
       border: 1px solid var(--line);
       border-radius: 999px;
@@ -332,6 +357,18 @@
       font-weight: 800;
     }
 
+    .added-block-item.active {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(47, 125, 87, .16);
+      background: #fbfffd;
+    }
+
+    .notice-box.active {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(47, 125, 87, .16);
+      background: #fbfffd;
+    }
+
     .added-block-title {
       display: grid;
       grid-template-columns: 1fr auto;
@@ -349,6 +386,26 @@
     .block-fields {
       display: grid;
       gap: 8px;
+    }
+
+    .block-edit-area,
+    .block-layout-area {
+      display: grid;
+      gap: 8px;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfd;
+    }
+
+    .block-layout-area {
+      background: var(--soft-blue);
+    }
+
+    .block-area-title {
+      color: var(--green-dark);
+      font-size: 13px;
+      font-weight: 900;
     }
 
     .link-grid {
@@ -588,6 +645,22 @@
       font-size: clamp(20px, 2.8vw, 30px);
     }
 
+    .site-preview.heading-line h2 {
+      border-left: 0;
+      border-top: 3px solid var(--green);
+      border-bottom: 1px solid var(--line);
+      color: var(--green-dark);
+      padding: 8px 0;
+    }
+
+    .site-preview.heading-band h2 {
+      border-left: 0;
+      border-radius: 8px;
+      background: var(--green);
+      color: #fff;
+      padding: 8px 12px;
+    }
+
     .text-block p {
       margin: 0;
       line-height: 1.75;
@@ -608,6 +681,13 @@
     .linked-photo {
       display: block;
       text-decoration: none;
+    }
+
+    .site-preview .is-editing-preview {
+      outline: 4px solid rgba(47, 125, 87, .38);
+      outline-offset: 5px;
+      box-shadow: 0 0 0 8px rgba(47, 125, 87, .10);
+      transition: outline-color .18s ease, box-shadow .18s ease;
     }
 
     .cards {
@@ -775,6 +855,26 @@
       text-align: center;
     }
 
+    .site-preview.heading-simple h2 {
+      border-top: 0;
+      border-right: 0;
+      border-bottom: 0;
+      border-left: 6px solid var(--green);
+      color: inherit;
+      background: transparent;
+      padding: 0 0 0 10px;
+      text-align: left;
+    }
+
+    .site-preview.heading-line h2 {
+      text-align: left;
+    }
+
+    .site-preview.heading-band h2 {
+      border: 0;
+      text-align: left;
+    }
+
     .code-panel {
       margin-top: 14px;
     }
@@ -891,6 +991,15 @@
       .auth-grid {
         grid-template-columns: 1fr;
       }
+
+      .editor-panel {
+        position: static;
+        max-height: none;
+      }
+
+      .editor-panel .form {
+        overflow: visible;
+      }
     }
   </style>
 </head>
@@ -903,7 +1012,7 @@
   </header>
 
   <main class="workspace">
-    <section class="panel">
+    <section class="panel editor-panel">
       <div class="panel-head">はめ込む内容</div>
       <div class="form">
         <div class="section-box">
@@ -935,7 +1044,18 @@
             <option value="red">赤</option>
             <option value="orange">オレンジ</option>
             <option value="purple">紫</option>
+            <option value="teal">青緑</option>
+            <option value="navy">紺</option>
+            <option value="pink">桃色</option>
+            <option value="brown">茶色</option>
+            <option value="black">黒</option>
             <option value="gray">落ち着いた灰色</option>
+          </select>
+          <label for="headingStyleSelect">見出しの形</label>
+          <select id="headingStyleSelect">
+            <option value="simple">シンプル</option>
+            <option value="line">上下線で見出し</option>
+            <option value="band">色付き帯で見出し</option>
           </select>
         </div>
 
@@ -978,8 +1098,10 @@
 
         <div class="section-box">
           <label>この下に追加するブロック</label>
+          <div class="block-panel-label">1. 追加する部品を選ぶ</div>
           <div class="block-tabs" id="blockTabs"></div>
           <div class="block-picker" id="blockPicker"></div>
+          <div class="block-panel-label">2. 追加した部品の内容・配置を編集</div>
           <div class="added-blocks" id="addedBlocks"></div>
         </div>
 
@@ -989,19 +1111,19 @@
           <textarea id="customText" placeholder="ここに自由に文章を入れます。写真左・文字右などの追加ブロックにも使えます。"></textarea>
         </div>
 
-        <div class="section-box optional-box notice-box">
+        <div class="section-box optional-box notice-box" data-notice-box="0">
           <label>お知らせ 1</label>
           <input data-notice-title="0" value="町内清掃のお知らせ">
           <textarea data-notice-body="0">7月20日朝8時より町内清掃を行います。公民館前に集合してください。</textarea>
         </div>
 
-        <div class="section-box optional-box notice-box">
+        <div class="section-box optional-box notice-box" data-notice-box="1">
           <label>お知らせ 2</label>
           <input data-notice-title="1" value="夏祭りのご案内">
           <textarea data-notice-body="1">8月3日午後5時より、公民館前広場で夏祭りを開催します。</textarea>
         </div>
 
-        <div class="section-box optional-box notice-box">
+        <div class="section-box optional-box notice-box" data-notice-box="2">
           <label>お知らせ 3</label>
           <input data-notice-title="2" value="防災訓練について">
           <textarea data-notice-body="2">9月1日に防災訓練を行います。詳細は回覧板でお知らせします。</textarea>
@@ -1064,6 +1186,10 @@
       currentPageIndex: 0,
       isLoadingPage: false,
       themeId: "green",
+      headingStyle: "simple",
+      activeBlockId: "",
+      activeNoticeIndex: -1,
+      isPreviewRendering: false,
       localPhotos: []
     };
 
@@ -1085,7 +1211,7 @@
       { id: "basic", name: "文字" },
       { id: "media", name: "写真・リンク" },
       { id: "list", name: "一覧" },
-      { id: "layout", name: "配置" }
+      { id: "layout", name: "写真と文字" }
     ];
 
     const themes = {
@@ -1094,6 +1220,11 @@
       red: { name: "赤", main: "#dc2626", dark: "#991b1b", soft: "#fff0f0", accent: "#f97316", blue: "#b91c1c", softBlue: "#fee2e2", softGold: "#fff7ed" },
       orange: { name: "オレンジ", main: "#ea580c", dark: "#9a3412", soft: "#fff3e8", accent: "#ca8a04", blue: "#c2410c", softBlue: "#ffedd5", softGold: "#fef3c7" },
       purple: { name: "紫", main: "#7c3aed", dark: "#4c1d95", soft: "#f3edff", accent: "#db2777", blue: "#6d28d9", softBlue: "#ede9fe", softGold: "#fdf2f8" },
+      teal: { name: "青緑", main: "#0f766e", dark: "#134e4a", soft: "#e6fffb", accent: "#0891b2", blue: "#0e7490", softBlue: "#cffafe", softGold: "#ecfeff" },
+      navy: { name: "紺", main: "#1d4ed8", dark: "#172554", soft: "#eef4ff", accent: "#f59e0b", blue: "#1e40af", softBlue: "#dbeafe", softGold: "#fffbeb" },
+      pink: { name: "桃色", main: "#db2777", dark: "#831843", soft: "#fff0f7", accent: "#be123c", blue: "#be185d", softBlue: "#fce7f3", softGold: "#fff1f2" },
+      brown: { name: "茶色", main: "#92400e", dark: "#451a03", soft: "#fff7ed", accent: "#b45309", blue: "#78350f", softBlue: "#ffedd5", softGold: "#fef3c7" },
+      black: { name: "黒", main: "#111827", dark: "#030712", soft: "#f3f4f6", accent: "#4b5563", blue: "#374151", softBlue: "#e5e7eb", softGold: "#f9fafb" },
       gray: { name: "落ち着いた灰色", main: "#475569", dark: "#1f2937", soft: "#f1f5f9", accent: "#64748b", blue: "#334155", softBlue: "#e2e8f0", softGold: "#f8fafc" }
     };
 
@@ -1118,6 +1249,7 @@
       pageTitle: document.getElementById("pageTitle"),
       navPosition: document.getElementById("navPosition"),
       themeSelect: document.getElementById("themeSelect"),
+      headingStyleSelect: document.getElementById("headingStyleSelect"),
       themeSwatches: document.getElementById("themeSwatches"),
       saveProjectBtn: document.getElementById("saveProjectBtn"),
       loadProjectBtn: document.getElementById("loadProjectBtn"),
@@ -1163,6 +1295,7 @@
 
     function collectNotices() {
       return [0, 1, 2].map((index) => ({
+        index,
         title: document.querySelector(`[data-notice-title="${index}"]`).value.trim(),
         body: document.querySelector(`[data-notice-body="${index}"]`).value.trim()
       })).filter((notice) => notice.title || notice.body);
@@ -1215,6 +1348,10 @@
       return themes[state.themeId] || themes.green;
     }
 
+    function currentHeadingStyle() {
+      return ["simple", "line", "band"].includes(state.headingStyle) ? state.headingStyle : "simple";
+    }
+
     function applyTheme(themeId = state.themeId) {
       state.themeId = themes[themeId] ? themeId : "green";
       const theme = currentTheme();
@@ -1237,6 +1374,11 @@
         <button class="theme-swatch ${id === state.themeId ? "active" : ""}" type="button" data-theme="${id}" title="${theme.name}" style="--swatch: ${theme.main}"></button>
       `).join("");
       applyTheme(state.themeId);
+    }
+
+    function applyHeadingStyle(style = state.headingStyle) {
+      state.headingStyle = ["simple", "line", "band"].includes(style) ? style : "simple";
+      els.headingStyleSelect.value = state.headingStyle;
     }
 
     function readFileAsDataUrl(file) {
@@ -1348,6 +1490,7 @@
       return {
         version: 1,
         themeId: state.themeId,
+        headingStyle: state.headingStyle,
         navPosition: els.navPosition.value,
         currentPageIndex: state.currentPageIndex,
         pages: cloneData(state.pages)
@@ -1360,10 +1503,12 @@
         return;
       }
       state.themeId = themes[data.themeId] ? data.themeId : "green";
+      state.headingStyle = ["simple", "line", "band"].includes(data.headingStyle) ? data.headingStyle : "simple";
       els.navPosition.value = data.navPosition === "left" ? "left" : "top";
       state.pages = cloneData(data.pages);
       state.currentPageIndex = Math.min(Math.max(Number(data.currentPageIndex) || 0, 0), state.pages.length - 1);
       applyTheme(state.themeId);
+      applyHeadingStyle(state.headingStyle);
       applyPageData(state.pages[state.currentPageIndex]);
       render();
       els.status.textContent = "設定を読み込みました";
@@ -1447,6 +1592,31 @@
       return collectPhotoUrls()[0] || "";
     }
 
+    function isDataImageUrl(url) {
+      return /^data:image\/[a-zA-Z0-9.+-]+;base64,/.test(String(url || ""));
+    }
+
+    function imageExtensionFromMime(mime) {
+      if (mime.includes("png")) return "png";
+      if (mime.includes("webp")) return "webp";
+      if (mime.includes("gif")) return "gif";
+      return "jpg";
+    }
+
+    function dataUrlToBytes(dataUrl) {
+      const match = /^data:(image\/[a-zA-Z0-9.+-]+);base64,(.*)$/.exec(dataUrl);
+      if (!match) return null;
+      const binary = atob(match[2]);
+      const bytes = new Uint8Array(binary.length);
+      for (let index = 0; index < binary.length; index += 1) {
+        bytes[index] = binary.charCodeAt(index);
+      }
+      return {
+        mime: match[1],
+        bytes
+      };
+    }
+
     function photoMarkup(photoUrls, siteName) {
       const photos = photoUrls.length ? photoUrls : [];
       if (!photos.length) {
@@ -1460,7 +1630,19 @@
     }
 
     function blockClass(block, baseClass = "") {
-      return `${baseClass} ${block?.width === "half" ? "block-half" : ""}`.trim();
+      const halfClass = block?.width === "half" ? "block-half" : "";
+      const activeClass = state.isPreviewRendering && block?.id === state.activeBlockId ? "is-editing-preview" : "";
+      return `${baseClass} ${halfClass} ${activeClass}`.trim();
+    }
+
+    function previewBlockAttr(block) {
+      return state.isPreviewRendering && block?.id ? ` data-preview-block-id="${escapeHtml(block.id)}"` : "";
+    }
+
+    function previewNoticeAttr(index = "") {
+      if (!state.isPreviewRendering) return "";
+      const value = index === "" ? "" : ` data-preview-notice-index="${index}"`;
+      return ` data-preview-target="notice"${value}`;
     }
 
     function textLinkMarkup(block) {
@@ -1473,27 +1655,29 @@
     function wrapPhotoLink(markup, block) {
       const url = String(block?.photoLinkUrl || "").trim();
       if (!url) return markup;
-      return `<a class="${blockClass(block, "linked-photo")}" href="${escapeHtml(url)}" target="_blank" rel="noopener">${markup}</a>`;
+      return `<a class="${blockClass(block, "linked-photo")}"${previewBlockAttr(block)} href="${escapeHtml(url)}" target="_blank" rel="noopener">${markup}</a>`;
     }
 
     function noticesCardsMarkup(notices) {
       const cards = notices.map((notice) => `
-        <article class="preview-card">
+        <article class="preview-card"${previewNoticeAttr(notice.index ?? "")}>
           <h3>${escapeHtml(notice.title || "お知らせ")}</h3>
           <p>${escapeHtml(notice.body)}</p>
         </article>
       `).join("");
-      return `<section><h2>お知らせ</h2><div class="cards">${cards}</div></section>`;
+      const activeClass = state.isPreviewRendering && state.activeNoticeIndex >= 0 ? " is-editing-preview" : "";
+      return `<section class="${activeClass.trim()}"${previewNoticeAttr()}><h2>お知らせ</h2><div class="cards">${cards}</div></section>`;
     }
 
     function noticesTableMarkup(notices) {
       const rows = notices.map((notice, index) => `
-        <tr>
+        <tr${previewNoticeAttr(notice.index ?? index)}>
           <th>${index + 1}</th>
           <td><strong>${escapeHtml(notice.title || "お知らせ")}</strong><br>${escapeHtml(notice.body)}</td>
         </tr>
       `).join("");
-      return `<section><h2>お知らせ</h2><table class="notice-table">${rows}</table></section>`;
+      const activeClass = state.isPreviewRendering && state.activeNoticeIndex >= 0 ? " is-editing-preview" : "";
+      return `<section class="${activeClass.trim()}"${previewNoticeAttr()}><h2>お知らせ</h2><table class="notice-table">${rows}</table></section>`;
     }
 
     function scheduleMarkup() {
@@ -1530,17 +1714,17 @@
 
     function headingOnlyMarkup(block) {
       const custom = customHeadingText(block);
-      return `<section class="${blockClass(block, "text-block text-heading-only")}"><h2>${custom.heading}</h2>${textLinkMarkup(block)}</section>`;
+      return `<section class="${blockClass(block, "text-block text-heading-only")}"${previewBlockAttr(block)}><h2>${custom.heading}</h2>${textLinkMarkup(block)}</section>`;
     }
 
     function textOnlyMarkup(block) {
       const custom = customHeadingText(block);
-      return `<section class="${blockClass(block, "text-block text-only")}"><p>${custom.text}</p>${textLinkMarkup(block)}</section>`;
+      return `<section class="${blockClass(block, "text-block text-only")}"${previewBlockAttr(block)}><p>${custom.text}</p>${textLinkMarkup(block)}</section>`;
     }
 
     function headingTextMarkup(block) {
       const custom = customHeadingText(block);
-      return `<section class="${blockClass(block, "text-block")}"><h2>${custom.heading}</h2><p>${custom.text}</p>${textLinkMarkup(block)}</section>`;
+      return `<section class="${blockClass(block, "text-block")}"${previewBlockAttr(block)}><h2>${custom.heading}</h2><p>${custom.text}</p>${textLinkMarkup(block)}</section>`;
     }
 
     function recentInfoMarkup(context) {
@@ -1579,14 +1763,14 @@
 
     function linksBlockMarkup(block) {
       const custom = customHeadingText(block);
-      return `<section class="${blockClass(block, "feature-text")}"><h2>${custom.heading}</h2><p>${custom.text}</p>${linkButtonsMarkup(block)}</section>`;
+      return `<section class="${blockClass(block, "feature-text")}"${previewBlockAttr(block)}><h2>${custom.heading}</h2><p>${custom.text}</p>${linkButtonsMarkup(block)}</section>`;
     }
 
     function photoTextMarkup(photoUrls, siteName, block, reverse = false) {
       const custom = customHeadingText(block);
       const photo = photoMarkup(photoUrls, siteName);
       const text = `<div class="feature-text"><h2>${custom.heading}</h2><p>${custom.text}</p></div>`;
-      return `<section class="${blockClass(block, `feature-row ${reverse ? "reverse" : ""}`)}">${reverse ? `${text}${wrapPhotoLink(photo, block)}` : `${wrapPhotoLink(photo, block)}${text}`}</section>`;
+      return `<section class="${blockClass(block, `feature-row ${reverse ? "reverse" : ""}`)}"${previewBlockAttr(block)}>${reverse ? `${text}${wrapPhotoLink(photo, block)}` : `${wrapPhotoLink(photo, block)}${text}`}</section>`;
     }
 
     function extraBlockMarkup(block, context) {
@@ -1595,7 +1779,7 @@
       if (blockType === "textOnly") return textOnlyMarkup(block);
       if (blockType === "headingText") return headingTextMarkup(block);
       if (blockType === "pdfLinks" || blockType === "buttonLinks") return linksBlockMarkup(block);
-      if (blockType === "photo") return wrapPhotoLink(`<section class="${blockClass(block)}">${context.photoBlock}</section>`, block);
+      if (blockType === "photo") return wrapPhotoLink(`<section class="${blockClass(block)}"${previewBlockAttr(block)}>${context.photoBlock}</section>`, block);
       if (blockType === "photoTextLeft") return photoTextMarkup(context.photoUrls, context.siteName, block, false);
       if (blockType === "textPhotoRight") return photoTextMarkup(context.photoUrls, context.siteName, block, true);
       if (blockType === "blankHeading") return blankHeadingMarkup();
@@ -1627,8 +1811,9 @@
             const needsLinks = ["pdfLinks", "buttonLinks"].includes(block.type);
             const needsTextLink = ["headingOnly", "textOnly", "headingText", "photoTextLeft", "textPhotoRight"].includes(block.type);
             const needsPhotoLink = ["photo", "photoTextLeft", "textPhotoRight"].includes(block.type);
+            const isActive = block.id === state.activeBlockId;
             return `
-              <div class="added-block-item">
+              <div class="added-block-item ${isActive ? "active" : ""}" data-added-block-id="${escapeHtml(block.id)}">
                 <div class="added-block-title">
                   <span>${index + 1}. ${escapeHtml(type ? type.name : block.type)}</span>
                   <div class="block-tools">
@@ -1638,25 +1823,31 @@
                   </div>
                 </div>
                 <div class="block-fields">
-                  <select data-block-field="${index}:width">
-                    <option value="full" ${block.width !== "half" ? "selected" : ""}>幅いっぱい</option>
-                    <option value="half" ${block.width === "half" ? "selected" : ""}>半分幅</option>
-                  </select>
-                  ${needsHeading ? `<input data-block-field="${index}:heading" value="${escapeHtml(block.heading)}" placeholder="見出し">` : ""}
-                  ${needsText ? `<textarea rows="1" data-block-field="${index}:text" placeholder="本文">${escapeHtml(block.text)}</textarea>` : ""}
-                  ${needsTextLink ? `
-                    <div class="link-grid">
-                      <input data-block-field="${index}:textLinkText" value="${escapeHtml(block.textLinkText || "")}" placeholder="文字リンクの表示名">
-                      <input data-block-field="${index}:textLinkUrl" value="${escapeHtml(block.textLinkUrl || "")}" placeholder="文字リンクURL">
-                    </div>
-                  ` : ""}
-                  ${needsPhotoLink ? `<input data-block-field="${index}:photoLinkUrl" value="${escapeHtml(block.photoLinkUrl || "")}" placeholder="写真を押した時のリンクURL">` : ""}
-                  ${needsLinks ? (block.links || []).slice(0, 3).map((link, linkIndex) => `
-                    <div class="link-grid">
-                      <input data-block-field="${index}:links.${linkIndex}.text" value="${escapeHtml(link.text)}" placeholder="リンク文字 ${linkIndex + 1}">
-                      <input data-block-field="${index}:links.${linkIndex}.url" value="${escapeHtml(link.url)}" placeholder="PDFまたはリンクURL ${linkIndex + 1}">
-                    </div>
-                  `).join("") : ""}
+                  <div class="block-edit-area">
+                    <div class="block-area-title">内容</div>
+                    ${needsHeading ? `<input data-block-field="${index}:heading" value="${escapeHtml(block.heading)}" placeholder="見出し">` : ""}
+                    ${needsText ? `<textarea rows="1" data-block-field="${index}:text" placeholder="本文">${escapeHtml(block.text)}</textarea>` : ""}
+                    ${needsTextLink ? `
+                      <div class="link-grid">
+                        <input data-block-field="${index}:textLinkText" value="${escapeHtml(block.textLinkText || "")}" placeholder="文字リンクの表示名">
+                        <input data-block-field="${index}:textLinkUrl" value="${escapeHtml(block.textLinkUrl || "")}" placeholder="文字リンクURL">
+                      </div>
+                    ` : ""}
+                    ${needsPhotoLink ? `<input data-block-field="${index}:photoLinkUrl" value="${escapeHtml(block.photoLinkUrl || "")}" placeholder="写真を押した時のリンクURL">` : ""}
+                    ${needsLinks ? (block.links || []).slice(0, 3).map((link, linkIndex) => `
+                      <div class="link-grid">
+                        <input data-block-field="${index}:links.${linkIndex}.text" value="${escapeHtml(link.text)}" placeholder="リンク文字 ${linkIndex + 1}">
+                        <input data-block-field="${index}:links.${linkIndex}.url" value="${escapeHtml(link.url)}" placeholder="PDFまたはリンクURL ${linkIndex + 1}">
+                      </div>
+                    `).join("") : ""}
+                  </div>
+                  <div class="block-layout-area">
+                    <div class="block-area-title">配置</div>
+                    <select data-block-field="${index}:width">
+                      <option value="full" ${block.width !== "half" ? "selected" : ""}>横幅いっぱい</option>
+                      <option value="half" ${block.width === "half" ? "selected" : ""}>半分の幅で横並び</option>
+                    </select>
+                  </div>
                 </div>
               </div>
             `;
@@ -1748,6 +1939,7 @@
       const template = currentTemplate();
       const photoUrl = escapeHtml(primaryPhotoUrl() || placeholderPhoto());
       const navClass = els.navPosition.value === "left" ? "nav-left" : "nav-top";
+      const headingClass = `heading-${currentHeadingStyle()}`;
       return `<!doctype html>
 <html lang="ja">
 <head>
@@ -1756,7 +1948,7 @@
   <title>${title}</title>
   <link rel="stylesheet" href="styles.css">
 </head>
-<body class="${template.className} ${navClass}" style="--preview-photo: url('${photoUrl}');">
+<body class="${template.className} ${navClass} ${headingClass}" style="--preview-photo: url('${photoUrl}');">
 ${buildPreviewHtml()}
 </body>
 </html>`;
@@ -1857,6 +2049,22 @@ h2 {
   margin: 0 0 14px;
   border-left: 8px solid #2f7d57;
   padding-left: 12px;
+}
+
+body.heading-line h2 {
+  border-left: 0;
+  border-top: 3px solid #2f7d57;
+  border-bottom: 1px solid #d8e0e7;
+  color: #245f43;
+  padding: 8px 0;
+}
+
+body.heading-band h2 {
+  border-left: 0;
+  border-radius: 8px;
+  background: #2f7d57;
+  color: #fff;
+  padding: 8px 12px;
 }
 
 .lead {
@@ -2118,6 +2326,26 @@ main > .block-half {
   border-bottom: 1px solid #d8e0e7;
   padding: 8px 0;
   text-align: center;
+}
+
+body.heading-simple h2 {
+  border-top: 0;
+  border-right: 0;
+  border-bottom: 0;
+  border-left: 8px solid #2f7d57;
+  color: inherit;
+  background: transparent;
+  padding: 0 0 0 12px;
+  text-align: left;
+}
+
+body.heading-line h2 {
+  text-align: left;
+}
+
+body.heading-band h2 {
+  border: 0;
+  text-align: left;
 }
 
 @media (max-width: 760px) {
@@ -2789,11 +3017,14 @@ exports.deleteUserByAdmin = onCall(async (request) => {
       state.html = buildExportHtml();
       state.css = buildExportCss();
       state.blockHtml = buildPeraichiLikeHtml();
-      els.preview.className = `site-preview ${template.className} ${els.navPosition.value === "left" ? "nav-left" : "nav-top"}`;
+      els.preview.className = `site-preview ${template.className} ${els.navPosition.value === "left" ? "nav-left" : "nav-top"} heading-${currentHeadingStyle()}`;
       els.preview.style.setProperty("--preview-photo", `url('${previewPhoto}')`);
+      state.isPreviewRendering = true;
       els.preview.innerHTML = buildPreviewHtml();
+      state.isPreviewRendering = false;
       els.codeOutput.textContent = state.activeTab === "html" ? state.html : state.activeTab === "css" ? state.css : state.blockHtml;
       if (!skipAddedBlocks) renderAddedBlocks();
+      updateNoticeSelection();
       els.status.textContent = "ソースを生成しました";
     }
 
@@ -2852,7 +3083,7 @@ exports.deleteUserByAdmin = onCall(async (request) => {
 
       files.forEach((file) => {
         const nameBytes = encoder.encode(file.name);
-        const data = encoder.encode(file.content);
+        const data = file.bytes instanceof Uint8Array ? file.bytes : encoder.encode(file.content || "");
         const crc = crc32(data);
         const localHeader = new Uint8Array([
           ...u32(0x04034b50), ...u16(20), ...u16(0), ...u16(0), ...u16(stamp.time), ...u16(stamp.date),
@@ -2878,26 +3109,67 @@ exports.deleteUserByAdmin = onCall(async (request) => {
       return new Blob([...chunks, ...central, end], { type: "application/zip" });
     }
 
+    function collectProjectImageAssets() {
+      saveCurrentPage();
+      const map = new Map();
+      const files = [];
+      state.pages.forEach((page) => {
+        (page.photoUrls || []).forEach((url) => {
+          if (!isDataImageUrl(url) || map.has(url)) return;
+          const image = dataUrlToBytes(url);
+          if (!image) return;
+          const ext = imageExtensionFromMime(image.mime);
+          const name = `images/photo-${files.length + 1}.${ext}`;
+          map.set(url, name);
+          files.push({ name, bytes: image.bytes });
+        });
+      });
+      return { map, files };
+    }
+
+    function replacePageDataImageUrls(page, imageMap) {
+      return {
+        ...page,
+        photoUrls: (page.photoUrls || ["", "", ""]).map((url) => imageMap.get(url) || url)
+      };
+    }
+
+    function replaceContentImageUrls(content, imageMap) {
+      let output = content || "";
+      imageMap.forEach((fileName, dataUrl) => {
+        output = output.split(dataUrl).join(fileName);
+      });
+      return output;
+    }
+
     function buildPageHtmlFiles() {
       saveCurrentPage();
       const originalIndex = state.currentPageIndex;
+      const imageAssets = collectProjectImageAssets();
       const files = state.pages.map((page, index) => {
         state.currentPageIndex = index;
-        applyPageData(page);
+        applyPageData(replacePageDataImageUrls(page, imageAssets.map));
         return { name: slugForPage(index), content: buildExportHtml() };
       });
       state.currentPageIndex = originalIndex;
       applyPageData(state.pages[originalIndex]);
       renderPageTabs();
-      return files;
+      return {
+        pageFiles: files,
+        imageFiles: imageAssets.files,
+        imageMap: imageAssets.map
+      };
     }
 
     function downloadZip() {
       render();
-      const pageFiles = buildPageHtmlFiles();
+      const exportFiles = buildPageHtmlFiles();
+      const pageFiles = exportFiles.pageFiles;
       const readme = `自治会ホームページ一式
 
 index.html と styles.css を同じフォルダに置くと表示できます。
+写真をPCフォルダーから選んだ場合は、images フォルダーに写真が入ります。
+HTML内には写真そのものを埋め込まず、images/photo-1.jpg のようなリンクにしています。
 2ページ目以降がある場合は page-2.html、page-3.html のように入っています。
 各ページ上部または左側のリンクバーからページ移動できます。
 peraichi-like.html は、ペライチ風の単体HTMLです。
@@ -2922,8 +3194,9 @@ functions/index.js にCloud Functionsの雛形を入れています。
 `;
       const zip = makeZip([
         ...pageFiles,
+        ...exportFiles.imageFiles,
         { name: "styles.css", content: state.css },
-        { name: "peraichi-like.html", content: state.blockHtml },
+        { name: "peraichi-like.html", content: replaceContentImageUrls(state.blockHtml, exportFiles.imageMap) },
         { name: "auth-sample.html", content: buildAuthSampleHtml() },
         { name: "auth-app.js", content: buildAuthAppJs() },
         { name: "admin.html", content: buildAdminSampleHtml() },
@@ -2959,6 +3232,10 @@ functions/index.js にCloud Functionsの雛形を入れています。
     document.getElementById("downloadZipBtn").addEventListener("click", downloadZip);
     els.themeSelect.addEventListener("change", () => {
       applyTheme(els.themeSelect.value);
+      render();
+    });
+    els.headingStyleSelect.addEventListener("change", () => {
+      applyHeadingStyle(els.headingStyleSelect.value);
       render();
     });
     els.themeSwatches.addEventListener("click", (event) => {
@@ -3050,7 +3327,50 @@ functions/index.js にCloud Functionsの雛形を入れています。
       render();
     });
 
+    function scrollActiveBlockIntoView() {
+      const item = els.addedBlocks.querySelector(`[data-added-block-id="${CSS.escape(state.activeBlockId)}"]`);
+      if (item) item.scrollIntoView({ block: "center", behavior: "smooth" });
+    }
+
+    function updateNoticeSelection() {
+      optionalEls.noticeBoxes.forEach((box, index) => {
+        box.classList.toggle("active", index === state.activeNoticeIndex);
+      });
+    }
+
+    function activateNotice(index) {
+      state.activeBlockId = "";
+      state.activeNoticeIndex = Math.min(Math.max(Number(index) || 0, 0), 2);
+      renderAddedBlocks();
+      render(true);
+      updateNoticeSelection();
+      optionalEls.noticeBoxes[state.activeNoticeIndex]?.scrollIntoView({ block: "center", behavior: "smooth" });
+      els.status.textContent = `お知らせ${state.activeNoticeIndex + 1}を左で編集できます`;
+    }
+
     els.preview.addEventListener("click", (event) => {
+      const previewNotice = event.target.closest("[data-preview-target='notice']");
+      if (previewNotice) {
+        event.preventDefault();
+        activateNotice(previewNotice.dataset.previewNoticeIndex || 0);
+        return;
+      }
+
+      const previewBlock = event.target.closest("[data-preview-block-id]");
+      if (previewBlock) {
+        event.preventDefault();
+        const blockId = previewBlock.dataset.previewBlockId;
+        if (!state.extraBlocks.some((block) => block.id === blockId)) return;
+        state.activeBlockId = blockId;
+        state.activeNoticeIndex = -1;
+        renderAddedBlocks();
+        render(true);
+        updateNoticeSelection();
+        scrollActiveBlockIntoView();
+        els.status.textContent = "プレビューで選んだ部品を左で編集できます";
+        return;
+      }
+
       const link = event.target.closest(".site-nav a");
       if (!link) return;
       event.preventDefault();
@@ -3072,11 +3392,28 @@ functions/index.js にCloud Functionsの雛形を入れています。
     els.blockPicker.addEventListener("click", (event) => {
       const button = event.target.closest("[data-add-block-type]");
       if (!button) return;
-      state.extraBlocks.push(defaultBlock(button.dataset.addBlockType));
+      const block = defaultBlock(button.dataset.addBlockType);
+      state.extraBlocks.push(block);
+      state.activeBlockId = block.id;
+      state.activeNoticeIndex = -1;
       render();
     });
 
+    function activateAddedBlockFromEvent(event) {
+      const item = event.target.closest("[data-added-block-id]");
+      if (!item) return false;
+      if (state.activeBlockId === item.dataset.addedBlockId) return true;
+      state.activeBlockId = item.dataset.addedBlockId;
+      state.activeNoticeIndex = -1;
+      renderAddedBlocks();
+      render(true);
+      return true;
+    }
+
+    els.addedBlocks.addEventListener("focusin", activateAddedBlockFromEvent);
+
     els.addedBlocks.addEventListener("click", (event) => {
+      activateAddedBlockFromEvent(event);
       const moveButton = event.target.closest("[data-move-block]");
       if (moveButton) {
         event.preventDefault();
@@ -3096,7 +3433,10 @@ functions/index.js にCloud Functionsの雛形を入れています。
       event.stopPropagation();
       const item = button.closest(".added-block-item");
       if (item) item.remove();
-      state.extraBlocks.splice(Number(button.dataset.removeBlock), 1);
+      const [removed] = state.extraBlocks.splice(Number(button.dataset.removeBlock), 1);
+      if (removed?.id === state.activeBlockId) {
+        state.activeBlockId = state.extraBlocks[0]?.id || "";
+      }
       renderAddedBlocks();
       render(true);
     });
@@ -3108,6 +3448,8 @@ functions/index.js にCloud Functionsの雛形を入れています。
       const [indexText, path] = input.dataset.blockField.split(":");
       const block = state.extraBlocks[Number(indexText)];
       if (!block) return;
+      state.activeBlockId = block.id;
+      state.activeNoticeIndex = -1;
       if (["heading", "text", "width", "textLinkText", "textLinkUrl", "photoLinkUrl"].includes(path)) {
         block[path] = input.value;
       } else if (path.startsWith("links.")) {
@@ -3117,6 +3459,21 @@ functions/index.js にCloud Functionsの雛形を入れています。
       }
       if (input.tagName === "TEXTAREA") autoResizeBlockTextareas();
       render(true);
+    });
+
+    optionalEls.noticeBoxes.forEach((box, index) => {
+      box.addEventListener("focusin", () => {
+        state.activeBlockId = "";
+        state.activeNoticeIndex = index;
+        renderAddedBlocks();
+        render(true);
+      });
+      box.addEventListener("click", () => {
+        state.activeBlockId = "";
+        state.activeNoticeIndex = index;
+        renderAddedBlocks();
+        render(true);
+      });
     });
 
     document.querySelectorAll(".tab").forEach((tab) => {
@@ -3133,6 +3490,7 @@ functions/index.js にCloud Functionsの雛形を入れています。
 
     initializeTemplates();
     initializeThemes();
+    applyHeadingStyle(state.headingStyle);
     initializePages();
     renderPhotoLibrary();
     render();
