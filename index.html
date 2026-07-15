@@ -1149,6 +1149,7 @@
         <div class="button-row">
           <button class="btn primary" id="generateBtn" type="button">ソースを作る</button>
           <button class="btn secondary" id="sampleBtn" type="button">例を入れる</button>
+          <button class="btn secondary" id="standardSetBtn" type="button">自治会HP標準セット</button>
         </div>
 
         <div class="button-row">
@@ -1349,6 +1350,153 @@
           { text: "", url: "" },
           { text: "", url: "" }
         ]
+      };
+    }
+
+    function standardBlock(type, values = {}) {
+      return {
+        ...defaultBlock(type),
+        ...values,
+        links: values.links || defaultBlock(type).links
+      };
+    }
+
+    function standardNotice(title, body) {
+      return { title, body };
+    }
+
+    function createStandardJichikaiProject(siteName = "大森自治会") {
+      const commonNotices = [
+        standardNotice("夏の町内清掃を行います", "朝8時に公民館前へ集合してください。軍手、帽子、飲み物をご用意ください。"),
+        standardNotice("夏祭りのご案内", "夕方5時より、公民館前広場で開催予定です。詳細は回覧板でお知らせします。"),
+        standardNotice("防災訓練について", "防災関係の詳しい掲載は、立ち上げ後に継続検討します。")
+      ];
+      const base = (title, extraBlocks, options = {}) => ({
+        title,
+        slug: "",
+        siteName,
+        catchText: options.catchText || "行事、活動、広報誌、回覧板を見やすくまとめてお知らせします。",
+        photoUrls: ["", "", ""],
+        templateId: options.templateId || "blank",
+        customHeading: options.customHeading || "",
+        customText: options.customText || "",
+        notices: cloneData(options.notices || commonNotices),
+        scheduleText: options.scheduleText || "7月20日: 町内清掃 / 8月3日: 夏祭り / 9月1日: 防災訓練",
+        contactText: options.contactText || "お問い合わせは自治会役員または班長までお願いします。",
+        extraBlocks
+      });
+
+      const pages = [
+        base("Top", [
+          standardBlock("headingText", {
+            heading: "住みよい地域づくりを、みんなで。",
+            text: "行事、活動、広報誌、回覧板を見やすくまとめた自治会ホームページです。直近情報を最初のページで一覧できるようにします。"
+          }),
+          standardBlock("recentInfo", { heading: "新着情報", text: "直近のお知らせを一覧で掲載します。" }),
+          standardBlock("pdfLinks", {
+            heading: "よく見られる情報",
+            text: "広報誌、回覧板、加入案内などへ移動できます。",
+            links: [
+              { text: "広報誌を見る", url: "page-3.html" },
+              { text: "回覧板を見る", url: "page-3.html#circular" },
+              { text: "加入案内を見る", url: "page-2.html#join" }
+            ]
+          })
+        ], {
+          catchText: "地域の行事、防災、回覧板のお知らせをまとめて掲載しています。",
+          templateId: "newsFirst"
+        }),
+        base("自治会について", [
+          standardBlock("headingText", {
+            heading: "大森自治会の目的",
+            text: "地域の安心、安全、親睦を大切にしながら、住みよいまちづくりを進めるために活動しています。"
+          }),
+          standardBlock("headingText", {
+            heading: "主な活動",
+            text: "町内清掃、広報誌の配布、回覧板、行事運営など、日々の暮らしに必要な情報を地域の皆さまへお届けします。"
+          }),
+          standardBlock("headingText", {
+            heading: "加入案内",
+            text: "活動内容を知っていただいたうえで、地域の情報を受け取れる自治会への加入をご検討ください。詳しくは役員または問い合わせ窓口までご連絡ください。"
+          })
+        ], {
+          customHeading: "自治会について",
+          customText: "歴史、組織、目的、活動内容、加入案内を掲載します。"
+        }),
+        base("広報・回覧板", [
+          standardBlock("headingText", {
+            heading: "広報誌",
+            text: "年3回発行分のうち、直近1年分を掲載します。過去分はボタンで移動できる形を想定しています。"
+          }),
+          standardBlock("pdfLinks", {
+            heading: "広報誌PDF",
+            text: "PDFを差し替えれば、そのまま広報誌ページとして使えます。",
+            links: [
+              { text: "広報誌 春号", url: "" },
+              { text: "広報誌 夏号", url: "" },
+              { text: "広報誌 冬号", url: "" }
+            ]
+          }),
+          standardBlock("pdfLinks", {
+            heading: "回覧板",
+            text: "直近3か月分をPDFリンクで掲載します。",
+            links: [
+              { text: "2026年7月 回覧板", url: "" },
+              { text: "2026年6月 回覧板", url: "" },
+              { text: "2026年5月 回覧板", url: "" }
+            ]
+          }),
+          standardBlock("buttonLinks", {
+            heading: "過去分",
+            text: "ページを長くしすぎないよう、過去分はボタンで誘導します。",
+            links: [
+              { text: "過去分を見る", url: "" },
+              { text: "", url: "" },
+              { text: "", url: "" }
+            ]
+          })
+        ]),
+        base("コミュセン", [
+          standardBlock("headingText", {
+            heading: "施設案内",
+            text: "地域の会合、行事準備、各種活動で利用できるコミュニティ施設です。利用できる部屋や設備は、確認内容に合わせて掲載します。"
+          }),
+          standardBlock("headingText", {
+            heading: "利用案内",
+            text: "利用対象、予約方法、注意事項などを掲載します。利用後の清掃、備品の確認にご協力ください。"
+          })
+        ]),
+        base("伝統行事", [
+          standardBlock("headingText", {
+            heading: "地域で受け継ぐ行事",
+            text: "地域のつながりを大切にしながら、季節ごとの行事を実施しています。写真や案内PDFを追加して、行事の様子をわかりやすく掲載できます。"
+          }),
+          standardBlock("newsCards", { heading: "行事一覧", text: "春の地域清掃、夏祭り、防災訓練などを掲載します。" })
+        ]),
+        base("問い合わせ", [
+          standardBlock("headingText", {
+            heading: "お問い合わせ",
+            text: "問い合わせ方法は、運用に合わせて「メールのみ」「電話のみ」「両方」から選べます。この標準セットではメール中心の案内にしています。"
+          }),
+          standardBlock("headingText", {
+            heading: "今後の検討",
+            text: "問い合わせフォームを設置する場合は、迷惑送信対策としてreCAPTCHAを検討します。アクセス解析も必要に応じてあとから導入できます。"
+          })
+        ], {
+          contactText: "メール: info@example.com / 担当: 自治会役員または班長まで"
+        })
+      ].map((page, index) => ({
+        ...page,
+        slug: slugForPage(index)
+      }));
+
+      return {
+        version: 1,
+        themeId: "green",
+        headingStyle: "line",
+        navPosition: "top",
+        currentPageIndex: 0,
+        pages
       };
     }
 
@@ -3516,6 +3664,14 @@ functions/index.js にCloud Functionsの雛形を入れています。
         ] }
       ];
       render();
+    });
+
+    document.getElementById("standardSetBtn").addEventListener("click", () => {
+      const siteName = els.siteName.value.trim() || "大森自治会";
+      const message = "自治会HP標準セットを入れます。現在の作成内容は標準セットに置き換わります。よろしいですか？";
+      if (!confirm(message)) return;
+      loadProjectData(createStandardJichikaiProject(siteName));
+      els.status.textContent = "自治会HP標準セットを入れました。不要なページやブロックは削除できます。";
     });
 
     els.pageTabs.addEventListener("click", (event) => {
