@@ -492,7 +492,7 @@
       overflow: hidden;
       background: linear-gradient(rgba(232, 243, 237, .86), rgba(232, 243, 237, .9)), var(--header-photo), var(--soft-green);
       background-size: cover;
-      background-position: center;
+      background-position: var(--header-photo-position, center center);
     }
 
     .site-preview nav {
@@ -1096,6 +1096,23 @@
             <input id="headerPhotoEnabled" type="checkbox">
             上の帯に専用写真を薄く表示
           </label>
+          <label for="headerPhotoScope">帯写真を出すページ</label>
+          <select id="headerPhotoScope">
+            <option value="top">トップだけ</option>
+            <option value="all">全ページ</option>
+          </select>
+          <label for="headerPhotoPosition">帯写真の位置</label>
+          <select id="headerPhotoPosition">
+            <option value="center center">中央</option>
+            <option value="center top">上</option>
+            <option value="center bottom">下</option>
+            <option value="left center">左</option>
+            <option value="right center">右</option>
+            <option value="left top">左上</option>
+            <option value="right top">右上</option>
+            <option value="left bottom">左下</option>
+            <option value="right bottom">右下</option>
+          </select>
           <button class="btn secondary" id="chooseHeaderPhotoBtn" type="button">帯写真をファイルから選ぶ</button>
           <input id="headerPhotoInput" type="file" accept="image/*" hidden>
           <input id="headerPhotoUrl" placeholder="帯写真URL または下の写真一覧から帯写真を選択">
@@ -1232,6 +1249,8 @@
       themeId: "green",
       headingStyle: "simple",
       headerPhotoEnabled: false,
+      headerPhotoScope: "top",
+      headerPhotoPosition: "center center",
       activeBlockId: "",
       activeNoticeIndex: -1,
       isPreviewRendering: false,
@@ -1301,6 +1320,8 @@
       themeSelect: document.getElementById("themeSelect"),
       headingStyleSelect: document.getElementById("headingStyleSelect"),
       headerPhotoEnabled: document.getElementById("headerPhotoEnabled"),
+      headerPhotoScope: document.getElementById("headerPhotoScope"),
+      headerPhotoPosition: document.getElementById("headerPhotoPosition"),
       chooseHeaderPhotoBtn: document.getElementById("chooseHeaderPhotoBtn"),
       headerPhotoInput: document.getElementById("headerPhotoInput"),
       headerPhotoUrl: document.getElementById("headerPhotoUrl"),
@@ -1584,11 +1605,31 @@
     }
 
     function headerPhotoEnabled() {
-      return Boolean(els.headerPhotoEnabled.checked && headerPhotoUrl());
+      return Boolean(els.headerPhotoEnabled.checked && activeHeaderPhotoUrl());
     }
 
     function headerPhotoUrl() {
       return String(els.headerPhotoUrl.value || "").trim();
+    }
+
+    function headerPhotoScope() {
+      return els.headerPhotoScope.value === "all" ? "all" : "top";
+    }
+
+    function headerPhotoPosition() {
+      return els.headerPhotoPosition.value || "center center";
+    }
+
+    function activeHeaderPhotoUrl(pageIndex = state.currentPageIndex) {
+      if (headerPhotoScope() === "all") {
+        return String(state.pages[0]?.headerPhotoUrl || headerPhotoUrl() || "").trim();
+      }
+      return pageIndex === 0 ? headerPhotoUrl() : "";
+    }
+
+    function activeHeaderPhotoEnabled(pageIndex = state.currentPageIndex) {
+      if (!els.headerPhotoEnabled.checked) return false;
+      return Boolean(activeHeaderPhotoUrl(pageIndex));
     }
 
     function readFileAsDataUrl(file) {
@@ -1720,6 +1761,9 @@
       els.headerPhotoUrl.value = dataUrl;
       els.headerPhotoEnabled.checked = true;
       state.headerPhotoEnabled = true;
+      if (headerPhotoScope() === "all" && state.pages[0]) {
+        state.pages[0].headerPhotoUrl = dataUrl;
+      }
       render();
     }
 
@@ -1785,6 +1829,8 @@
         themeId: state.themeId,
         headingStyle: state.headingStyle,
         headerPhotoEnabled: els.headerPhotoEnabled.checked,
+        headerPhotoScope: headerPhotoScope(),
+        headerPhotoPosition: headerPhotoPosition(),
         navPosition: els.navPosition.value,
         currentPageIndex: state.currentPageIndex,
         pages: cloneData(state.pages)
@@ -1800,6 +1846,10 @@
       state.headingStyle = ["simple", "line", "band"].includes(data.headingStyle) ? data.headingStyle : "simple";
       state.headerPhotoEnabled = Boolean(data.headerPhotoEnabled);
       els.headerPhotoEnabled.checked = state.headerPhotoEnabled;
+      state.headerPhotoScope = data.headerPhotoScope === "all" ? "all" : "top";
+      state.headerPhotoPosition = data.headerPhotoPosition || "center center";
+      els.headerPhotoScope.value = state.headerPhotoScope;
+      els.headerPhotoPosition.value = state.headerPhotoPosition;
       els.navPosition.value = data.navPosition === "left" ? "left" : "top";
       state.pages = cloneData(data.pages);
       state.currentPageIndex = Math.min(Math.max(Number(data.currentPageIndex) || 0, 0), state.pages.length - 1);
@@ -1860,7 +1910,7 @@
       const template = currentTemplate();
       const blockTypes = state.extraBlocks.map((block) => block.type);
       const isBlank = template.id === "blank";
-      const needsPhoto = headerPhotoEnabled() || !isBlank || blockTypes.some((type) => ["photo", "photoTextLeft", "textPhotoRight"].includes(type));
+      const needsPhoto = activeHeaderPhotoEnabled() || !isBlank || blockTypes.some((type) => ["photo", "photoTextLeft", "textPhotoRight"].includes(type));
       const needsNotices = !isBlank || blockTypes.some((type) => ["recentInfo", "newsCards", "newsTable"].includes(type));
       const needsSchedule = !isBlank;
       const needsContact = !isBlank;
@@ -2234,9 +2284,10 @@
     function buildExportHtml() {
       const title = escapeHtml(`${els.siteName.value || "自治会ホームページ"} - ${els.pageTitle.value || "ホーム"}`);
       const template = currentTemplate();
-      const hasHeaderPhoto = headerPhotoEnabled();
+      const hasHeaderPhoto = activeHeaderPhotoEnabled(state.currentPageIndex);
       const photoUrl = escapeHtml(primaryPhotoUrl() || placeholderPhoto());
-      const headerUrl = escapeHtml(headerPhotoUrl() || placeholderPhoto());
+      const headerUrl = escapeHtml(activeHeaderPhotoUrl(state.currentPageIndex) || placeholderPhoto());
+      const headerPosition = escapeHtml(headerPhotoPosition());
       const navClass = els.navPosition.value === "left" ? "nav-left" : "nav-top";
       const headingClass = `heading-${currentHeadingStyle()}`;
       const headerPhotoClass = hasHeaderPhoto ? "has-header-photo" : "";
@@ -2248,7 +2299,7 @@
   <title>${title}</title>
   <link rel="stylesheet" href="styles.css">
 </head>
-<body class="${template.className} ${navClass} ${headingClass} ${headerPhotoClass}" style="--preview-photo: url('${photoUrl}'); --header-photo: url('${headerUrl}');">
+<body class="${template.className} ${navClass} ${headingClass} ${headerPhotoClass}" style="--preview-photo: url('${photoUrl}'); --header-photo: url('${headerUrl}'); --header-photo-position: ${headerPosition};">
 ${buildPreviewHtml()}
 </body>
 </html>`;
@@ -2298,7 +2349,7 @@ body.has-header-photo:not(.t-blank) header {
   overflow: hidden;
   background: linear-gradient(rgba(232,243,237,.86), rgba(232,243,237,.9)), var(--header-photo), #e8f3ed;
   background-size: cover;
-  background-position: center;
+  background-position: var(--header-photo-position, center center);
 }
 
 nav {
@@ -3359,8 +3410,9 @@ exports.deleteUserByAdmin = onCall(async (request) => {
       saveCurrentPage();
       const template = currentTemplate();
       const previewPhoto = escapeHtml(primaryPhotoUrl() || placeholderPhoto());
-      const headerPhoto = escapeHtml(headerPhotoUrl() || placeholderPhoto());
-      const headerPhotoClass = headerPhotoEnabled() ? "has-header-photo" : "";
+      const headerPhoto = escapeHtml(activeHeaderPhotoUrl(state.currentPageIndex) || placeholderPhoto());
+      const headerPhotoClass = activeHeaderPhotoEnabled(state.currentPageIndex) ? "has-header-photo" : "";
+      const headerPosition = escapeHtml(headerPhotoPosition());
       updateVisibleInputs();
       renderPageTabs();
       state.html = buildExportHtml();
@@ -3369,6 +3421,7 @@ exports.deleteUserByAdmin = onCall(async (request) => {
       els.preview.className = `site-preview ${template.className} ${els.navPosition.value === "left" ? "nav-left" : "nav-top"} heading-${currentHeadingStyle()} ${headerPhotoClass}`;
       els.preview.style.setProperty("--preview-photo", `url('${previewPhoto}')`);
       els.preview.style.setProperty("--header-photo", `url('${headerPhoto}')`);
+      els.preview.style.setProperty("--header-photo-position", headerPosition);
       state.isPreviewRendering = true;
       els.preview.innerHTML = buildPreviewHtml();
       state.isPreviewRendering = false;
@@ -3507,11 +3560,15 @@ exports.deleteUserByAdmin = onCall(async (request) => {
       saveCurrentPage();
       const originalIndex = state.currentPageIndex;
       const imageAssets = collectProjectImageAssets();
-      const files = state.pages.map((page, index) => {
+      const originalPages = cloneData(state.pages);
+      const exportPages = originalPages.map((page) => replacePageDataImageUrls(page, imageAssets.map));
+      state.pages = exportPages;
+      const files = exportPages.map((page, index) => {
         state.currentPageIndex = index;
-        applyPageData(replacePageDataImageUrls(page, imageAssets.map));
+        applyPageData(page);
         return { name: slugForPage(index), content: buildExportHtml() };
       });
+      state.pages = originalPages;
       state.currentPageIndex = originalIndex;
       applyPageData(state.pages[originalIndex]);
       renderPageTabs();
