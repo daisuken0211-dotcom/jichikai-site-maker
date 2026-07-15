@@ -1454,6 +1454,7 @@
         slug: "",
         siteName,
         catchText: options.catchText || "行事、活動、広報誌、回覧板を見やすくまとめてお知らせします。",
+        headerPhotoEnabled: Boolean(options.headerPhotoEnabled),
         headerPhotoUrl: "",
         photoUrls: ["", "", ""],
         templateId: options.templateId || "blank",
@@ -1487,7 +1488,7 @@
         }),
         base("自治会について", [
           standardBlock("headingText", {
-            heading: "大森自治会の目的",
+            heading: `${siteName}の目的`,
             text: "地域の安心、安全、親睦を大切にしながら、住みよいまちづくりを進めるために活動しています。"
           }),
           standardBlock("headingText", {
@@ -1663,6 +1664,14 @@
         lead: "",
         pageLabel: currentSiteName
       };
+    }
+
+    function activeDocumentSiteName(pageIndex = state.currentPageIndex) {
+      const currentSiteName = String(els.siteName.value || "自治会ホームページ").trim();
+      if (headerPhotoScope() === "all") {
+        return firstPageValue("siteName", currentSiteName) || currentSiteName;
+      }
+      return currentSiteName;
     }
 
     function activeHeaderPhotoUrl(pageIndex = state.currentPageIndex) {
@@ -2335,7 +2344,7 @@
     }
 
     function buildExportHtml() {
-      const title = escapeHtml(`${els.siteName.value || "自治会ホームページ"} - ${els.pageTitle.value || "ホーム"}`);
+      const title = escapeHtml(`${activeDocumentSiteName(state.currentPageIndex)} - ${els.pageTitle.value || "ホーム"}`);
       const template = currentTemplate();
       const hasHeaderPhoto = activeHeaderPhotoEnabled(state.currentPageIndex);
       const photoUrl = escapeHtml(primaryPhotoUrl() || placeholderPhoto());
