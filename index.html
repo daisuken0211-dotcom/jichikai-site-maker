@@ -2297,7 +2297,7 @@
                     ${needsText ? `<textarea rows="1" data-block-field="${index}:text" placeholder="本文">${escapeHtml(block.text)}</textarea>` : ""}
                     ${needsPhotoContent ? `
                       <div class="photo-slot-row">
-                        <button type="button" data-choose-block-photo="${index}:0">写真を選ぶ</button>
+                        <button type="button" data-choose-block-photo="${index}:0">写真を選ぶ（すぐ表示）</button>
                         ${block.photoUrls?.[0] ? `<span class="photo-choice-meta">写真が入っています</span>` : `<span class="photo-choice-meta">未選択</span>`}
                       </div>
                     ` : ""}
@@ -4052,6 +4052,16 @@ functions/index.js にCloud Functionsの雛形を入れています。
       const [photoIndexText, slotIndexText] = button.dataset.useLocalPhoto.split(":");
       const photo = state.localPhotos[Number(photoIndexText)];
       if (!photo) return;
+      const activeBlock = state.extraBlocks.find((block) => block.id === state.activeBlockId);
+      if (activeBlock && ["photo", "photoTextLeft", "textPhotoRight"].includes(activeBlock.type)) {
+        activeBlock.photoUrls = activeBlock.photoUrls || ["", "", ""];
+        activeBlock.photoUrls[Number(slotIndexText) || 0] = photo.dataUrl;
+        renderAddedBlocks();
+        render(true);
+        scrollActiveBlockIntoView();
+        els.status.textContent = "選択中の写真ブロックに写真を入れました";
+        return;
+      }
       setPhotoSlot(Number(slotIndexText), photo.dataUrl);
       els.status.textContent = `${button.textContent}に写真を入れました`;
     });
@@ -4259,17 +4269,24 @@ functions/index.js にCloud Functionsの雛形を入れています。
       if (!file || !target) return;
       const block = state.extraBlocks[target.blockIndex];
       if (!block) return;
+      const slotIndex = target.slotIndex || 0;
+      block.photoUrls = block.photoUrls || ["", "", ""];
+      state.activeBlockId = block.id;
       try {
-        els.status.textContent = "写真をホームページ用に軽くしています";
+        const instantDataUrl = await readFileAsDataUrl(file);
+        block.photoUrls[slotIndex] = instantDataUrl;
+        renderAddedBlocks();
+        render(true);
+        scrollActiveBlockIntoView();
+        els.status.textContent = "写真を表示しました。裏でHP用に軽くしています";
+
         const compressed = await compressImageForHomepage(file);
-        block.photoUrls = block.photoUrls || ["", "", ""];
-        block.photoUrls[target.slotIndex || 0] = compressed.dataUrl;
-        state.activeBlockId = block.id;
+        block.photoUrls[slotIndex] = compressed.dataUrl;
         renderAddedBlocks();
         render(true);
         els.status.textContent = `写真を入れました（${formatBytes(file.size)} → ${formatBytes(compressed.compressedSize)}）`;
       } catch (error) {
-        els.status.textContent = "写真を読み込めませんでした";
+        els.status.textContent = block.photoUrls[slotIndex] ? "写真は表示しました。軽量化はできませんでした" : "写真を読み込めませんでした";
       } finally {
         els.blockPhotoInput.value = "";
       }
