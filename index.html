@@ -421,8 +421,13 @@
 
     .link-grid {
       display: grid;
-      grid-template-columns: 1fr 1.25fr;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) auto;
       gap: 6px;
+      align-items: center;
+    }
+
+    .link-grid .photo-choice-meta {
+      grid-column: 1 / -1;
     }
 
     .small-btn {
@@ -1153,6 +1158,7 @@
             <button class="btn secondary" id="loadProjectBtn" type="button">設定を読み込む</button>
           </div>
           <input id="projectFileInput" type="file" accept="application/json,.json" hidden>
+          <input id="linkFileInput" type="file" accept="application/pdf,.pdf,image/*,.doc,.docx,.xls,.xlsx,.ppt,.pptx" hidden>
         </div>
 
         <div class="field">
@@ -1282,7 +1288,8 @@
       activeBlockId: "",
       activeNoticeIndex: -1,
       isPreviewRendering: false,
-      localPhotos: []
+      localPhotos: [],
+      pendingLinkFileTarget: null
     };
 
     const accessCodeConfig = {
@@ -1357,6 +1364,7 @@
       saveProjectBtn: document.getElementById("saveProjectBtn"),
       loadProjectBtn: document.getElementById("loadProjectBtn"),
       projectFileInput: document.getElementById("projectFileInput"),
+      linkFileInput: document.getElementById("linkFileInput"),
       siteName: document.getElementById("siteName"),
       catchText: document.getElementById("catchText"),
       photoUrl1: document.getElementById("photoUrl1"),
@@ -1436,9 +1444,9 @@
         textLinkUrl: "",
         photoLinkUrl: "",
         links: [
-          { text: "PDFを見る", url: "" },
-          { text: "", url: "" },
-          { text: "", url: "" }
+          { text: "PDFを見る", url: "", fileName: "" },
+          { text: "", url: "", fileName: "" },
+          { text: "", url: "", fileName: "" }
         ]
       };
     }
@@ -2018,6 +2026,10 @@
       return /^data:image\/[a-zA-Z0-9.+-]+;base64,/.test(String(url || ""));
     }
 
+    function isDataUrl(url) {
+      return /^data:[^;,]+;base64,/.test(String(url || ""));
+    }
+
     function imageExtensionFromMime(mime) {
       if (mime.includes("png")) return "png";
       if (mime.includes("webp")) return "webp";
@@ -2025,8 +2037,29 @@
       return "jpg";
     }
 
+    function extensionFromMime(mime, fallback = "bin") {
+      const value = String(mime || "").toLowerCase();
+      if (value.includes("pdf")) return "pdf";
+      if (value.includes("png")) return "png";
+      if (value.includes("jpeg") || value.includes("jpg")) return "jpg";
+      if (value.includes("webp")) return "webp";
+      if (value.includes("gif")) return "gif";
+      if (value.includes("wordprocessingml") || value.includes("msword")) return "docx";
+      if (value.includes("spreadsheetml") || value.includes("excel")) return "xlsx";
+      if (value.includes("presentationml") || value.includes("powerpoint")) return "pptx";
+      return fallback;
+    }
+
+    function safeAssetFileName(name, fallback = "file") {
+      const cleaned = String(name || fallback)
+        .split(/[\\/]/).pop()
+        .replace(/[^\w.\-\u3040-\u30ff\u3400-\u9fff]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+      return cleaned || fallback;
+    }
+
     function dataUrlToBytes(dataUrl) {
-      const match = /^data:(image\/[a-zA-Z0-9.+-]+);base64,(.*)$/.exec(dataUrl);
+      const match = /^data:([^;,]+);base64,(.*)$/.exec(dataUrl);
       if (!match) return null;
       const binary = atob(match[2]);
       const bytes = new Uint8Array(binary.length);
@@ -2253,13 +2286,21 @@
                       <div class="link-grid">
                         <input data-block-field="${index}:textLinkText" value="${escapeHtml(block.textLinkText || "")}" placeholder="文字リンクの表示名">
                         <input data-block-field="${index}:textLinkUrl" value="${escapeHtml(block.textLinkUrl || "")}" placeholder="文字リンクURL">
+                        <button class="small-btn" type="button" data-choose-link-file="${index}:textLink">ファイルを選ぶ</button>
                       </div>
                     ` : ""}
-                    ${needsPhotoLink ? `<input data-block-field="${index}:photoLinkUrl" value="${escapeHtml(block.photoLinkUrl || "")}" placeholder="写真を押した時のリンクURL">` : ""}
+                    ${needsPhotoLink ? `
+                      <div class="link-grid">
+                        <input data-block-field="${index}:photoLinkUrl" value="${escapeHtml(block.photoLinkUrl || "")}" placeholder="写真を押した時のリンクURL">
+                        <button class="small-btn" type="button" data-choose-link-file="${index}:photoLink">ファイルを選ぶ</button>
+                      </div>
+                    ` : ""}
                     ${needsLinks ? (block.links || []).slice(0, 3).map((link, linkIndex) => `
                       <div class="link-grid">
                         <input data-block-field="${index}:links.${linkIndex}.text" value="${escapeHtml(link.text)}" placeholder="リンク文字 ${linkIndex + 1}">
                         <input data-block-field="${index}:links.${linkIndex}.url" value="${escapeHtml(link.url)}" placeholder="PDFまたはリンクURL ${linkIndex + 1}">
+                        <button class="small-btn" type="button" data-choose-link-file="${index}:links.${linkIndex}">ファイルを選ぶ</button>
+                        ${link.fileName ? `<div class="photo-choice-meta">選択中: ${escapeHtml(link.fileName)}</div>` : ""}
                       </div>
                     `).join("") : ""}
                   </div>
@@ -3643,6 +3684,47 @@ exports.deleteUserByAdmin = onCall(async (request) => {
       return { map, files };
     }
 
+    function addDataFileAsset(url, preferredName, assetState) {
+      if (!isDataUrl(url) || isDataImageUrl(url) || assetState.map.has(url)) return;
+      const fileData = dataUrlToBytes(url);
+      if (!fileData) return;
+      const originalName = safeAssetFileName(preferredName || `file-${assetState.files.length + 1}.${extensionFromMime(fileData.mime)}`);
+      const hasExtension = /\.[A-Za-z0-9]{2,6}$/.test(originalName);
+      const baseName = hasExtension ? originalName : `${originalName}.${extensionFromMime(fileData.mime)}`;
+      let name = `files/${baseName}`;
+      let count = 2;
+      const used = new Set(assetState.files.map((file) => file.name));
+      while (used.has(name)) {
+        const dot = baseName.lastIndexOf(".");
+        name = dot > 0
+          ? `files/${baseName.slice(0, dot)}-${count}${baseName.slice(dot)}`
+          : `files/${baseName}-${count}`;
+        count += 1;
+      }
+      assetState.map.set(url, name);
+      assetState.files.push({ name, bytes: fileData.bytes });
+    }
+
+    function collectLinksFromBlock(block, callback) {
+      if (!block) return;
+      callback(block.textLinkUrl, block.textLinkFileName || block.textLinkText || "link-file");
+      callback(block.photoLinkUrl, block.photoLinkFileName || "photo-link-file");
+      (block.links || []).forEach((link) => {
+        callback(link.url, link.fileName || link.text || "file");
+      });
+    }
+
+    function collectProjectFileAssets() {
+      saveCurrentPage();
+      const assetState = { map: new Map(), files: [] };
+      state.pages.forEach((page) => {
+        (page.extraBlocks || []).forEach((block) => {
+          collectLinksFromBlock(block, (url, name) => addDataFileAsset(url, name, assetState));
+        });
+      });
+      return assetState;
+    }
+
     function replacePageDataImageUrls(page, imageMap) {
       return {
         ...page,
@@ -3651,9 +3733,9 @@ exports.deleteUserByAdmin = onCall(async (request) => {
       };
     }
 
-    function replaceContentImageUrls(content, imageMap) {
+    function replaceContentAssetUrls(content, assetMap) {
       let output = content || "";
-      imageMap.forEach((fileName, dataUrl) => {
+      assetMap.forEach((fileName, dataUrl) => {
         output = output.split(dataUrl).join(fileName);
       });
       return output;
@@ -3663,13 +3745,14 @@ exports.deleteUserByAdmin = onCall(async (request) => {
       saveCurrentPage();
       const originalIndex = state.currentPageIndex;
       const imageAssets = collectProjectImageAssets();
+      const fileAssets = collectProjectFileAssets();
       const originalPages = cloneData(state.pages);
       const exportPages = originalPages.map((page) => replacePageDataImageUrls(page, imageAssets.map));
       state.pages = exportPages;
       const files = exportPages.map((page, index) => {
         state.currentPageIndex = index;
         applyPageData(page);
-        return { name: slugForPage(index), content: buildExportHtml() };
+        return { name: slugForPage(index), content: replaceContentAssetUrls(buildExportHtml(), fileAssets.map) };
       });
       state.pages = originalPages;
       state.currentPageIndex = originalIndex;
@@ -3678,7 +3761,9 @@ exports.deleteUserByAdmin = onCall(async (request) => {
       return {
         pageFiles: files,
         imageFiles: imageAssets.files,
-        imageMap: imageAssets.map
+        fileFiles: fileAssets.files,
+        imageMap: imageAssets.map,
+        fileMap: fileAssets.map
       };
     }
 
@@ -3783,6 +3868,8 @@ exports.deleteUserByAdmin = onCall(async (request) => {
 index.html と styles.css を同じフォルダに置くと表示できます。
 写真をPCフォルダーから選んだ場合は、images フォルダーに写真が入ります。
 HTML内には写真そのものを埋め込まず、images/photo-1.jpg のようなリンクにしています。
+PDFや資料ファイルをボタンから選んだ場合は、files フォルダーに入ります。
+HTML内には files/ファイル名.pdf のようなリンクにしています。
 利用コードなしで保存した場合は、ページ下部に Created by Sakuma Farm のリンクが入ります。
 2ページ目以降がある場合は page-2.html、page-3.html のように入っています。
 各ページ上部または左側のリンクバーからページ移動できます。
@@ -3809,8 +3896,9 @@ functions/index.js にCloud Functionsの雛形を入れています。
       const zip = makeZip([
         ...pageFiles,
         ...exportFiles.imageFiles,
+        ...exportFiles.fileFiles,
         { name: "styles.css", content: state.css },
-        { name: "peraichi-like.html", content: contentForExportMode(replaceContentImageUrls(state.blockHtml, exportFiles.imageMap), mode) },
+        { name: "peraichi-like.html", content: contentForExportMode(replaceContentAssetUrls(replaceContentAssetUrls(state.blockHtml, exportFiles.imageMap), exportFiles.fileMap), mode) },
         { name: "auth-sample.html", content: buildAuthSampleHtml() },
         { name: "auth-app.js", content: buildAuthAppJs() },
         { name: "admin.html", content: buildAdminSampleHtml() },
@@ -4077,6 +4165,16 @@ functions/index.js にCloud Functionsの雛形を入れています。
 
     els.addedBlocks.addEventListener("click", (event) => {
       activateAddedBlockFromEvent(event);
+      const fileButton = event.target.closest("[data-choose-link-file]");
+      if (fileButton) {
+        event.preventDefault();
+        event.stopPropagation();
+        const [indexText, target] = fileButton.dataset.chooseLinkFile.split(":");
+        state.pendingLinkFileTarget = { blockIndex: Number(indexText), target };
+        els.linkFileInput.value = "";
+        els.linkFileInput.click();
+        return;
+      }
       const moveButton = event.target.closest("[data-move-block]");
       if (moveButton) {
         event.preventDefault();
@@ -4104,6 +4202,43 @@ functions/index.js にCloud Functionsの雛形を入れています。
       render(true);
     });
 
+    els.linkFileInput.addEventListener("change", async () => {
+      const file = els.linkFileInput.files?.[0];
+      const target = state.pendingLinkFileTarget;
+      state.pendingLinkFileTarget = null;
+      if (!file || !target) return;
+      const block = state.extraBlocks[target.blockIndex];
+      if (!block) return;
+      try {
+        els.status.textContent = "ファイルを読み込んでいます";
+        const dataUrl = await readFileAsDataUrl(file);
+        if (target.target === "textLink") {
+          block.textLinkUrl = dataUrl;
+          block.textLinkFileName = file.name;
+          if (!block.textLinkText) block.textLinkText = file.name.replace(/\.[^.]+$/, "");
+        } else if (target.target === "photoLink") {
+          block.photoLinkUrl = dataUrl;
+          block.photoLinkFileName = file.name;
+        } else if (target.target.startsWith("links.")) {
+          const linkIndex = Number(target.target.split(".")[1]);
+          const link = block.links?.[linkIndex];
+          if (link) {
+            link.url = dataUrl;
+            link.fileName = file.name;
+            if (!link.text) link.text = file.name.replace(/\.[^.]+$/, "");
+          }
+        }
+        state.activeBlockId = block.id;
+        renderAddedBlocks();
+        render(true);
+        els.status.textContent = `${file.name} をリンクに入れました。ZIP保存時に files フォルダーへ入ります`;
+      } catch (error) {
+        els.status.textContent = "ファイルを読み込めませんでした";
+      } finally {
+        els.linkFileInput.value = "";
+      }
+    });
+
     els.addedBlocks.addEventListener("input", (event) => {
       const input = event.target.closest("[data-block-field]");
       if (!input) return;
@@ -4115,10 +4250,15 @@ functions/index.js にCloud Functionsの雛形を入れています。
       state.activeNoticeIndex = -1;
       if (["heading", "text", "width", "textLinkText", "textLinkUrl", "photoLinkUrl"].includes(path)) {
         block[path] = input.value;
+        if (path === "textLinkUrl" && !isDataUrl(input.value)) block.textLinkFileName = "";
+        if (path === "photoLinkUrl" && !isDataUrl(input.value)) block.photoLinkFileName = "";
       } else if (path.startsWith("links.")) {
         const [, linkIndexText, key] = path.split(".");
         const link = block.links[Number(linkIndexText)];
-        if (link) link[key] = input.value;
+        if (link) {
+          link[key] = input.value;
+          if (key === "url" && !isDataUrl(input.value)) link.fileName = "";
+        }
       }
       if (input.tagName === "TEXTAREA") autoResizeBlockTextareas();
       render(true);
