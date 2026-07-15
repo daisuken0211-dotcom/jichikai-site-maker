@@ -487,7 +487,7 @@
       padding: 30px;
     }
 
-    .site-preview.has-header-photo:not(.t-blank) header {
+    .site-preview.has-header-photo header {
       position: relative;
       overflow: hidden;
       background: linear-gradient(rgba(232, 243, 237, .86), rgba(232, 243, 237, .9)), var(--header-photo), var(--soft-green);
@@ -572,6 +572,22 @@
       margin: 10px 0 0;
       font-size: 18px;
       color: #334155;
+    }
+
+    .site-preview .page-title-label {
+      display: inline-block;
+      margin-top: 16px;
+      color: #5b6b82;
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    .site-preview.has-header-photo .page-title-label {
+      color: var(--green-dark);
+      background: rgba(255, 255, 255, .78);
+      border: 1px solid rgba(36, 95, 67, .18);
+      border-radius: 999px;
+      padding: 4px 12px;
     }
 
     .site-preview main {
@@ -865,7 +881,7 @@
       min-height: 140px;
     }
 
-    .site-preview.t-blank header {
+    .site-preview.t-blank:not(.has-header-photo) header {
       background: #fff;
       border-bottom: 1px solid var(--line);
     }
@@ -1620,6 +1636,35 @@
       return els.headerPhotoPosition.value || "center center";
     }
 
+    function firstPageValue(fieldName, fallback = "") {
+      return String(state.pages[0]?.[fieldName] || fallback || "").trim();
+    }
+
+    function activeHeroContent(pageIndex = state.currentPageIndex) {
+      const pageTitle = String(els.pageTitle.value || "ホーム").trim();
+      const currentSiteName = String(els.siteName.value || "自治会").trim();
+      const currentCatchText = String(els.catchText.value || "").trim();
+      if (activeHeaderPhotoEnabled(pageIndex)) {
+        if (headerPhotoScope() === "all") {
+          return {
+            title: firstPageValue("siteName", currentSiteName) || currentSiteName,
+            lead: firstPageValue("catchText", currentCatchText),
+            pageLabel: pageTitle
+          };
+        }
+        return {
+          title: currentSiteName,
+          lead: currentCatchText,
+          pageLabel: pageTitle
+        };
+      }
+      return {
+        title: pageTitle,
+        lead: "",
+        pageLabel: currentSiteName
+      };
+    }
+
     function activeHeaderPhotoUrl(pageIndex = state.currentPageIndex) {
       if (headerPhotoScope() === "all") {
         return String(state.pages[0]?.headerPhotoUrl || headerPhotoUrl() || "").trim();
@@ -1628,7 +1673,12 @@
     }
 
     function activeHeaderPhotoEnabled(pageIndex = state.currentPageIndex) {
-      if (!els.headerPhotoEnabled.checked) return false;
+      if (headerPhotoScope() === "all") {
+        const firstPageEnabled = state.pages[0]?.headerPhotoEnabled ?? els.headerPhotoEnabled.checked;
+        if (!firstPageEnabled) return false;
+      } else if (!els.headerPhotoEnabled.checked) {
+        return false;
+      }
       return Boolean(activeHeaderPhotoUrl(pageIndex));
     }
 
@@ -1762,6 +1812,7 @@
       els.headerPhotoEnabled.checked = true;
       state.headerPhotoEnabled = true;
       if (headerPhotoScope() === "all" && state.pages[0]) {
+        state.pages[0].headerPhotoEnabled = true;
         state.pages[0].headerPhotoUrl = dataUrl;
       }
       render();
@@ -1777,6 +1828,7 @@
         slug: slugForPage(index),
         siteName,
         catchText: "住みよいまちづくりのために、地域の情報をわかりやすくお届けします。",
+        headerPhotoEnabled: false,
         headerPhotoUrl: "",
         photoUrls: ["", "", ""],
         templateId: "blank",
@@ -1805,6 +1857,7 @@
         slug: slugForPage(state.currentPageIndex),
         siteName: els.siteName.value,
         catchText: els.catchText.value,
+        headerPhotoEnabled: els.headerPhotoEnabled.checked,
         headerPhotoUrl: els.headerPhotoUrl.value,
         photoUrls: [els.photoUrl1.value, els.photoUrl2.value, els.photoUrl3.value],
         templateId: els.templateSelect.value,
@@ -1865,6 +1918,7 @@
       els.pageTitle.value = page.title || "ホーム";
       els.siteName.value = page.siteName || "みどり町自治会";
       els.catchText.value = page.catchText || "";
+      els.headerPhotoEnabled.checked = page.headerPhotoEnabled ?? state.headerPhotoEnabled;
       els.headerPhotoUrl.value = page.headerPhotoUrl || "";
       els.photoUrl1.value = page.photoUrls?.[0] || "";
       els.photoUrl2.value = page.photoUrls?.[1] || "";
@@ -2213,6 +2267,10 @@
     function buildPreviewHtml() {
       const siteName = escapeHtml(els.siteName.value || "自治会");
       const catchText = escapeHtml(els.catchText.value);
+      const hero = activeHeroContent(state.currentPageIndex);
+      const heroTitle = escapeHtml(hero.title || els.pageTitle.value || "ホーム");
+      const heroLead = escapeHtml(hero.lead || "");
+      const heroPageLabel = escapeHtml(hero.pageLabel || "");
       const photoUrls = collectPhotoUrls();
       const notices = collectNotices();
       const template = currentTemplate();
@@ -2252,8 +2310,9 @@
         return `
           ${pageNavMarkup()}
           <header>
-            <h1>${siteName}</h1>
-            <span class="page-title-label">${escapeHtml(els.pageTitle.value || "ホーム")}</span>
+            <h1>${heroTitle}</h1>
+            ${heroLead ? `<p class="lead">${heroLead}</p>` : ""}
+            ${heroPageLabel ? `<span class="page-title-label">${heroPageLabel}</span>` : ""}
           </header>
           <main>
             ${extraBlocksMarkup(context)}
@@ -2264,15 +2323,9 @@
       return `
         ${pageNavMarkup()}
         <header>
-          <nav>
-            <span>お知らせ</span>
-            <span>行事予定</span>
-            <span>防災情報</span>
-            <span>連絡先</span>
-          </nav>
-          <h1>${siteName}</h1>
-          <span class="page-title-label">${escapeHtml(els.pageTitle.value || "ホーム")}</span>
-          <span class="template-note">${escapeHtml(template.note)}</span>
+          <h1>${heroTitle}</h1>
+          ${heroLead ? `<p class="lead">${heroLead}</p>` : ""}
+          ${heroPageLabel ? `<span class="page-title-label">${heroPageLabel}</span>` : ""}
         </header>
         <main>
           ${bodyBlocks}
@@ -2344,7 +2397,7 @@ header {
   padding: 40px min(6vw, 56px);
 }
 
-body.has-header-photo:not(.t-blank) header {
+body.has-header-photo header {
   position: relative;
   overflow: hidden;
   background: linear-gradient(rgba(232,243,237,.86), rgba(232,243,237,.9)), var(--header-photo), #e8f3ed;
@@ -2461,6 +2514,22 @@ body.heading-band h2 {
   max-width: 760px;
   margin: 12px 0 0;
   font-size: 20px;
+}
+
+.page-title-label {
+  display: inline-block;
+  margin-top: 16px;
+  color: #5b6b82;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+body.has-header-photo .page-title-label {
+  color: #245f43;
+  background: rgba(255,255,255,.78);
+  border: 1px solid rgba(36,95,67,.18);
+  border-radius: 999px;
+  padding: 4px 12px;
 }
 
 main {
@@ -2701,7 +2770,7 @@ main > .block-half {
   min-height: 140px;
 }
 
-.t-blank header {
+.t-blank:not(.has-header-photo) header {
   background: #fff;
   border-bottom: 1px solid #d8e0e7;
 }
