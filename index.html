@@ -1159,6 +1159,7 @@
           </div>
           <input id="projectFileInput" type="file" accept="application/json,.json" hidden>
           <input id="linkFileInput" type="file" accept="application/pdf,.pdf,image/*,.doc,.docx,.xls,.xlsx,.ppt,.pptx" hidden>
+          <input id="blockPhotoInput" type="file" accept="image/*" hidden>
         </div>
 
         <div class="field">
@@ -1289,7 +1290,8 @@
       activeNoticeIndex: -1,
       isPreviewRendering: false,
       localPhotos: [],
-      pendingLinkFileTarget: null
+      pendingLinkFileTarget: null,
+      pendingBlockPhotoTarget: null
     };
 
     const accessCodeConfig = {
@@ -1365,6 +1367,7 @@
       loadProjectBtn: document.getElementById("loadProjectBtn"),
       projectFileInput: document.getElementById("projectFileInput"),
       linkFileInput: document.getElementById("linkFileInput"),
+      blockPhotoInput: document.getElementById("blockPhotoInput"),
       siteName: document.getElementById("siteName"),
       catchText: document.getElementById("catchText"),
       photoUrl1: document.getElementById("photoUrl1"),
@@ -1443,6 +1446,7 @@
         textLinkText: "",
         textLinkUrl: "",
         photoLinkUrl: "",
+        photoUrls: ["", "", ""],
         links: [
           { text: "PDFを見る", url: "", fileName: "" },
           { text: "", url: "", fileName: "" },
@@ -2084,6 +2088,14 @@
       `;
     }
 
+    function blockPhotoUrls(block, fallbackUrls = []) {
+      const ownPhotos = (block?.photoUrls || [])
+        .map((url) => String(url || "").trim())
+        .filter(Boolean)
+        .slice(0, 3);
+      return ownPhotos.length ? ownPhotos : fallbackUrls;
+    }
+
     function blockClass(block, baseClass = "") {
       const halfClass = block?.width === "half" ? "block-half" : "";
       const activeClass = state.isPreviewRendering && block?.id === state.activeBlockId ? "is-editing-preview" : "";
@@ -2223,7 +2235,7 @@
 
     function photoTextMarkup(photoUrls, siteName, block, reverse = false) {
       const custom = customHeadingText(block);
-      const photo = photoMarkup(photoUrls, siteName);
+      const photo = photoMarkup(blockPhotoUrls(block, photoUrls), siteName);
       const text = `<div class="feature-text"><h2>${custom.heading}</h2><p>${custom.text}</p></div>`;
       return `<section class="${blockClass(block, `feature-row ${reverse ? "reverse" : ""}`)}"${previewBlockAttr(block)}>${reverse ? `${text}${wrapPhotoLink(photo, block)}` : `${wrapPhotoLink(photo, block)}${text}`}</section>`;
     }
@@ -2234,7 +2246,7 @@
       if (blockType === "textOnly") return textOnlyMarkup(block);
       if (blockType === "headingText") return headingTextMarkup(block);
       if (blockType === "pdfLinks" || blockType === "buttonLinks") return linksBlockMarkup(block);
-      if (blockType === "photo") return wrapPhotoLink(`<section class="${blockClass(block)}"${previewBlockAttr(block)}>${context.photoBlock}</section>`, block);
+      if (blockType === "photo") return wrapPhotoLink(`<section class="${blockClass(block)}"${previewBlockAttr(block)}>${photoMarkup(blockPhotoUrls(block, context.photoUrls), context.siteName)}</section>`, block);
       if (blockType === "photoTextLeft") return photoTextMarkup(context.photoUrls, context.siteName, block, false);
       if (blockType === "textPhotoRight") return photoTextMarkup(context.photoUrls, context.siteName, block, true);
       if (blockType === "blankHeading") return blankHeadingMarkup();
@@ -2266,6 +2278,7 @@
             const needsLinks = ["pdfLinks", "buttonLinks"].includes(block.type);
             const needsTextLink = ["headingOnly", "textOnly", "headingText", "photoTextLeft", "textPhotoRight"].includes(block.type);
             const needsPhotoLink = ["photo", "photoTextLeft", "textPhotoRight"].includes(block.type);
+            const needsPhotoContent = ["photo", "photoTextLeft", "textPhotoRight"].includes(block.type);
             const isActive = block.id === state.activeBlockId;
             return `
               <div class="added-block-item ${isActive ? "active" : ""}" data-added-block-id="${escapeHtml(block.id)}">
@@ -2282,6 +2295,12 @@
                     <div class="block-area-title">内容</div>
                     ${needsHeading ? `<input data-block-field="${index}:heading" value="${escapeHtml(block.heading)}" placeholder="見出し">` : ""}
                     ${needsText ? `<textarea rows="1" data-block-field="${index}:text" placeholder="本文">${escapeHtml(block.text)}</textarea>` : ""}
+                    ${needsPhotoContent ? `
+                      <div class="photo-slot-row">
+                        <button type="button" data-choose-block-photo="${index}:0">写真を選ぶ</button>
+                        ${block.photoUrls?.[0] ? `<span class="photo-choice-meta">写真が入っています</span>` : `<span class="photo-choice-meta">未選択</span>`}
+                      </div>
+                    ` : ""}
                     ${needsTextLink ? `
                       <div class="link-grid">
                         <input data-block-field="${index}:textLinkText" value="${escapeHtml(block.textLinkText || "")}" placeholder="文字リンクの表示名">
@@ -3510,12 +3529,12 @@ exports.deleteUserByAdmin = onCall(async (request) => {
         }
         if (block.type === "photo") {
           return `<div class="pera1-section block" data-structure="b-img" data-block-name="画像" id="${sectionId}">
-    <div class="c-wrapper u-align-center">${buildPeraichiPhotoRow(context.photoUrls || [], context.siteName)}</div>
+    <div class="c-wrapper u-align-center">${buildPeraichiPhotoRow(blockPhotoUrls(block, context.photoUrls || []), context.siteName)}</div>
   </div>`;
         }
         if (block.type === "photoTextLeft" || block.type === "textPhotoRight") {
           const custom = customHeadingText(block);
-          const photo = `<div>${buildPeraichiPhotoRow(context.photoUrls || [], context.siteName)}</div>`;
+          const photo = `<div>${buildPeraichiPhotoRow(blockPhotoUrls(block, context.photoUrls || []), context.siteName)}</div>`;
           const text = `<div><h2 class="pera1-editable" data-structure="e-heading">${custom.heading}</h2><div class="pera1-editable" data-structure="e-text">${custom.text}</div></div>`;
           return `<div class="pera1-section block" data-structure="b-article-img-left--bdr" data-block-name="左画像(枠付)" id="${sectionId}">
     <div class="c-wrapper"><div class="article-box">${block.type === "textPhotoRight" ? `${text}${photo}` : `${photo}${text}`}</div></div>
@@ -3680,6 +3699,17 @@ exports.deleteUserByAdmin = onCall(async (request) => {
           map.set(url, name);
           files.push({ name, bytes: image.bytes });
         });
+        (page.extraBlocks || []).forEach((block) => {
+          (block.photoUrls || []).forEach((url) => {
+            if (!isDataImageUrl(url) || map.has(url)) return;
+            const image = dataUrlToBytes(url);
+            if (!image) return;
+            const ext = imageExtensionFromMime(image.mime);
+            const name = `images/block-photo-${files.length + 1}.${ext}`;
+            map.set(url, name);
+            files.push({ name, bytes: image.bytes });
+          });
+        });
       });
       return { map, files };
     }
@@ -3729,7 +3759,11 @@ exports.deleteUserByAdmin = onCall(async (request) => {
       return {
         ...page,
         headerPhotoUrl: imageMap.get(page.headerPhotoUrl || "") || page.headerPhotoUrl || "",
-        photoUrls: (page.photoUrls || ["", "", ""]).map((url) => imageMap.get(url) || url)
+        photoUrls: (page.photoUrls || ["", "", ""]).map((url) => imageMap.get(url) || url),
+        extraBlocks: (page.extraBlocks || []).map((block) => ({
+          ...block,
+          photoUrls: (block.photoUrls || ["", "", ""]).map((url) => imageMap.get(url) || url)
+        }))
       };
     }
 
@@ -4181,6 +4215,16 @@ functions/index.js にCloud Functionsの雛形を入れています。
         els.linkFileInput.click();
         return;
       }
+      const photoButton = event.target.closest("[data-choose-block-photo]");
+      if (photoButton) {
+        event.preventDefault();
+        event.stopPropagation();
+        const [indexText, slotText] = photoButton.dataset.chooseBlockPhoto.split(":");
+        state.pendingBlockPhotoTarget = { blockIndex: Number(indexText), slotIndex: Number(slotText) || 0 };
+        els.blockPhotoInput.value = "";
+        els.blockPhotoInput.click();
+        return;
+      }
       const moveButton = event.target.closest("[data-move-block]");
       if (moveButton) {
         event.preventDefault();
@@ -4206,6 +4250,29 @@ functions/index.js にCloud Functionsの雛形を入れています。
       }
       renderAddedBlocks();
       render(true);
+    });
+
+    els.blockPhotoInput.addEventListener("change", async () => {
+      const file = els.blockPhotoInput.files?.[0];
+      const target = state.pendingBlockPhotoTarget;
+      state.pendingBlockPhotoTarget = null;
+      if (!file || !target) return;
+      const block = state.extraBlocks[target.blockIndex];
+      if (!block) return;
+      try {
+        els.status.textContent = "写真をホームページ用に軽くしています";
+        const compressed = await compressImageForHomepage(file);
+        block.photoUrls = block.photoUrls || ["", "", ""];
+        block.photoUrls[target.slotIndex || 0] = compressed.dataUrl;
+        state.activeBlockId = block.id;
+        renderAddedBlocks();
+        render(true);
+        els.status.textContent = `写真を入れました（${formatBytes(file.size)} → ${formatBytes(compressed.compressedSize)}）`;
+      } catch (error) {
+        els.status.textContent = "写真を読み込めませんでした";
+      } finally {
+        els.blockPhotoInput.value = "";
+      }
     });
 
     els.linkFileInput.addEventListener("change", async () => {
