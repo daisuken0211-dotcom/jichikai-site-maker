@@ -494,6 +494,17 @@
       return elements.secret.value.trim();
     }
 
+    function adminErrorMessage(reason) {
+      const messages = {
+        unauthorized: "管理者用秘密キーが違うか、入力されていません。admin-secret.local.txt の内容を入れてください。",
+        empty_code: "利用コードが空欄です。自動生成を押してください。",
+        invalid_code: "利用コードが見つかりません。",
+        method_not_allowed: "通信方法が正しくありません。",
+        not_found: "管理APIのURLが見つかりません。"
+      };
+      return messages[reason] || reason || "処理に失敗しました。";
+    }
+
     async function postAdmin(path, body = {}) {
       if (!secretValue()) throw new Error("管理者用秘密キーを入力してください。");
       const response = await fetch(`${API_BASE}${path}`, {
@@ -506,7 +517,7 @@
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok || data.ok === false) {
-        throw new Error(data.reason || "処理に失敗しました。");
+        throw new Error(adminErrorMessage(data.reason));
       }
       return data;
     }
@@ -566,6 +577,10 @@
     }
 
     elements.saveSecret.addEventListener("click", () => {
+      if (!secretValue()) {
+        setStatus("管理者用秘密キーを入力してから保存してください。", true);
+        return;
+      }
       localStorage.setItem(storageKey, secretValue());
       setStatus("この端末に管理者用秘密キーを保存しました。");
     });
