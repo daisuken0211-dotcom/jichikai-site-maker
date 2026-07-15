@@ -1,0 +1,633 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>利用コード管理 | 自治会ホームページ作成ツール</title>
+  <style>
+    :root {
+      --ink: #1f2937;
+      --muted: #64748b;
+      --line: #d8e0e7;
+      --soft: #f6f8f7;
+      --green: #2f7d57;
+      --green-dark: #245f43;
+      --red: #b42318;
+      --blue: #2563eb;
+      --white: #fff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #eef3f1;
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", Meiryo, sans-serif;
+      line-height: 1.65;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      padding: 16px 22px;
+      background: rgba(255, 255, 255, 0.94);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(8px);
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: 22px;
+      color: var(--green-dark);
+    }
+
+    h2 {
+      font-size: 18px;
+      margin-bottom: 12px;
+    }
+
+    h3 {
+      font-size: 15px;
+    }
+
+    main {
+      width: min(1180px, calc(100% - 28px));
+      margin: 18px auto 34px;
+      display: grid;
+      grid-template-columns: minmax(320px, 430px) 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    section,
+    .panel {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .stack {
+      display: grid;
+      gap: 14px;
+    }
+
+    label {
+      display: grid;
+      gap: 6px;
+      font-weight: 800;
+      color: #334155;
+    }
+
+    input,
+    select,
+    textarea,
+    button {
+      font: inherit;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      min-height: 44px;
+      border: 2px solid var(--line);
+      border-radius: 8px;
+      padding: 9px 11px;
+      background: #fff;
+      color: var(--ink);
+    }
+
+    textarea {
+      min-height: 136px;
+      resize: vertical;
+    }
+
+    button {
+      min-height: 44px;
+      border: 2px solid var(--green);
+      border-radius: 8px;
+      padding: 9px 13px;
+      background: var(--green);
+      color: #fff;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      color: var(--green-dark);
+      background: #f4faf6;
+      border-color: #b9d8c8;
+    }
+
+    button.danger {
+      background: var(--red);
+      border-color: var(--red);
+    }
+
+    button.blue {
+      background: var(--blue);
+      border-color: var(--blue);
+    }
+
+    button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .notice {
+      padding: 10px 12px;
+      border: 1px solid #bfd8c8;
+      border-radius: 8px;
+      color: var(--green-dark);
+      background: #f4faf6;
+      font-weight: 800;
+    }
+
+    .notice.error {
+      border-color: #f0b8b2;
+      color: var(--red);
+      background: #fff5f5;
+    }
+
+    .tiny {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .code-box {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: center;
+      padding: 10px;
+      background: var(--soft);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .code-value {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 20px;
+      font-weight: 900;
+      overflow-wrap: anywhere;
+      color: var(--green-dark);
+    }
+
+    .code-list {
+      display: grid;
+      gap: 10px;
+      max-height: calc(100vh - 178px);
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .code-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      display: grid;
+      gap: 8px;
+      background: #fff;
+    }
+
+    .code-card.disabled {
+      opacity: 0.68;
+      background: #f8fafc;
+    }
+
+    .card-head {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: start;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 26px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: #e8f3ed;
+      color: var(--green-dark);
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .pill.off {
+      color: #475569;
+      background: #e2e8f0;
+    }
+
+    .pill.expired {
+      color: var(--red);
+      background: #fff0ee;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 12px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .secret-line {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: end;
+    }
+
+    @media (max-width: 860px) {
+      header,
+      main {
+        width: 100%;
+      }
+
+      header {
+        position: static;
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      main {
+        grid-template-columns: 1fr;
+        padding: 0 12px 20px;
+      }
+
+      .row,
+      .secret-line,
+      .code-box {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>利用コード管理</h1>
+      <p class="tiny">自治会ホームページ作成ツールの出力許可コードを作成・停止します。</p>
+    </div>
+    <div class="actions">
+      <a href="./" class="tiny">作成ツールへ戻る</a>
+      <button class="secondary" type="button" data-refresh>一覧を更新</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="stack">
+      <section>
+        <h2>管理者確認</h2>
+        <div class="secret-line">
+          <label>
+            管理者用秘密キー
+            <input type="password" data-admin-secret autocomplete="current-password" placeholder="admin-secret.local.txt の内容">
+          </label>
+          <button class="secondary" type="button" data-save-secret>この端末に保存</button>
+        </div>
+        <p class="tiny">秘密キーは利用者には渡しません。コード作成・停止の時だけ使います。</p>
+      </section>
+
+      <section>
+        <h2>新しいコードを作る</h2>
+        <div class="stack">
+          <div class="row">
+            <label>
+              種類
+              <select data-code-type>
+                <option value="monthly">新規・月次</option>
+                <option value="yearly">既存・年次</option>
+                <option value="free">無料許可</option>
+              </select>
+            </label>
+            <label>
+              有効期限
+              <input type="date" data-expires-date>
+            </label>
+          </div>
+
+          <label>
+            利用コード
+            <div class="code-box">
+              <span class="code-value" data-code-preview>SF-XXXXXX</span>
+              <button class="secondary" type="button" data-generate-code>自動生成</button>
+            </div>
+          </label>
+
+          <label>
+            使用者氏名・自治会名
+            <input data-customer-name placeholder="例: みどり町自治会 佐久間様">
+          </label>
+
+          <label>
+            メールアドレス
+            <input type="email" data-email placeholder="customer@example.com">
+          </label>
+
+          <label>
+            メモ
+            <input data-note placeholder="例: 2026年7月新規、紹介無料など">
+          </label>
+
+          <div class="actions">
+            <button type="button" data-register-code>コードを登録</button>
+            <button class="secondary" type="button" data-copy-mail>メール文面をコピー</button>
+          </div>
+          <p data-status class="notice" hidden></p>
+        </div>
+      </section>
+
+      <section>
+        <h2>送信用メール文面</h2>
+        <textarea data-mail-body readonly></textarea>
+      </section>
+    </div>
+
+    <section>
+      <h2>登録済みコード</h2>
+      <div class="code-list" data-code-list>
+        <p class="tiny">管理者用秘密キーを入れて「一覧を更新」を押してください。</p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const API_BASE = "https://sakuma-farm-homepage-auth.sakuma-farm-jichikai.workers.dev";
+    const APP_URL = "https://daisuken0211-dotcom.github.io/jichikai-site-maker/";
+    const storageKey = "sakumaFarmAdminSecret";
+
+    const elements = {
+      secret: document.querySelector("[data-admin-secret]"),
+      saveSecret: document.querySelector("[data-save-secret]"),
+      type: document.querySelector("[data-code-type]"),
+      expiresDate: document.querySelector("[data-expires-date]"),
+      codePreview: document.querySelector("[data-code-preview]"),
+      generateCode: document.querySelector("[data-generate-code]"),
+      customerName: document.querySelector("[data-customer-name]"),
+      email: document.querySelector("[data-email]"),
+      note: document.querySelector("[data-note]"),
+      registerCode: document.querySelector("[data-register-code]"),
+      copyMail: document.querySelector("[data-copy-mail]"),
+      mailBody: document.querySelector("[data-mail-body]"),
+      status: document.querySelector("[data-status]"),
+      refresh: document.querySelector("[data-refresh]"),
+      codeList: document.querySelector("[data-code-list]")
+    };
+
+    function pad(value) {
+      return String(value).padStart(2, "0");
+    }
+
+    function formatDateInput(date) {
+      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+    }
+
+    function endOfMonth(date = new Date()) {
+      return new Date(date.getFullYear(), date.getMonth() + 1, 0);
+    }
+
+    function oneYearLater(date = new Date()) {
+      return new Date(date.getFullYear() + 1, date.getMonth(), date.getDate());
+    }
+
+    function setStatus(message, isError = false) {
+      elements.status.hidden = false;
+      elements.status.textContent = message;
+      elements.status.classList.toggle("error", isError);
+    }
+
+    function randomPart(length = 6) {
+      const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      const bytes = new Uint8Array(length);
+      crypto.getRandomValues(bytes);
+      return Array.from(bytes, (byte) => alphabet[byte % alphabet.length]).join("");
+    }
+
+    function codePrefix() {
+      const now = new Date();
+      if (elements.type.value === "yearly") return `SF-Y${now.getFullYear()}`;
+      if (elements.type.value === "free") return "SF-FREE";
+      return `SF-${now.getFullYear()}${pad(now.getMonth() + 1)}`;
+    }
+
+    function generateCode() {
+      elements.codePreview.textContent = `${codePrefix()}-${randomPart(5)}`;
+      updateMailBody();
+    }
+
+    function setDefaultExpiry() {
+      const now = new Date();
+      if (elements.type.value === "yearly") {
+        elements.expiresDate.value = formatDateInput(oneYearLater(now));
+      } else if (elements.type.value === "free") {
+        elements.expiresDate.value = "";
+      } else {
+        elements.expiresDate.value = formatDateInput(endOfMonth(now));
+      }
+      generateCode();
+    }
+
+    function expiryIso() {
+      if (!elements.expiresDate.value) return "";
+      return `${elements.expiresDate.value}T23:59:59+09:00`;
+    }
+
+    function codeTypeLabel(type = elements.type.value) {
+      if (type === "yearly") return "年次";
+      if (type === "free") return "無料";
+      return "月次";
+    }
+
+    function buildPayload() {
+      return {
+        code: elements.codePreview.textContent.trim(),
+        type: elements.type.value,
+        customerName: elements.customerName.value.trim(),
+        email: elements.email.value.trim(),
+        note: elements.note.value.trim(),
+        expiresAt: expiryIso(),
+        enabled: true
+      };
+    }
+
+    function updateMailBody() {
+      const payload = buildPayload();
+      const name = payload.customerName || "ご利用者様";
+      const expires = payload.expiresAt ? `${elements.expiresDate.value} まで` : "期限なし";
+      elements.mailBody.value = `${name}\n\n自治会ホームページ作成ツールの利用コードをお送りします。\n\n利用コード: ${payload.code}\n有効期限: ${expires}\n\n作成ツールはこちらです。\n${APP_URL}\n\n出力・保存を押したときに、この利用コードを入力してください。\n一度入力した端末では、期限まで再入力は不要です。\n\nSakuma Farm`;
+    }
+
+    function secretValue() {
+      return elements.secret.value.trim();
+    }
+
+    async function postAdmin(path, body = {}) {
+      if (!secretValue()) throw new Error("管理者用秘密キーを入力してください。");
+      const response = await fetch(`${API_BASE}${path}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Admin-Secret": secretValue()
+        },
+        body: JSON.stringify(body)
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || data.ok === false) {
+        throw new Error(data.reason || "処理に失敗しました。");
+      }
+      return data;
+    }
+
+    function escapeHtml(value) {
+      return String(value || "").replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        "\"": "&quot;",
+        "'": "&#39;"
+      }[char]));
+    }
+
+    function renderCodes(codes) {
+      if (!codes.length) {
+        elements.codeList.innerHTML = '<p class="tiny">登録済みコードはまだありません。</p>';
+        return;
+      }
+
+      elements.codeList.innerHTML = codes.map((item) => {
+        const status = item.expired ? "期限切れ" : item.enabled ? "有効" : "停止";
+        const pillClass = item.expired ? "expired" : item.enabled ? "" : "off";
+        const disabledClass = item.enabled ? "" : " disabled";
+        const expires = item.expiresAt ? item.expiresAt.replace("T", " ").replace("+09:00", "") : "期限なし";
+        return `
+          <article class="code-card${disabledClass}">
+            <div class="card-head">
+              <div>
+                <div class="code-value">${escapeHtml(item.code)}</div>
+                <div class="meta">
+                  <span>${escapeHtml(codeTypeLabel(item.type))}</span>
+                  <span>${escapeHtml(item.customerName || "名前未設定")}</span>
+                  <span>${escapeHtml(item.email || "メール未設定")}</span>
+                </div>
+              </div>
+              <span class="pill ${pillClass}">${status}</span>
+            </div>
+            <div class="meta">
+              <span>期限: ${escapeHtml(expires)}</span>
+              <span>${escapeHtml(item.note || "")}</span>
+            </div>
+            <div class="actions">
+              <button class="secondary" type="button" data-load-code="${escapeHtml(item.code)}">メール文面を作る</button>
+              <button class="danger" type="button" data-disable-code="${escapeHtml(item.code)}" ${item.enabled ? "" : "disabled"}>停止</button>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    async function refreshCodes() {
+      elements.codeList.innerHTML = '<p class="tiny">読み込み中です。</p>';
+      const data = await postAdmin("/admin/list-codes");
+      renderCodes(data.codes || []);
+      setStatus("登録済みコードを読み込みました。");
+    }
+
+    elements.saveSecret.addEventListener("click", () => {
+      localStorage.setItem(storageKey, secretValue());
+      setStatus("この端末に管理者用秘密キーを保存しました。");
+    });
+
+    elements.type.addEventListener("change", setDefaultExpiry);
+    elements.expiresDate.addEventListener("input", updateMailBody);
+    elements.customerName.addEventListener("input", updateMailBody);
+    elements.email.addEventListener("input", updateMailBody);
+    elements.note.addEventListener("input", updateMailBody);
+    elements.generateCode.addEventListener("click", generateCode);
+
+    elements.registerCode.addEventListener("click", async () => {
+      try {
+        const payload = buildPayload();
+        if (!payload.code || payload.code === "SF-XXXXXX") generateCode();
+        await postAdmin("/admin/upsert-code", buildPayload());
+        setStatus("利用コードを登録しました。メール文面をコピーして利用者へ送れます。");
+        await refreshCodes();
+      } catch (error) {
+        setStatus(error.message || "登録に失敗しました。", true);
+      }
+    });
+
+    elements.copyMail.addEventListener("click", async () => {
+      updateMailBody();
+      await navigator.clipboard.writeText(elements.mailBody.value);
+      setStatus("メール文面をコピーしました。");
+    });
+
+    elements.refresh.addEventListener("click", async () => {
+      try {
+        await refreshCodes();
+      } catch (error) {
+        setStatus(error.message || "一覧取得に失敗しました。", true);
+      }
+    });
+
+    elements.codeList.addEventListener("click", async (event) => {
+      const disableButton = event.target.closest("[data-disable-code]");
+      const loadButton = event.target.closest("[data-load-code]");
+
+      if (loadButton) {
+        elements.codePreview.textContent = loadButton.dataset.loadCode;
+        updateMailBody();
+        setStatus("選択したコードのメール文面を作りました。");
+      }
+
+      if (disableButton) {
+        if (!confirm(`${disableButton.dataset.disableCode} を停止しますか？`)) return;
+        try {
+          await postAdmin("/admin/disable-code", { code: disableButton.dataset.disableCode });
+          setStatus("利用コードを停止しました。");
+          await refreshCodes();
+        } catch (error) {
+          setStatus(error.message || "停止に失敗しました。", true);
+        }
+      }
+    });
+
+    elements.secret.value = localStorage.getItem(storageKey) || "";
+    setDefaultExpiry();
+    updateMailBody();
+  </script>
+</body>
+</html>
