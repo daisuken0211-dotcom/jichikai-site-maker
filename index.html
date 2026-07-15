@@ -2034,6 +2034,29 @@ ${buildPreviewHtml()}
 </html>`;
     }
 
+    function sakumaFarmCreditHtml() {
+      return `<footer id="sakuma-farm-credit" style="margin:32px auto 0;padding:14px 16px;border-top:1px solid #d8e0e7;text-align:center;color:#64748b;font:14px/1.6 -apple-system,BlinkMacSystemFont,'Hiragino Sans','Yu Gothic',Meiryo,sans-serif;background:#f8fafc;">
+  Created by Sakuma Farm | <a href="https://daisuken0211-dotcom.github.io/jichikai-site-maker/" target="_blank" rel="noopener" style="color:#245f43;font-weight:700;text-decoration:underline;">自治会ホームページ作成ツール</a>
+</footer>
+<script>
+(function(){
+  var credit = '<footer id="sakuma-farm-credit" style="margin:32px auto 0;padding:14px 16px;border-top:1px solid #d8e0e7;text-align:center;color:#64748b;font:14px/1.6 -apple-system,BlinkMacSystemFont,\\'Hiragino Sans\\',\\'Yu Gothic\\',Meiryo,sans-serif;background:#f8fafc;">Created by Sakuma Farm | <a href="https://daisuken0211-dotcom.github.io/jichikai-site-maker/" target="_blank" rel="noopener" style="color:#245f43;font-weight:700;text-decoration:underline;">自治会ホームページ作成ツール</a></footer>';
+  function ensureCredit(){
+    if (!document.getElementById('sakuma-farm-credit')) {
+      document.body.insertAdjacentHTML('beforeend', credit);
+    }
+  }
+  ensureCredit();
+  setInterval(ensureCredit, 2000);
+})();
+<\/script>`;
+    }
+
+    function applySakumaFarmCredit(html) {
+      if (!html || html.includes("sakuma-farm-credit")) return html;
+      return html.replace("</body>", `${sakumaFarmCreditHtml()}\n</body>`);
+    }
+
     function buildExportCss() {
       const theme = currentTheme();
       return `body {
@@ -3241,15 +3264,83 @@ exports.deleteUserByAdmin = onCall(async (request) => {
       };
     }
 
-    function downloadZip() {
+    function accessStorageKey() {
+      return "sakumaFarmHomepageAccess";
+    }
+
+    function endOfYear(year) {
+      return new Date(year, 11, 31, 23, 59, 59).getTime();
+    }
+
+    function endOfMonth(year, monthIndex) {
+      return new Date(year, monthIndex + 1, 0, 23, 59, 59).getTime();
+    }
+
+    function validAccessCodes() {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      return [
+        { code: `SAKUMA-${year}`, type: "yearly", expiresAt: endOfYear(year) },
+        { code: `SAKUMA-${year}${month}`, type: "monthly", expiresAt: endOfMonth(year, now.getMonth()) },
+        { code: "SAKUMA-FREE", type: "free", expiresAt: endOfYear(year) }
+      ];
+    }
+
+    function licensedAccess() {
+      try {
+        const data = JSON.parse(localStorage.getItem(accessStorageKey()) || "null");
+        return data && data.expiresAt && data.expiresAt > Date.now() ? data : null;
+      } catch {
+        return null;
+      }
+    }
+
+    function verifyAccessCode(code) {
+      const normalized = String(code || "").trim().toUpperCase();
+      return validAccessCodes().find((item) => item.code === normalized) || null;
+    }
+
+    function saveLicensedAccess(access) {
+      localStorage.setItem(accessStorageKey(), JSON.stringify({
+        type: access.type,
+        expiresAt: access.expiresAt,
+        checkedAt: Date.now()
+      }));
+    }
+
+    function exportModeOrCancel() {
+      if (licensedAccess()) return "licensed";
+      const code = prompt("利用コードを入力してください。\n\nコードがない場合は、空欄のままOKを押すと「Created by Sakuma Farm」入りで保存できます。");
+      if (code === null) return null;
+      if (!code.trim()) return "branded";
+      const access = verifyAccessCode(code);
+      if (!access) {
+        alert("利用コードが違います。もう一度お試しください。コードなしで保存する場合は空欄のままOKを押してください。");
+        return null;
+      }
+      saveLicensedAccess(access);
+      els.status.textContent = "利用コードを確認しました。次回からこのPCでは入力不要です";
+      return "licensed";
+    }
+
+    function contentForExportMode(content, mode) {
+      return mode === "branded" ? applySakumaFarmCredit(content) : content;
+    }
+
+    function downloadZip(mode = "licensed") {
       render();
       const exportFiles = buildPageHtmlFiles();
-      const pageFiles = exportFiles.pageFiles;
+      const pageFiles = exportFiles.pageFiles.map((file) => ({
+        ...file,
+        content: contentForExportMode(file.content, mode)
+      }));
       const readme = `自治会ホームページ一式
 
 index.html と styles.css を同じフォルダに置くと表示できます。
 写真をPCフォルダーから選んだ場合は、images フォルダーに写真が入ります。
 HTML内には写真そのものを埋め込まず、images/photo-1.jpg のようなリンクにしています。
+利用コードなしで保存した場合は、ページ下部に Created by Sakuma Farm のリンクが入ります。
 2ページ目以降がある場合は page-2.html、page-3.html のように入っています。
 各ページ上部または左側のリンクバーからページ移動できます。
 peraichi-like.html は、ペライチ風の単体HTMLです。
@@ -3276,7 +3367,7 @@ functions/index.js にCloud Functionsの雛形を入れています。
         ...pageFiles,
         ...exportFiles.imageFiles,
         { name: "styles.css", content: state.css },
-        { name: "peraichi-like.html", content: replaceContentImageUrls(state.blockHtml, exportFiles.imageMap) },
+        { name: "peraichi-like.html", content: contentForExportMode(replaceContentImageUrls(state.blockHtml, exportFiles.imageMap), mode) },
         { name: "auth-sample.html", content: buildAuthSampleHtml() },
         { name: "auth-app.js", content: buildAuthAppJs() },
         { name: "admin.html", content: buildAdminSampleHtml() },
@@ -3297,19 +3388,35 @@ functions/index.js にCloud Functionsの雛形を入れています。
       els.status.textContent = "ZIPを保存しました";
     }
 
-    function currentCode() {
+    function currentCode(mode = "licensed") {
       if (state.activeTab === "css") return { filename: "styles.css", text: state.css };
-      if (state.activeTab === "blockHtml") return { filename: "peraichi-like.html", text: state.blockHtml };
-      return { filename: "index.html", text: state.html };
+      if (state.activeTab === "blockHtml") return { filename: "peraichi-like.html", text: contentForExportMode(state.blockHtml, mode) };
+      return { filename: "index.html", text: contentForExportMode(state.html, mode) };
+    }
+
+    function requestedExportMode() {
+      const mode = exportModeOrCancel();
+      if (!mode) els.status.textContent = "出力をキャンセルしました";
+      return mode;
     }
 
     document.getElementById("generateBtn").addEventListener("click", render);
-    document.getElementById("copyHtmlBtn").addEventListener("click", () => copyText(currentCode().text));
+    document.getElementById("copyHtmlBtn").addEventListener("click", () => {
+      const mode = requestedExportMode();
+      if (!mode) return;
+      copyText(currentCode(mode).text);
+    });
     document.getElementById("downloadHtmlBtn").addEventListener("click", () => {
-      const code = currentCode();
+      const mode = requestedExportMode();
+      if (!mode) return;
+      const code = currentCode(mode);
       download(code.filename, code.text);
     });
-    document.getElementById("downloadZipBtn").addEventListener("click", downloadZip);
+    document.getElementById("downloadZipBtn").addEventListener("click", () => {
+      const mode = requestedExportMode();
+      if (!mode) return;
+      downloadZip(mode);
+    });
     els.themeSelect.addEventListener("change", () => {
       applyTheme(els.themeSelect.value);
       render();
