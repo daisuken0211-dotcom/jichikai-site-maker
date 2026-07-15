@@ -155,6 +155,11 @@
       color: var(--ink);
     }
 
+    input[type="checkbox"] {
+      width: auto;
+      margin-right: 6px;
+    }
+
     textarea {
       min-height: 82px;
       resize: vertical;
@@ -250,7 +255,7 @@
 
     .photo-slot-row {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 4px;
     }
 
@@ -482,6 +487,14 @@
       padding: 30px;
     }
 
+    .site-preview.has-header-photo:not(.t-blank) header {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(rgba(232, 243, 237, .86), rgba(232, 243, 237, .9)), var(--header-photo), var(--soft-green);
+      background-size: cover;
+      background-position: center;
+    }
+
     .site-preview nav {
       display: flex;
       gap: 10px;
@@ -653,10 +666,18 @@
 
     .site-preview.heading-line h2 {
       border-left: 0;
-      border-top: 3px solid var(--green);
       border-bottom: 1px solid var(--line);
       color: var(--green-dark);
       padding: 8px 0;
+      position: relative;
+    }
+
+    .site-preview.heading-line h2::before {
+      content: "";
+      display: block;
+      height: 3px;
+      margin-bottom: 8px;
+      background: var(--green);
     }
 
     .site-preview.heading-band h2 {
@@ -855,10 +876,18 @@
 
     .site-preview.t-magazine h2 {
       border-left: 0;
-      border-top: 3px solid var(--green);
       border-bottom: 1px solid var(--line);
       padding: 8px 0;
       text-align: center;
+      position: relative;
+    }
+
+    .site-preview.t-magazine h2::before {
+      content: "";
+      display: block;
+      height: 3px;
+      margin-bottom: 8px;
+      background: var(--green);
     }
 
     .site-preview.heading-simple h2 {
@@ -1063,6 +1092,13 @@
             <option value="line">上下線で見出し</option>
             <option value="band">色付き帯で見出し</option>
           </select>
+          <label>
+            <input id="headerPhotoEnabled" type="checkbox">
+            上の帯に専用写真を薄く表示
+          </label>
+          <button class="btn secondary" id="chooseHeaderPhotoBtn" type="button">帯写真をファイルから選ぶ</button>
+          <input id="headerPhotoInput" type="file" accept="image/*" hidden>
+          <input id="headerPhotoUrl" placeholder="帯写真URL または下の写真一覧から帯写真を選択">
         </div>
 
         <div class="section-box">
@@ -1195,6 +1231,7 @@
       isLoadingPage: false,
       themeId: "green",
       headingStyle: "simple",
+      headerPhotoEnabled: false,
       activeBlockId: "",
       activeNoticeIndex: -1,
       isPreviewRendering: false,
@@ -1263,6 +1300,10 @@
       navPosition: document.getElementById("navPosition"),
       themeSelect: document.getElementById("themeSelect"),
       headingStyleSelect: document.getElementById("headingStyleSelect"),
+      headerPhotoEnabled: document.getElementById("headerPhotoEnabled"),
+      chooseHeaderPhotoBtn: document.getElementById("chooseHeaderPhotoBtn"),
+      headerPhotoInput: document.getElementById("headerPhotoInput"),
+      headerPhotoUrl: document.getElementById("headerPhotoUrl"),
       themeSwatches: document.getElementById("themeSwatches"),
       saveProjectBtn: document.getElementById("saveProjectBtn"),
       loadProjectBtn: document.getElementById("loadProjectBtn"),
@@ -1376,6 +1417,7 @@
         slug: "",
         siteName,
         catchText: options.catchText || "行事、活動、広報誌、回覧板を見やすくまとめてお知らせします。",
+        headerPhotoUrl: "",
         photoUrls: ["", "", ""],
         templateId: options.templateId || "blank",
         customHeading: options.customHeading || "",
@@ -1541,6 +1583,14 @@
       els.headingStyleSelect.value = state.headingStyle;
     }
 
+    function headerPhotoEnabled() {
+      return Boolean(els.headerPhotoEnabled.checked && headerPhotoUrl());
+    }
+
+    function headerPhotoUrl() {
+      return String(els.headerPhotoUrl.value || "").trim();
+    }
+
     function readFileAsDataUrl(file) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -1620,6 +1670,7 @@
           <div class="photo-choice-name">${escapeHtml(photo.name)}</div>
           <div class="photo-choice-meta">${formatBytes(photo.originalSize)} → ${formatBytes(photo.compressedSize)} / ${photo.width}×${photo.height}</div>
           <div class="photo-slot-row">
+            <button type="button" data-use-header-photo="${index}">帯写真</button>
             <button type="button" data-use-local-photo="${index}:0">写真1</button>
             <button type="button" data-use-local-photo="${index}:1">写真2</button>
             <button type="button" data-use-local-photo="${index}:2">写真3</button>
@@ -1665,6 +1716,13 @@
       render();
     }
 
+    function setHeaderPhoto(dataUrl) {
+      els.headerPhotoUrl.value = dataUrl;
+      els.headerPhotoEnabled.checked = true;
+      state.headerPhotoEnabled = true;
+      render();
+    }
+
     function slugForPage(index) {
       return index === 0 ? "index.html" : `page-${index + 1}.html`;
     }
@@ -1675,6 +1733,7 @@
         slug: slugForPage(index),
         siteName,
         catchText: "住みよいまちづくりのために、地域の情報をわかりやすくお届けします。",
+        headerPhotoUrl: "",
         photoUrls: ["", "", ""],
         templateId: "blank",
         customHeading: "",
@@ -1702,6 +1761,7 @@
         slug: slugForPage(state.currentPageIndex),
         siteName: els.siteName.value,
         catchText: els.catchText.value,
+        headerPhotoUrl: els.headerPhotoUrl.value,
         photoUrls: [els.photoUrl1.value, els.photoUrl2.value, els.photoUrl3.value],
         templateId: els.templateSelect.value,
         customHeading: els.customHeading.value,
@@ -1724,6 +1784,7 @@
         version: 1,
         themeId: state.themeId,
         headingStyle: state.headingStyle,
+        headerPhotoEnabled: els.headerPhotoEnabled.checked,
         navPosition: els.navPosition.value,
         currentPageIndex: state.currentPageIndex,
         pages: cloneData(state.pages)
@@ -1737,6 +1798,8 @@
       }
       state.themeId = themes[data.themeId] ? data.themeId : "green";
       state.headingStyle = ["simple", "line", "band"].includes(data.headingStyle) ? data.headingStyle : "simple";
+      state.headerPhotoEnabled = Boolean(data.headerPhotoEnabled);
+      els.headerPhotoEnabled.checked = state.headerPhotoEnabled;
       els.navPosition.value = data.navPosition === "left" ? "left" : "top";
       state.pages = cloneData(data.pages);
       state.currentPageIndex = Math.min(Math.max(Number(data.currentPageIndex) || 0, 0), state.pages.length - 1);
@@ -1752,6 +1815,7 @@
       els.pageTitle.value = page.title || "ホーム";
       els.siteName.value = page.siteName || "みどり町自治会";
       els.catchText.value = page.catchText || "";
+      els.headerPhotoUrl.value = page.headerPhotoUrl || "";
       els.photoUrl1.value = page.photoUrls?.[0] || "";
       els.photoUrl2.value = page.photoUrls?.[1] || "";
       els.photoUrl3.value = page.photoUrls?.[2] || "";
@@ -1796,7 +1860,7 @@
       const template = currentTemplate();
       const blockTypes = state.extraBlocks.map((block) => block.type);
       const isBlank = template.id === "blank";
-      const needsPhoto = !isBlank || blockTypes.some((type) => ["photo", "photoTextLeft", "textPhotoRight"].includes(type));
+      const needsPhoto = headerPhotoEnabled() || !isBlank || blockTypes.some((type) => ["photo", "photoTextLeft", "textPhotoRight"].includes(type));
       const needsNotices = !isBlank || blockTypes.some((type) => ["recentInfo", "newsCards", "newsTable"].includes(type));
       const needsSchedule = !isBlank;
       const needsContact = !isBlank;
@@ -2170,9 +2234,12 @@
     function buildExportHtml() {
       const title = escapeHtml(`${els.siteName.value || "自治会ホームページ"} - ${els.pageTitle.value || "ホーム"}`);
       const template = currentTemplate();
+      const hasHeaderPhoto = headerPhotoEnabled();
       const photoUrl = escapeHtml(primaryPhotoUrl() || placeholderPhoto());
+      const headerUrl = escapeHtml(headerPhotoUrl() || placeholderPhoto());
       const navClass = els.navPosition.value === "left" ? "nav-left" : "nav-top";
       const headingClass = `heading-${currentHeadingStyle()}`;
+      const headerPhotoClass = hasHeaderPhoto ? "has-header-photo" : "";
       return `<!doctype html>
 <html lang="ja">
 <head>
@@ -2181,7 +2248,7 @@
   <title>${title}</title>
   <link rel="stylesheet" href="styles.css">
 </head>
-<body class="${template.className} ${navClass} ${headingClass}" style="--preview-photo: url('${photoUrl}');">
+<body class="${template.className} ${navClass} ${headingClass} ${headerPhotoClass}" style="--preview-photo: url('${photoUrl}'); --header-photo: url('${headerUrl}');">
 ${buildPreviewHtml()}
 </body>
 </html>`;
@@ -2224,6 +2291,14 @@ header {
   background: #e8f3ed;
   border-bottom: 1px solid #c7dfd2;
   padding: 40px min(6vw, 56px);
+}
+
+body.has-header-photo:not(.t-blank) header {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(rgba(232,243,237,.86), rgba(232,243,237,.9)), var(--header-photo), #e8f3ed;
+  background-size: cover;
+  background-position: center;
 }
 
 nav {
@@ -2309,10 +2384,18 @@ h2 {
 
 body.heading-line h2 {
   border-left: 0;
-  border-top: 3px solid #2f7d57;
   border-bottom: 1px solid #d8e0e7;
   color: #245f43;
   padding: 8px 0;
+  position: relative;
+}
+
+body.heading-line h2::before {
+  content: "";
+  display: block;
+  height: 3px;
+  margin-bottom: 8px;
+  background: #2f7d57;
 }
 
 body.heading-band h2 {
@@ -2578,10 +2661,18 @@ main > .block-half {
 
 .t-magazine h2 {
   border-left: 0;
-  border-top: 3px solid #2f7d57;
   border-bottom: 1px solid #d8e0e7;
   padding: 8px 0;
   text-align: center;
+  position: relative;
+}
+
+.t-magazine h2::before {
+  content: "";
+  display: block;
+  height: 3px;
+  margin-bottom: 8px;
+  background: #2f7d57;
 }
 
 body.heading-simple h2 {
@@ -3268,13 +3359,16 @@ exports.deleteUserByAdmin = onCall(async (request) => {
       saveCurrentPage();
       const template = currentTemplate();
       const previewPhoto = escapeHtml(primaryPhotoUrl() || placeholderPhoto());
+      const headerPhoto = escapeHtml(headerPhotoUrl() || placeholderPhoto());
+      const headerPhotoClass = headerPhotoEnabled() ? "has-header-photo" : "";
       updateVisibleInputs();
       renderPageTabs();
       state.html = buildExportHtml();
       state.css = buildExportCss();
       state.blockHtml = buildPeraichiLikeHtml();
-      els.preview.className = `site-preview ${template.className} ${els.navPosition.value === "left" ? "nav-left" : "nav-top"} heading-${currentHeadingStyle()}`;
+      els.preview.className = `site-preview ${template.className} ${els.navPosition.value === "left" ? "nav-left" : "nav-top"} heading-${currentHeadingStyle()} ${headerPhotoClass}`;
       els.preview.style.setProperty("--preview-photo", `url('${previewPhoto}')`);
+      els.preview.style.setProperty("--header-photo", `url('${headerPhoto}')`);
       state.isPreviewRendering = true;
       els.preview.innerHTML = buildPreviewHtml();
       state.isPreviewRendering = false;
@@ -3370,6 +3464,16 @@ exports.deleteUserByAdmin = onCall(async (request) => {
       const map = new Map();
       const files = [];
       state.pages.forEach((page) => {
+        const headerUrl = page.headerPhotoUrl || "";
+        if (isDataImageUrl(headerUrl) && !map.has(headerUrl)) {
+          const image = dataUrlToBytes(headerUrl);
+          if (image) {
+            const ext = imageExtensionFromMime(image.mime);
+            const name = `images/header-${files.length + 1}.${ext}`;
+            map.set(headerUrl, name);
+            files.push({ name, bytes: image.bytes });
+          }
+        }
         (page.photoUrls || []).forEach((url) => {
           if (!isDataImageUrl(url) || map.has(url)) return;
           const image = dataUrlToBytes(url);
@@ -3386,6 +3490,7 @@ exports.deleteUserByAdmin = onCall(async (request) => {
     function replacePageDataImageUrls(page, imageMap) {
       return {
         ...page,
+        headerPhotoUrl: imageMap.get(page.headerPhotoUrl || "") || page.headerPhotoUrl || "",
         photoUrls: (page.photoUrls || ["", "", ""]).map((url) => imageMap.get(url) || url)
       };
     }
@@ -3626,6 +3731,21 @@ functions/index.js にCloud Functionsの雛形を入れています。
         els.projectFileInput.value = "";
       }
     });
+    els.chooseHeaderPhotoBtn.addEventListener("click", () => els.headerPhotoInput.click());
+    els.headerPhotoInput.addEventListener("change", async () => {
+      const file = els.headerPhotoInput.files?.[0];
+      if (!file) return;
+      try {
+        els.status.textContent = "帯写真をホームページ用に軽くしています";
+        const compressed = await compressImageForHomepage(file);
+        setHeaderPhoto(compressed.dataUrl);
+        els.status.textContent = `帯写真を入れました（${formatBytes(file.size)} → ${formatBytes(compressed.compressedSize)}）`;
+      } catch (error) {
+        els.status.textContent = "帯写真を読み込めませんでした";
+      } finally {
+        els.headerPhotoInput.value = "";
+      }
+    });
     els.choosePhotoFolderBtn.addEventListener("click", () => els.photoFolderInput.click());
     els.clearPhotoLibraryBtn.addEventListener("click", () => {
       state.localPhotos = [];
@@ -3637,6 +3757,14 @@ functions/index.js にCloud Functionsの雛形を入れています。
       els.photoFolderInput.value = "";
     });
     els.photoLibrary.addEventListener("click", (event) => {
+      const headerButton = event.target.closest("[data-use-header-photo]");
+      if (headerButton) {
+        const photo = state.localPhotos[Number(headerButton.dataset.useHeaderPhoto)];
+        if (!photo) return;
+        setHeaderPhoto(photo.dataUrl);
+        els.status.textContent = "帯写真に写真を入れました";
+        return;
+      }
       const button = event.target.closest("[data-use-local-photo]");
       if (!button) return;
       const [photoIndexText, slotIndexText] = button.dataset.useLocalPhoto.split(":");
@@ -3648,6 +3776,8 @@ functions/index.js にCloud Functionsの雛形を入れています。
     document.getElementById("sampleBtn").addEventListener("click", () => {
       els.siteName.value = "さくら台自治会";
       els.catchText.value = "地域の行事、防災、回覧板のお知らせをまとめて掲載しています。";
+      els.headerPhotoUrl.value = "";
+      els.headerPhotoEnabled.checked = false;
       els.photoUrl1.value = "";
       els.photoUrl2.value = "";
       els.photoUrl3.value = "";
