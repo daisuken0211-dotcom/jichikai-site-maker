@@ -1200,6 +1200,11 @@
       localPhotos: []
     };
 
+    const accessCodeConfig = {
+      apiUrl: "",
+      appId: "jichikai-site-maker"
+    };
+
     const templates = [
       { id: "blank", name: "1. 白紙", note: "自治会名だけ表示", className: "t-blank" },
       { id: "standard", name: "2. 標準", note: "写真上・お知らせ3枚", className: "t-standard" },
@@ -3301,6 +3306,25 @@ exports.deleteUserByAdmin = onCall(async (request) => {
       return validAccessCodes().find((item) => item.code === normalized) || null;
     }
 
+    async function verifyAccessCodeOnServer(code) {
+      if (!accessCodeConfig.apiUrl) return verifyAccessCode(code);
+      const response = await fetch(accessCodeConfig.apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code: String(code || "").trim(),
+          appId: accessCodeConfig.appId
+        })
+      });
+      if (!response.ok) throw new Error("利用コードを確認できませんでした");
+      const result = await response.json();
+      if (!result || !result.ok) return null;
+      return {
+        type: result.type || "server",
+        expiresAt: result.expiresAt ? new Date(result.expiresAt).getTime() : endOfYear(new Date().getFullYear())
+      };
+    }
+
     function saveLicensedAccess(access) {
       localStorage.setItem(accessStorageKey(), JSON.stringify({
         type: access.type,
@@ -3309,12 +3333,18 @@ exports.deleteUserByAdmin = onCall(async (request) => {
       }));
     }
 
-    function exportModeOrCancel() {
+    async function exportModeOrCancel() {
       if (licensedAccess()) return "licensed";
       const code = prompt("利用コードを入力してください。\n\nコードがない場合は、空欄のままOKを押すと「Created by Sakuma Farm」入りで保存できます。");
       if (code === null) return null;
       if (!code.trim()) return "branded";
-      const access = verifyAccessCode(code);
+      let access = null;
+      try {
+        access = await verifyAccessCodeOnServer(code);
+      } catch (error) {
+        alert("利用コードの確認サーバーに接続できませんでした。時間をおいて再度お試しください。");
+        return null;
+      }
       if (!access) {
         alert("利用コードが違います。もう一度お試しください。コードなしで保存する場合は空欄のままOKを押してください。");
         return null;
@@ -3394,26 +3424,26 @@ functions/index.js にCloud Functionsの雛形を入れています。
       return { filename: "index.html", text: contentForExportMode(state.html, mode) };
     }
 
-    function requestedExportMode() {
-      const mode = exportModeOrCancel();
+    async function requestedExportMode() {
+      const mode = await exportModeOrCancel();
       if (!mode) els.status.textContent = "出力をキャンセルしました";
       return mode;
     }
 
     document.getElementById("generateBtn").addEventListener("click", render);
-    document.getElementById("copyHtmlBtn").addEventListener("click", () => {
-      const mode = requestedExportMode();
+    document.getElementById("copyHtmlBtn").addEventListener("click", async () => {
+      const mode = await requestedExportMode();
       if (!mode) return;
       copyText(currentCode(mode).text);
     });
-    document.getElementById("downloadHtmlBtn").addEventListener("click", () => {
-      const mode = requestedExportMode();
+    document.getElementById("downloadHtmlBtn").addEventListener("click", async () => {
+      const mode = await requestedExportMode();
       if (!mode) return;
       const code = currentCode(mode);
       download(code.filename, code.text);
     });
-    document.getElementById("downloadZipBtn").addEventListener("click", () => {
-      const mode = requestedExportMode();
+    document.getElementById("downloadZipBtn").addEventListener("click", async () => {
+      const mode = await requestedExportMode();
       if (!mode) return;
       downloadZip(mode);
     });
