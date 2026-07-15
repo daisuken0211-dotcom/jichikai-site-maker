@@ -1175,6 +1175,7 @@
         <div class="section-box optional-box" id="photoBox">
           <label>写真 最大3枚</label>
           <div class="status">PCの写真は自動でホームページ用に軽くします</div>
+          <div class="status">選んだ写真・PDFはサーバーへ送信しません。この画面内で処理してZIPに入れます。</div>
           <div class="photo-actions">
             <button class="btn secondary" id="choosePhotoFolderBtn" type="button">PCの写真フォルダーを選ぶ</button>
             <button class="small-btn" id="clearPhotoLibraryBtn" type="button">一覧クリア</button>
@@ -3904,6 +3905,7 @@ index.html と styles.css を同じフォルダに置くと表示できます。
 HTML内には写真そのものを埋め込まず、images/photo-1.jpg のようなリンクにしています。
 PDFや資料ファイルをボタンから選んだ場合は、files フォルダーに入ります。
 HTML内には files/ファイル名.pdf のようなリンクにしています。
+選んだ写真やPDFは、この作成画面内だけで処理します。作成中にサーバーへアップロードして保存することはありません。
 利用コードなしで保存した場合は、ページ下部に Created by Sakuma Farm のリンクが入ります。
 2ページ目以降がある場合は page-2.html、page-3.html のように入っています。
 各ページ上部または左側のリンクバーからページ移動できます。
@@ -4195,6 +4197,15 @@ functions/index.js にCloud Functionsの雛形を入れています。
       state.activeNoticeIndex = -1;
       render();
       setTimeout(scrollActiveBlockIntoView, 0);
+      if (["photo", "photoTextLeft", "textPhotoRight"].includes(block.type)) {
+        state.pendingBlockPhotoTarget = { blockIndex: insertIndex, slotIndex: 0 };
+        els.status.textContent = "写真ブロックを追加しました。続けて写真を選んでください";
+        setTimeout(() => {
+          els.blockPhotoInput.value = "";
+          els.blockPhotoInput.click();
+        }, 0);
+        return;
+      }
       els.status.textContent = activeIndex >= 0
         ? "選んでいた部品の下に追加しました。左の上へ・下へで移動できます"
         : "一番下に追加しました。左の上へ・下へで移動できます";
