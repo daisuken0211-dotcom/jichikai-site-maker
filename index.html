@@ -4144,10 +4144,16 @@ functions/index.js にCloud Functionsの雛形を入れています。
       const button = event.target.closest("[data-add-block-type]");
       if (!button) return;
       const block = defaultBlock(button.dataset.addBlockType);
-      state.extraBlocks.push(block);
+      const activeIndex = state.extraBlocks.findIndex((item) => item.id === state.activeBlockId);
+      const insertIndex = activeIndex >= 0 ? activeIndex + 1 : state.extraBlocks.length;
+      state.extraBlocks.splice(insertIndex, 0, block);
       state.activeBlockId = block.id;
       state.activeNoticeIndex = -1;
       render();
+      setTimeout(scrollActiveBlockIntoView, 0);
+      els.status.textContent = activeIndex >= 0
+        ? "選んでいた部品の下に追加しました。左の上へ・下へで移動できます"
+        : "一番下に追加しました。左の上へ・下へで移動できます";
     });
 
     function activateAddedBlockFromEvent(event) {
