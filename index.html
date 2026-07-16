@@ -269,6 +269,15 @@
       font-weight: 900;
     }
 
+    .photo-adjust-card {
+      display: grid;
+      gap: 5px;
+      padding: 7px;
+      border: 1px solid #cbd8e3;
+      border-radius: 7px;
+      background: #ffffff;
+    }
+
     .page-tabs {
       display: flex;
       gap: 6px;
@@ -1337,7 +1346,7 @@
             </label>
           </div>
           <label>写真 拡大
-            <input id="photoZoom" type="range" min="100" max="180" value="100">
+              <input id="photoZoom" type="range" min="100" max="500" value="100">
           </label>
           <div class="photo-choice-meta">写真が表示されている場所は、プレビューでドラッグして位置を動かせます</div>
         </div>
@@ -1618,6 +1627,11 @@
         photoX: 50,
         photoY: 50,
         photoZoom: 100,
+        photoSettings: [
+          { x: 50, y: 50, zoom: 100 },
+          { x: 50, y: 50, zoom: 100 },
+          { x: 50, y: 50, zoom: 100 }
+        ],
         links: [
           { text: "PDFを見る", url: "", fileName: "" },
           { text: "", url: "", fileName: "" },
@@ -2281,11 +2295,43 @@
       };
     }
 
-    function photoStyleAttrs(block = null) {
-      if (!block) return "";
-      const x = Math.min(100, Math.max(0, Number(block.photoX ?? 50)));
-      const y = Math.min(100, Math.max(0, Number(block.photoY ?? 50)));
-      const zoom = Math.min(180, Math.max(100, Number(block.photoZoom ?? 100))) / 100;
+    function clampPhotoSetting(value, fallback, min, max) {
+      const numeric = Number(value);
+      if (!Number.isFinite(numeric)) return fallback;
+      return Math.min(max, Math.max(min, numeric));
+    }
+
+    function photoSetting(block = null, index = 0) {
+      if (!block) return null;
+      const legacy = {
+        x: clampPhotoSetting(block.photoX, 50, 0, 100),
+        y: clampPhotoSetting(block.photoY, 50, 0, 100),
+        zoom: clampPhotoSetting(block.photoZoom, 100, 100, 500)
+      };
+      const setting = block.photoSettings?.[index] || {};
+      return {
+        x: clampPhotoSetting(setting.x, legacy.x, 0, 100),
+        y: clampPhotoSetting(setting.y, legacy.y, 0, 100),
+        zoom: clampPhotoSetting(setting.zoom, legacy.zoom, 100, 500)
+      };
+    }
+
+    function ensurePhotoSettings(block) {
+      if (!block) return [];
+      const settings = [0, 1, 2].map((index) => photoSetting(block, index));
+      block.photoSettings = settings;
+      block.photoX = settings[0].x;
+      block.photoY = settings[0].y;
+      block.photoZoom = settings[0].zoom;
+      return settings;
+    }
+
+    function photoStyleAttrs(block = null, index = 0) {
+      const setting = photoSetting(block, index);
+      if (!setting) return "";
+      const x = setting.x;
+      const y = setting.y;
+      const zoom = setting.zoom / 100;
       return ` style="object-position:${x}% ${y}%; --photo-origin:${x}% ${y}%; --photo-zoom:${zoom};"`;
     }
 
@@ -2297,10 +2343,10 @@
       };
     }
 
-    function photoAdjustAttr(target = null) {
+    function photoAdjustAttr(target = null, index = 0) {
       if (!state.isPreviewRendering) return "";
-      if (target === "page") return ` data-photo-adjust-page="1"`;
-      return target?.id ? ` data-photo-adjust-block-id="${escapeHtml(target.id)}"` : "";
+      if (target === "page") return ` data-photo-adjust-page="1" data-photo-adjust-index="${index}"`;
+      return target?.id ? ` data-photo-adjust-block-id="${escapeHtml(target.id)}" data-photo-adjust-index="${index}"` : "";
     }
 
     function photoMarkup(photoUrls, siteName, adjust = null, target = "") {
@@ -2309,10 +2355,10 @@
         return `<div class="hero-photo">ここに自治会の写真が入ります</div>`;
       }
       const adjustableClass = adjust ? " is-adjustable-photo" : "";
-      const adjustAttr = target === "page" ? photoAdjustAttr("page") : photoAdjustAttr(adjust);
+      const adjustAttr = (index) => target === "page" ? photoAdjustAttr("page", index) : photoAdjustAttr(adjust, index);
       return `
         <div class="photo-gallery count-${photos.length}">
-          ${photos.map((url, index) => `<div class="hero-photo${adjustableClass}"${adjustAttr}><img src="${escapeHtml(url)}" alt="${siteName}の写真 ${index + 1}"${photoStyleAttrs(adjust)}></div>`).join("")}
+          ${photos.map((url, index) => `<div class="hero-photo${adjustableClass}"${adjustAttr(index)}><img src="${escapeHtml(url)}" alt="${siteName}の写真 ${index + 1}"${photoStyleAttrs(adjust, index)}></div>`).join("")}
         </div>
       `;
     }
@@ -2557,12 +2603,12 @@
                     <div class="block-area-title">内容</div>
                     ${needsHeading ? `<input data-block-field="${index}:heading" value="${escapeHtml(block.heading)}" placeholder="見出し">` : ""}
                     ${needsText ? `<textarea rows="1" data-block-field="${index}:text" placeholder="本文">${escapeHtml(block.text)}</textarea>` : ""}
-                    ${needsPhotoContent ? `
+                    ${needsPhotoContent ? [0, 1, 2].map((photoIndex) => `
                       <div class="photo-slot-row">
-                        <button type="button" data-choose-block-photo="${index}:0">写真を選ぶ（すぐ表示）</button>
-                        ${block.photoUrls?.[0] ? `<span class="photo-choice-meta">写真が入っています</span>` : `<span class="photo-choice-meta">未選択</span>`}
+                        <button type="button" data-choose-block-photo="${index}:${photoIndex}">写真${photoIndex + 1}を選ぶ（すぐ表示）</button>
+                        ${block.photoUrls?.[photoIndex] ? `<span class="photo-choice-meta">写真${photoIndex + 1}が入っています</span>` : `<span class="photo-choice-meta">未選択</span>`}
                       </div>
-                    ` : ""}
+                    `).join("") : ""}
                     ${needsDisasterSetup ? `
                       <div class="status">メール送信には、Cloudflare Workers / Firebase Functions などの小さなサーバー設定が別途必要です。静的HTMLだけでは送信しません。</div>
                     ` : ""}
@@ -2594,18 +2640,23 @@
                       <option value="full" ${block.width !== "half" ? "selected" : ""}>横幅いっぱい</option>
                       <option value="half" ${block.width === "half" ? "selected" : ""}>半分の幅で横並び</option>
                     </select>
-                    ${needsPhotoContent ? `
-                      <label>写真 左右
-                        <input type="range" min="0" max="100" value="${Number(block.photoX ?? 50)}" data-block-field="${index}:photoX">
-                      </label>
-                      <label>写真 上下
-                        <input type="range" min="0" max="100" value="${Number(block.photoY ?? 50)}" data-block-field="${index}:photoY">
-                      </label>
-                      <label>写真 拡大
-                        <input type="range" min="100" max="180" value="${Number(block.photoZoom ?? 100)}" data-block-field="${index}:photoZoom">
-                      </label>
-                      <div class="photo-choice-meta">プレビューの写真をドラッグしても位置を動かせます</div>
-                    ` : ""}
+                    ${needsPhotoContent ? [0, 1, 2].map((photoIndex) => {
+                      const setting = photoSetting(block, photoIndex);
+                      return `
+                        <div class="photo-adjust-card">
+                          <div class="photo-choice-meta">写真${photoIndex + 1}の位置</div>
+                          <label>左右
+                            <input type="range" min="0" max="100" value="${setting.x}" data-block-field="${index}:photoSettings.${photoIndex}.x">
+                          </label>
+                          <label>上下
+                            <input type="range" min="0" max="100" value="${setting.y}" data-block-field="${index}:photoSettings.${photoIndex}.y">
+                          </label>
+                          <label>拡大
+                            <input type="range" min="100" max="500" value="${setting.zoom}" data-block-field="${index}:photoSettings.${photoIndex}.zoom">
+                          </label>
+                        </div>
+                      `;
+                    }).join("") + `<div class="photo-choice-meta">プレビューの各写真をドラッグしても、その写真だけ位置を動かせます</div>` : ""}
                   </div>
                 </div>
               </div>
@@ -4513,6 +4564,7 @@ functions/index.js にCloud Functionsの雛形を入れています。
       const activeBlock = state.extraBlocks.find((block) => block.id === state.activeBlockId);
       if (activeBlock && ["photo", "photoTextLeft", "textPhotoRight"].includes(activeBlock.type)) {
         activeBlock.photoUrls = activeBlock.photoUrls || ["", "", ""];
+        ensurePhotoSettings(activeBlock);
         activeBlock.photoUrls[Number(slotIndexText) || 0] = photo.dataUrl;
         renderAddedBlocks();
         render(true);
@@ -4609,20 +4661,27 @@ functions/index.js にCloud Functionsの雛形を入れています。
       event.preventDefault();
       state.activeNoticeIndex = -1;
       const blockId = photo.dataset.photoAdjustBlockId;
+      const photoIndex = Math.min(2, Math.max(0, Number(photo.dataset.photoAdjustIndex) || 0));
       const block = blockId ? state.extraBlocks.find((item) => item.id === blockId) : null;
       if (blockId && !block) return;
-      if (block) state.activeBlockId = block.id;
+      if (block) {
+        state.activeBlockId = block.id;
+        ensurePhotoSettings(block);
+      }
+      const blockSetting = block ? photoSetting(block, photoIndex) : null;
       photoDragState = block
         ? {
             scope: "block",
             block,
+            photoIndex,
             startX: event.clientX,
             startY: event.clientY,
-            originalX: Number(block.photoX ?? 50),
-            originalY: Number(block.photoY ?? 50)
+            originalX: blockSetting.x,
+            originalY: blockSetting.y
           }
         : {
             scope: "page",
+            photoIndex,
             startX: event.clientX,
             startY: event.clientY,
             originalX: Number(els.photoX.value) || 50,
@@ -4642,8 +4701,13 @@ functions/index.js にCloud Functionsの雛形を入れています。
         els.photoX.value = nextX;
         els.photoY.value = nextY;
       } else {
-        photoDragState.block.photoX = nextX;
-        photoDragState.block.photoY = nextY;
+        const settings = ensurePhotoSettings(photoDragState.block);
+        settings[photoDragState.photoIndex].x = nextX;
+        settings[photoDragState.photoIndex].y = nextY;
+        photoDragState.block.photoSettings = settings;
+        photoDragState.block.photoX = settings[0].x;
+        photoDragState.block.photoY = settings[0].y;
+        photoDragState.block.photoZoom = settings[0].zoom;
       }
       render(true);
     });
@@ -4798,6 +4862,7 @@ functions/index.js にCloud Functionsの雛形を入れています。
       if (!block) return;
       const slotIndex = target.slotIndex || 0;
       block.photoUrls = block.photoUrls || ["", "", ""];
+      ensurePhotoSettings(block);
       state.activeBlockId = block.id;
       try {
         const instantDataUrl = await readFileAsDataUrl(file);
@@ -4869,6 +4934,19 @@ functions/index.js にCloud Functionsの雛形を入れています。
         block[path] = input.value;
         if (path === "textLinkUrl" && !isDataUrl(input.value)) block.textLinkFileName = "";
         if (path === "photoLinkUrl" && !isDataUrl(input.value)) block.photoLinkFileName = "";
+      } else if (path.startsWith("photoSettings.")) {
+        const [, photoIndexText, key] = path.split(".");
+        const photoIndex = Math.min(2, Math.max(0, Number(photoIndexText) || 0));
+        const settings = ensurePhotoSettings(block);
+        if (settings[photoIndex] && ["x", "y", "zoom"].includes(key)) {
+          const max = key === "zoom" ? 500 : 100;
+          const min = key === "zoom" ? 100 : 0;
+          settings[photoIndex][key] = clampPhotoSetting(input.value, settings[photoIndex][key], min, max);
+          block.photoSettings = settings;
+          block.photoX = settings[0].x;
+          block.photoY = settings[0].y;
+          block.photoZoom = settings[0].zoom;
+        }
       } else if (path.startsWith("links.")) {
         const [, linkIndexText, key] = path.split(".");
         const link = block.links[Number(linkIndexText)];
