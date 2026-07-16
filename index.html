@@ -2399,14 +2399,12 @@
       if (!block) return null;
       const legacy = {
         x: clampPhotoSetting(block.photoX, 50, 0, 100),
-        y: clampPhotoSetting(block.photoY, 50, 0, 100),
-        zoom: clampPhotoSetting(block.photoZoom, 100, 100, 500)
+        y: clampPhotoSetting(block.photoY, 50, 0, 100)
       };
       const setting = block.photoSettings?.[index] || {};
       return {
         x: clampPhotoSetting(setting.x, legacy.x, 0, 100),
-        y: clampPhotoSetting(setting.y, legacy.y, 0, 100),
-        zoom: clampPhotoSetting(setting.zoom, legacy.zoom, 100, 500)
+        y: clampPhotoSetting(setting.y, legacy.y, 0, 100)
       };
     }
 
@@ -2443,7 +2441,7 @@
       block.photoSettings = settings;
       block.photoX = settings[0].x;
       block.photoY = settings[0].y;
-      block.photoZoom = settings[0].zoom;
+      block.photoZoom = 100;
       return settings;
     }
 
@@ -2461,15 +2459,14 @@
       if (!setting) return "";
       const x = setting.x;
       const y = setting.y;
-      const zoom = setting.zoom / 100;
-      return ` style="object-position:${x}% ${y}%; --photo-origin:${x}% ${y}%; --photo-zoom:${zoom};"`;
+      return ` style="object-position:${x}% ${y}%;"`;
     }
 
     function pagePhotoSettings() {
       return {
         photoX: Number(els.photoX.value) || 50,
         photoY: Number(els.photoY.value) || 50,
-        photoZoom: Number(els.photoZoom.value) || 100
+        photoZoom: 100
       };
     }
 
@@ -2808,12 +2805,9 @@
                               <option value="100" ${snapPhotoPosition(setting.y) === 100 ? "selected" : ""}>下</option>
                             </select>
                           </label>
-                          <label>拡大縮小
-                            <input type="range" min="100" max="500" value="${setting.zoom}" data-block-field="${index}:photoSettings.${photoIndex}.zoom">
-                          </label>
                         </div>
                       `;
-                    }).join("") + `<div class="photo-choice-meta">写真を大きくした時だけ、上下左右の位置調整が見えやすくなります</div>` : ""}
+                    }).join("") : ""}
                   </div>
                 </div>
               </div>
@@ -3218,8 +3212,6 @@ main > .block-half {
   height: 100%;
   object-fit: cover;
   display: block;
-  transform: scale(var(--photo-zoom, 1));
-  transform-origin: var(--photo-origin, 50% 50%);
 }
 
 .disaster-contact-form {
@@ -4840,7 +4832,7 @@ functions/index.js にCloud Functionsの雛形を入れています。
         photoDragState.block.photoSettings = settings;
         photoDragState.block.photoX = settings[0].x;
         photoDragState.block.photoY = settings[0].y;
-        photoDragState.block.photoZoom = settings[0].zoom;
+        photoDragState.block.photoZoom = 100;
       }
       render(true);
     });
@@ -5092,15 +5084,13 @@ functions/index.js にCloud Functionsの雛形を入れています。
         const [, photoIndexText, key] = path.split(".");
         const photoIndex = Math.min(2, Math.max(0, Number(photoIndexText) || 0));
         const settings = ensurePhotoSettings(block);
-        if (settings[photoIndex] && ["x", "y", "zoom"].includes(key)) {
-          const max = key === "zoom" ? 500 : 100;
-          const min = key === "zoom" ? 100 : 0;
-          const value = clampPhotoSetting(input.value, settings[photoIndex][key], min, max);
-          settings[photoIndex][key] = key === "zoom" ? value : snapPhotoPosition(value);
+        if (settings[photoIndex] && ["x", "y"].includes(key)) {
+          const value = clampPhotoSetting(input.value, settings[photoIndex][key], 0, 100);
+          settings[photoIndex][key] = snapPhotoPosition(value);
           block.photoSettings = settings;
           block.photoX = settings[0].x;
           block.photoY = settings[0].y;
-          block.photoZoom = settings[0].zoom;
+          block.photoZoom = 100;
         }
       } else if (path.startsWith("links.")) {
         const [, linkIndexText, key] = path.split(".");
