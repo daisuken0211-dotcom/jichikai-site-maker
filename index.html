@@ -500,7 +500,7 @@
       position: relative;
       overflow: hidden;
       background: linear-gradient(rgba(232, 243, 237, .86), rgba(232, 243, 237, .9)), var(--header-photo), var(--soft-green);
-      background-size: cover;
+      background-size: cover, var(--header-photo-size, cover), auto;
       background-position: var(--header-photo-position, center center);
     }
 
@@ -542,6 +542,75 @@
     .site-preview .site-nav a.active {
       color: #fff;
       background: var(--green);
+    }
+
+    .site-preview.nav-style-box .site-nav a {
+      border-radius: 8px;
+      background: #fff;
+      border: 2px solid var(--line);
+      box-shadow: 0 3px 0 rgba(31, 41, 51, .10);
+    }
+
+    .site-preview.nav-style-box .site-nav a.active {
+      border-color: var(--green);
+      background: var(--soft-green);
+      color: var(--green-dark);
+      box-shadow: inset 0 -4px 0 var(--green);
+    }
+
+    .site-preview.nav-style-underline .site-nav {
+      box-shadow: none;
+      background: #fff;
+      justify-content: center;
+    }
+
+    .site-preview.nav-style-underline .site-nav a {
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      padding: 8px 4px 6px;
+      border-bottom: 3px solid transparent;
+    }
+
+    .site-preview.nav-style-underline .site-nav a.active {
+      color: var(--green-dark);
+      background: transparent;
+      border-bottom-color: var(--green);
+    }
+
+    .site-preview.nav-style-solid .site-nav {
+      background: var(--green-dark);
+      border-color: var(--green-dark);
+      justify-content: center;
+    }
+
+    .site-preview.nav-style-solid .site-nav a {
+      border-color: rgba(255, 255, 255, .18);
+      background: transparent;
+      color: #fff;
+    }
+
+    .site-preview.nav-style-solid .site-nav a.active {
+      background: #fff;
+      color: var(--green-dark);
+    }
+
+    .site-preview.nav-style-softbar .site-nav {
+      background: var(--soft-green);
+      box-shadow: none;
+      justify-content: center;
+    }
+
+    .site-preview.nav-style-softbar .site-nav a {
+      border: 0;
+      background: transparent;
+      border-radius: 8px;
+    }
+
+    .site-preview.nav-style-softbar .site-nav a.active {
+      background: #fff;
+      color: var(--green-dark);
+      box-shadow: inset 0 0 0 2px var(--green);
     }
 
     .site-preview.nav-left {
@@ -719,6 +788,40 @@
       background: var(--green);
       color: #fff;
       padding: 8px 12px;
+    }
+
+    .site-preview.heading-card h2 {
+      border: 2px solid var(--green);
+      border-left-width: 10px;
+      border-radius: 8px;
+      background: #fff;
+      color: var(--green-dark);
+      padding: 8px 12px;
+    }
+
+    .site-preview.heading-round h2 {
+      display: inline-block;
+      border: 3px solid var(--green);
+      border-radius: 999px;
+      background: #fff;
+      color: var(--green-dark);
+      padding: 7px 18px;
+    }
+
+    .site-preview.heading-marker h2 {
+      border: 0;
+      color: var(--green-dark);
+      padding: 0;
+      background: linear-gradient(transparent 58%, var(--soft-gold) 58%);
+      width: fit-content;
+    }
+
+    .site-preview.heading-sideband h2 {
+      border: 0;
+      border-top: 4px solid var(--green);
+      background: var(--soft-green);
+      color: var(--green-dark);
+      padding: 10px 12px;
     }
 
     .text-block p {
@@ -943,6 +1046,20 @@
       text-align: left;
     }
 
+    .site-preview.heading-card h2,
+    .site-preview.heading-round h2,
+    .site-preview.heading-marker h2,
+    .site-preview.heading-sideband h2 {
+      text-align: left;
+    }
+
+    .site-preview.heading-card h2::before,
+    .site-preview.heading-round h2::before,
+    .site-preview.heading-marker h2::before,
+    .site-preview.heading-sideband h2::before {
+      display: none;
+    }
+
     .code-panel {
       margin-top: 14px;
     }
@@ -1101,6 +1218,16 @@
               <option value="left">左に固定</option>
             </select>
           </div>
+          <div class="field">
+            <label for="navStyleSelect">リンクバーの見た目</label>
+            <select id="navStyleSelect">
+              <option value="pill">丸ボタン</option>
+              <option value="box">四角カード</option>
+              <option value="underline">下線だけ</option>
+              <option value="solid">濃い色の帯</option>
+              <option value="softbar">やさしい帯</option>
+            </select>
+          </div>
         </div>
 
         <div class="section-box">
@@ -1124,6 +1251,10 @@
             <option value="simple">シンプル</option>
             <option value="line">上下線で見出し</option>
             <option value="band">色付き帯で見出し</option>
+            <option value="card">左太線カード</option>
+            <option value="round">丸囲み</option>
+            <option value="marker">マーカー線</option>
+            <option value="sideband">淡い帯</option>
           </select>
           <label>
             <input id="headerPhotoEnabled" type="checkbox">
@@ -1145,7 +1276,19 @@
             <option value="right top">右上</option>
             <option value="left bottom">左下</option>
             <option value="right bottom">右下</option>
+            <option value="custom">細かく調整</option>
           </select>
+          <div class="compact-row">
+            <label>帯写真 左右
+              <input id="headerPhotoX" type="range" min="0" max="100" value="50">
+            </label>
+            <label>帯写真 上下
+              <input id="headerPhotoY" type="range" min="0" max="100" value="50">
+            </label>
+          </div>
+          <label>帯写真 拡大
+            <input id="headerPhotoZoom" type="range" min="100" max="180" value="100">
+          </label>
           <button class="btn secondary" id="chooseHeaderPhotoBtn" type="button">帯写真をファイルから選ぶ</button>
           <input id="headerPhotoInput" type="file" accept="image/*" hidden>
           <input id="headerPhotoUrl" placeholder="帯写真URL または下の写真一覧から帯写真を選択">
@@ -1185,6 +1328,18 @@
           <input id="photoUrl1" placeholder="写真1 https://example.com/photo1.jpg">
           <input id="photoUrl2" placeholder="写真2 https://example.com/photo2.jpg">
           <input id="photoUrl3" placeholder="写真3 https://example.com/photo3.jpg">
+          <div class="compact-row">
+            <label>写真 左右
+              <input id="photoX" type="range" min="0" max="100" value="50">
+            </label>
+            <label>写真 上下
+              <input id="photoY" type="range" min="0" max="100" value="50">
+            </label>
+          </div>
+          <label>写真 拡大
+            <input id="photoZoom" type="range" min="100" max="180" value="100">
+          </label>
+          <div class="photo-choice-meta">写真が表示されている場所は、プレビューでドラッグして位置を動かせます</div>
         </div>
 
         <div class="field">
@@ -1284,9 +1439,11 @@
       isLoadingPage: false,
       themeId: "green",
       headingStyle: "simple",
+      navStyle: "pill",
       headerPhotoEnabled: false,
       headerPhotoScope: "top",
-      headerPhotoPosition: "center center",
+      headerPhotoPosition: "50% 50%",
+      headerPhotoZoom: 100,
       activeBlockId: "",
       activeNoticeIndex: -1,
       isPreviewRendering: false,
@@ -1318,7 +1475,8 @@
       { id: "basic", name: "文字" },
       { id: "media", name: "写真・リンク" },
       { id: "list", name: "一覧" },
-      { id: "layout", name: "写真と文字" }
+      { id: "layout", name: "写真と文字" },
+      { id: "safety", name: "災害連絡" }
     ];
 
     const themes = {
@@ -1346,7 +1504,9 @@
       { id: "textPhotoRight", category: "layout", name: "文字左・写真右" },
       { id: "recentInfo", category: "list", name: "直近情報一覧" },
       { id: "newsCards", category: "list", name: "カード一覧" },
-      { id: "newsTable", category: "list", name: "表形式" }
+      { id: "newsTable", category: "list", name: "表形式" },
+      { id: "disasterForm", category: "safety", name: "災害時連絡フォーム" },
+      { id: "earthquakeMail", category: "safety", name: "緊急地震速報メール案内" }
     ];
 
     const els = {
@@ -1355,11 +1515,15 @@
       deletePageBtn: document.getElementById("deletePageBtn"),
       pageTitle: document.getElementById("pageTitle"),
       navPosition: document.getElementById("navPosition"),
+      navStyleSelect: document.getElementById("navStyleSelect"),
       themeSelect: document.getElementById("themeSelect"),
       headingStyleSelect: document.getElementById("headingStyleSelect"),
       headerPhotoEnabled: document.getElementById("headerPhotoEnabled"),
       headerPhotoScope: document.getElementById("headerPhotoScope"),
       headerPhotoPosition: document.getElementById("headerPhotoPosition"),
+      headerPhotoX: document.getElementById("headerPhotoX"),
+      headerPhotoY: document.getElementById("headerPhotoY"),
+      headerPhotoZoom: document.getElementById("headerPhotoZoom"),
       chooseHeaderPhotoBtn: document.getElementById("chooseHeaderPhotoBtn"),
       headerPhotoInput: document.getElementById("headerPhotoInput"),
       headerPhotoUrl: document.getElementById("headerPhotoUrl"),
@@ -1374,6 +1538,9 @@
       photoUrl1: document.getElementById("photoUrl1"),
       photoUrl2: document.getElementById("photoUrl2"),
       photoUrl3: document.getElementById("photoUrl3"),
+      photoX: document.getElementById("photoX"),
+      photoY: document.getElementById("photoY"),
+      photoZoom: document.getElementById("photoZoom"),
       choosePhotoFolderBtn: document.getElementById("choosePhotoFolderBtn"),
       clearPhotoLibraryBtn: document.getElementById("clearPhotoLibraryBtn"),
       photoFolderInput: document.getElementById("photoFolderInput"),
@@ -1448,6 +1615,9 @@
         textLinkUrl: "",
         photoLinkUrl: "",
         photoUrls: ["", "", ""],
+        photoX: 50,
+        photoY: 50,
+        photoZoom: 100,
         links: [
           { text: "PDFを見る", url: "", fileName: "" },
           { text: "", url: "", fileName: "" },
@@ -1599,6 +1769,7 @@
         version: 1,
         themeId: "green",
         headingStyle: "line",
+        navStyle: "pill",
         navPosition: "top",
         currentPageIndex: 0,
         pages
@@ -1614,7 +1785,11 @@
     }
 
     function currentHeadingStyle() {
-      return ["simple", "line", "band"].includes(state.headingStyle) ? state.headingStyle : "simple";
+      return ["simple", "line", "band", "card", "round", "marker", "sideband"].includes(state.headingStyle) ? state.headingStyle : "simple";
+    }
+
+    function currentNavStyle() {
+      return ["pill", "box", "underline", "solid", "softbar"].includes(state.navStyle) ? state.navStyle : "pill";
     }
 
     function applyTheme(themeId = state.themeId) {
@@ -1642,8 +1817,13 @@
     }
 
     function applyHeadingStyle(style = state.headingStyle) {
-      state.headingStyle = ["simple", "line", "band"].includes(style) ? style : "simple";
+      state.headingStyle = ["simple", "line", "band", "card", "round", "marker", "sideband"].includes(style) ? style : "simple";
       els.headingStyleSelect.value = state.headingStyle;
+    }
+
+    function applyNavStyle(style = state.navStyle) {
+      state.navStyle = ["pill", "box", "underline", "solid", "softbar"].includes(style) ? style : "pill";
+      els.navStyleSelect.value = state.navStyle;
     }
 
     function headerPhotoEnabled() {
@@ -1659,7 +1839,13 @@
     }
 
     function headerPhotoPosition() {
-      return els.headerPhotoPosition.value || "center center";
+      const preset = els.headerPhotoPosition.value || "50% 50%";
+      if (preset !== "custom") return preset;
+      return `${Number(els.headerPhotoX.value) || 50}% ${Number(els.headerPhotoY.value) || 50}%`;
+    }
+
+    function headerPhotoZoom() {
+      return Math.min(180, Math.max(100, Number(els.headerPhotoZoom.value) || 100));
     }
 
     function firstPageValue(fieldName, fallback = "") {
@@ -1865,6 +2051,9 @@
         headerPhotoEnabled: false,
         headerPhotoUrl: "",
         photoUrls: ["", "", ""],
+        photoX: 50,
+        photoY: 50,
+        photoZoom: 100,
         templateId: "blank",
         customHeading: "",
         customText: "",
@@ -1894,6 +2083,9 @@
         headerPhotoEnabled: els.headerPhotoEnabled.checked,
         headerPhotoUrl: els.headerPhotoUrl.value,
         photoUrls: [els.photoUrl1.value, els.photoUrl2.value, els.photoUrl3.value],
+        photoX: Number(els.photoX.value) || 50,
+        photoY: Number(els.photoY.value) || 50,
+        photoZoom: Number(els.photoZoom.value) || 100,
         templateId: els.templateSelect.value,
         customHeading: els.customHeading.value,
         customText: els.customText.value,
@@ -1915,9 +2107,11 @@
         version: 1,
         themeId: state.themeId,
         headingStyle: state.headingStyle,
+        navStyle: state.navStyle,
         headerPhotoEnabled: els.headerPhotoEnabled.checked,
         headerPhotoScope: headerPhotoScope(),
         headerPhotoPosition: headerPhotoPosition(),
+        headerPhotoZoom: headerPhotoZoom(),
         navPosition: els.navPosition.value,
         currentPageIndex: state.currentPageIndex,
         pages: cloneData(state.pages)
@@ -1930,18 +2124,25 @@
         return;
       }
       state.themeId = themes[data.themeId] ? data.themeId : "green";
-      state.headingStyle = ["simple", "line", "band"].includes(data.headingStyle) ? data.headingStyle : "simple";
+      state.headingStyle = ["simple", "line", "band", "card", "round", "marker", "sideband"].includes(data.headingStyle) ? data.headingStyle : "simple";
+      state.navStyle = ["pill", "box", "underline", "solid", "softbar"].includes(data.navStyle) ? data.navStyle : "pill";
       state.headerPhotoEnabled = Boolean(data.headerPhotoEnabled);
       els.headerPhotoEnabled.checked = state.headerPhotoEnabled;
       state.headerPhotoScope = data.headerPhotoScope === "all" ? "all" : "top";
-      state.headerPhotoPosition = data.headerPhotoPosition || "center center";
+      state.headerPhotoPosition = data.headerPhotoPosition || "50% 50%";
+      state.headerPhotoZoom = data.headerPhotoZoom || 100;
       els.headerPhotoScope.value = state.headerPhotoScope;
-      els.headerPhotoPosition.value = state.headerPhotoPosition;
+      els.headerPhotoPosition.value = ["center center", "center top", "center bottom", "left center", "right center", "left top", "right top", "left bottom", "right bottom"].includes(state.headerPhotoPosition) ? state.headerPhotoPosition : "custom";
+      const positionMatch = /^(\d+(?:\.\d+)?)%\s+(\d+(?:\.\d+)?)%$/.exec(state.headerPhotoPosition);
+      els.headerPhotoX.value = positionMatch ? positionMatch[1] : 50;
+      els.headerPhotoY.value = positionMatch ? positionMatch[2] : 50;
+      els.headerPhotoZoom.value = state.headerPhotoZoom;
       els.navPosition.value = data.navPosition === "left" ? "left" : "top";
       state.pages = cloneData(data.pages);
       state.currentPageIndex = Math.min(Math.max(Number(data.currentPageIndex) || 0, 0), state.pages.length - 1);
       applyTheme(state.themeId);
       applyHeadingStyle(state.headingStyle);
+      applyNavStyle(state.navStyle);
       applyPageData(state.pages[state.currentPageIndex]);
       render();
       els.status.textContent = "設定を読み込みました";
@@ -1957,6 +2158,9 @@
       els.photoUrl1.value = page.photoUrls?.[0] || "";
       els.photoUrl2.value = page.photoUrls?.[1] || "";
       els.photoUrl3.value = page.photoUrls?.[2] || "";
+      els.photoX.value = page.photoX ?? 50;
+      els.photoY.value = page.photoY ?? 50;
+      els.photoZoom.value = page.photoZoom ?? 100;
       els.templateSelect.value = page.templateId || "blank";
       els.customHeading.value = page.customHeading || "";
       els.customText.value = page.customText || "";
@@ -2077,14 +2281,38 @@
       };
     }
 
-    function photoMarkup(photoUrls, siteName) {
+    function photoStyleAttrs(block = null) {
+      if (!block) return "";
+      const x = Math.min(100, Math.max(0, Number(block.photoX ?? 50)));
+      const y = Math.min(100, Math.max(0, Number(block.photoY ?? 50)));
+      const zoom = Math.min(180, Math.max(100, Number(block.photoZoom ?? 100))) / 100;
+      return ` style="object-position:${x}% ${y}%; --photo-origin:${x}% ${y}%; --photo-zoom:${zoom};"`;
+    }
+
+    function pagePhotoSettings() {
+      return {
+        photoX: Number(els.photoX.value) || 50,
+        photoY: Number(els.photoY.value) || 50,
+        photoZoom: Number(els.photoZoom.value) || 100
+      };
+    }
+
+    function photoAdjustAttr(target = null) {
+      if (!state.isPreviewRendering) return "";
+      if (target === "page") return ` data-photo-adjust-page="1"`;
+      return target?.id ? ` data-photo-adjust-block-id="${escapeHtml(target.id)}"` : "";
+    }
+
+    function photoMarkup(photoUrls, siteName, adjust = null, target = "") {
       const photos = photoUrls.length ? photoUrls : [];
       if (!photos.length) {
         return `<div class="hero-photo">ここに自治会の写真が入ります</div>`;
       }
+      const adjustableClass = adjust ? " is-adjustable-photo" : "";
+      const adjustAttr = target === "page" ? photoAdjustAttr("page") : photoAdjustAttr(adjust);
       return `
         <div class="photo-gallery count-${photos.length}">
-          ${photos.map((url, index) => `<div class="hero-photo"><img src="${escapeHtml(url)}" alt="${siteName}の写真 ${index + 1}"></div>`).join("")}
+          ${photos.map((url, index) => `<div class="hero-photo${adjustableClass}"${adjustAttr}><img src="${escapeHtml(url)}" alt="${siteName}の写真 ${index + 1}"${photoStyleAttrs(adjust)}></div>`).join("")}
         </div>
       `;
     }
@@ -2236,9 +2464,39 @@
 
     function photoTextMarkup(photoUrls, siteName, block, reverse = false) {
       const custom = customHeadingText(block);
-      const photo = photoMarkup(blockPhotoUrls(block, photoUrls), siteName);
+      const photo = photoMarkup(blockPhotoUrls(block, photoUrls), siteName, block, "block");
       const text = `<div class="feature-text"><h2>${custom.heading}</h2><p>${custom.text}</p></div>`;
       return `<section class="${blockClass(block, `feature-row ${reverse ? "reverse" : ""}`)}"${previewBlockAttr(block)}>${reverse ? `${text}${wrapPhotoLink(photo, block)}` : `${wrapPhotoLink(photo, block)}${text}`}</section>`;
+    }
+
+    function disasterContactFormMarkup(block) {
+      const custom = customHeadingText(block);
+      return `<section class="${blockClass(block, "disaster-contact-form")}"${previewBlockAttr(block)}>
+        <h2>${custom.heading}</h2>
+        <p>${custom.text || "災害時に町内の安否や困りごとを連絡するためのフォームです。"}</p>
+        <div class="form-grid">
+          <input placeholder="お名前">
+          <input placeholder="住所または班名">
+          <select>
+            <option>無事です</option>
+            <option>助けが必要です</option>
+            <option>避難しています</option>
+          </select>
+          <input placeholder="連絡先電話番号">
+        </div>
+        <textarea placeholder="状況・困っていること"></textarea>
+        <button type="button">連絡を送る</button>
+        <small>実際のメール送信には、管理者メールと送信用サーバーの設定が必要です。</small>
+      </section>`;
+    }
+
+    function earthquakeMailOptionMarkup(block) {
+      const custom = customHeadingText(block);
+      return `<section class="${blockClass(block, "earthquake-mail-option")}"${previewBlockAttr(block)}>
+        <h2>${custom.heading}</h2>
+        <p>${custom.text || "緊急地震速報や震度情報を受けて、登録者へ安否確認メールを送る機能を追加できます。"}</p>
+        <p><strong>追加サーバー機能:</strong> 地震情報の受信、登録者名簿、メール送信、災害リーダーへの通知。</p>
+      </section>`;
     }
 
     function extraBlockMarkup(block, context) {
@@ -2247,9 +2505,11 @@
       if (blockType === "textOnly") return textOnlyMarkup(block);
       if (blockType === "headingText") return headingTextMarkup(block);
       if (blockType === "pdfLinks" || blockType === "buttonLinks") return linksBlockMarkup(block);
-      if (blockType === "photo") return wrapPhotoLink(`<section class="${blockClass(block)}"${previewBlockAttr(block)}>${photoMarkup(blockPhotoUrls(block, context.photoUrls), context.siteName)}</section>`, block);
+      if (blockType === "photo") return wrapPhotoLink(`<section class="${blockClass(block)}"${previewBlockAttr(block)}>${photoMarkup(blockPhotoUrls(block, context.photoUrls), context.siteName, block, "block")}</section>`, block);
       if (blockType === "photoTextLeft") return photoTextMarkup(context.photoUrls, context.siteName, block, false);
       if (blockType === "textPhotoRight") return photoTextMarkup(context.photoUrls, context.siteName, block, true);
+      if (blockType === "disasterForm") return disasterContactFormMarkup(block);
+      if (blockType === "earthquakeMail") return earthquakeMailOptionMarkup(block);
       if (blockType === "blankHeading") return blankHeadingMarkup();
       if (blockType === "recentInfo") return recentInfoMarkup(context);
       if (blockType === "newsCards") return context.noticeCards;
@@ -2274,12 +2534,13 @@
       els.addedBlocks.innerHTML = state.extraBlocks.length
         ? state.extraBlocks.map((block, index) => {
             const type = extraBlockTypes.find((item) => item.id === block.type);
-            const needsHeading = ["headingOnly", "headingText", "photoTextLeft", "textPhotoRight", "pdfLinks", "buttonLinks"].includes(block.type);
-            const needsText = ["textOnly", "headingText", "photoTextLeft", "textPhotoRight", "pdfLinks", "buttonLinks"].includes(block.type);
+            const needsHeading = ["headingOnly", "headingText", "photoTextLeft", "textPhotoRight", "pdfLinks", "buttonLinks", "disasterForm", "earthquakeMail"].includes(block.type);
+            const needsText = ["textOnly", "headingText", "photoTextLeft", "textPhotoRight", "pdfLinks", "buttonLinks", "disasterForm", "earthquakeMail"].includes(block.type);
             const needsLinks = ["pdfLinks", "buttonLinks"].includes(block.type);
             const needsTextLink = ["headingOnly", "textOnly", "headingText", "photoTextLeft", "textPhotoRight"].includes(block.type);
             const needsPhotoLink = ["photo", "photoTextLeft", "textPhotoRight"].includes(block.type);
             const needsPhotoContent = ["photo", "photoTextLeft", "textPhotoRight"].includes(block.type);
+            const needsDisasterSetup = ["disasterForm", "earthquakeMail"].includes(block.type);
             const isActive = block.id === state.activeBlockId;
             return `
               <div class="added-block-item ${isActive ? "active" : ""}" data-added-block-id="${escapeHtml(block.id)}">
@@ -2301,6 +2562,9 @@
                         <button type="button" data-choose-block-photo="${index}:0">写真を選ぶ（すぐ表示）</button>
                         ${block.photoUrls?.[0] ? `<span class="photo-choice-meta">写真が入っています</span>` : `<span class="photo-choice-meta">未選択</span>`}
                       </div>
+                    ` : ""}
+                    ${needsDisasterSetup ? `
+                      <div class="status">メール送信には、Cloudflare Workers / Firebase Functions などの小さなサーバー設定が別途必要です。静的HTMLだけでは送信しません。</div>
                     ` : ""}
                     ${needsTextLink ? `
                       <div class="link-grid">
@@ -2330,6 +2594,18 @@
                       <option value="full" ${block.width !== "half" ? "selected" : ""}>横幅いっぱい</option>
                       <option value="half" ${block.width === "half" ? "selected" : ""}>半分の幅で横並び</option>
                     </select>
+                    ${needsPhotoContent ? `
+                      <label>写真 左右
+                        <input type="range" min="0" max="100" value="${Number(block.photoX ?? 50)}" data-block-field="${index}:photoX">
+                      </label>
+                      <label>写真 上下
+                        <input type="range" min="0" max="100" value="${Number(block.photoY ?? 50)}" data-block-field="${index}:photoY">
+                      </label>
+                      <label>写真 拡大
+                        <input type="range" min="100" max="180" value="${Number(block.photoZoom ?? 100)}" data-block-field="${index}:photoZoom">
+                      </label>
+                      <div class="photo-choice-meta">プレビューの写真をドラッグしても位置を動かせます</div>
+                    ` : ""}
                   </div>
                 </div>
               </div>
@@ -2359,7 +2635,7 @@
       const noticeBlock = template.id === "tableNews" ? noticesTableMarkup(notices) : noticesCardsMarkup(notices);
       const noticeCards = noticesCardsMarkup(notices);
       const noticeTable = noticesTableMarkup(notices);
-      const photoBlock = photoMarkup(photoUrls, siteName);
+      const photoBlock = photoMarkup(photoUrls, siteName, pagePhotoSettings(), "page");
       const context = { siteName, catchText, photoUrls, photoBlock, noticeCards, noticeTable, notices, templateId: template.id };
       let bodyBlocks = "";
 
@@ -2427,7 +2703,9 @@
       const photoUrl = escapeHtml(primaryPhotoUrl() || placeholderPhoto());
       const headerUrl = escapeHtml(activeHeaderPhotoUrl(state.currentPageIndex) || placeholderPhoto());
       const headerPosition = escapeHtml(headerPhotoPosition());
+      const headerSize = `${headerPhotoZoom()}% auto`;
       const navClass = els.navPosition.value === "left" ? "nav-left" : "nav-top";
+      const navStyleClass = `nav-style-${currentNavStyle()}`;
       const headingClass = `heading-${currentHeadingStyle()}`;
       const headerPhotoClass = hasHeaderPhoto ? "has-header-photo" : "";
       return `<!doctype html>
@@ -2438,7 +2716,7 @@
   <title>${title}</title>
   <link rel="stylesheet" href="styles.css">
 </head>
-<body class="${template.className} ${navClass} ${headingClass} ${headerPhotoClass}" style="--preview-photo: url('${photoUrl}'); --header-photo: url('${headerUrl}'); --header-photo-position: ${headerPosition};">
+<body class="${template.className} ${navClass} ${navStyleClass} ${headingClass} ${headerPhotoClass}" style="--preview-photo: url('${photoUrl}'); --header-photo: url('${headerUrl}'); --header-photo-position: ${headerPosition}; --header-photo-size: ${headerSize};">
 ${buildPreviewHtml()}
 </body>
 </html>`;
@@ -2492,7 +2770,7 @@ body.has-header-photo header {
   position: relative;
   overflow: hidden;
   background: linear-gradient(rgba(232,243,237,.86), rgba(232,243,237,.9)), var(--header-photo), #e8f3ed;
-  background-size: cover;
+  background-size: cover, var(--header-photo-size, cover), auto;
   background-position: var(--header-photo-position, center center);
 }
 
@@ -2526,6 +2804,72 @@ nav {
 .site-nav a.active {
   color: #fff;
   background: #2f7d57;
+}
+
+body.nav-style-box .site-nav a {
+  border-radius: 8px;
+  background: #fff;
+  border: 2px solid #d8e0e7;
+  box-shadow: 0 3px 0 rgba(31,41,51,.10);
+}
+
+body.nav-style-box .site-nav a.active {
+  border-color: #2f7d57;
+  background: #e8f3ed;
+  color: #245f43;
+  box-shadow: inset 0 -4px 0 #2f7d57;
+}
+
+body.nav-style-underline .site-nav {
+  box-shadow: none;
+  background: #fff;
+}
+
+body.nav-style-underline .site-nav a {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 8px 4px 6px;
+  border-bottom: 3px solid transparent;
+}
+
+body.nav-style-underline .site-nav a.active {
+  color: #245f43;
+  background: transparent;
+  border-bottom-color: #2f7d57;
+}
+
+body.nav-style-solid .site-nav {
+  background: #245f43;
+  border-color: #245f43;
+}
+
+body.nav-style-solid .site-nav a {
+  border-color: rgba(255,255,255,.18);
+  background: transparent;
+  color: #fff;
+}
+
+body.nav-style-solid .site-nav a.active {
+  background: #fff;
+  color: #245f43;
+}
+
+body.nav-style-softbar .site-nav {
+  background: #e8f3ed;
+  box-shadow: none;
+}
+
+body.nav-style-softbar .site-nav a {
+  border: 0;
+  background: transparent;
+  border-radius: 8px;
+}
+
+body.nav-style-softbar .site-nav a.active {
+  background: #fff;
+  color: #245f43;
+  box-shadow: inset 0 0 0 2px #2f7d57;
 }
 
 body.nav-top {
@@ -2603,6 +2947,40 @@ body.heading-band h2 {
   padding: 8px 12px;
 }
 
+body.heading-card h2 {
+  border: 2px solid #2f7d57;
+  border-left-width: 10px;
+  border-radius: 8px;
+  background: #fff;
+  color: #245f43;
+  padding: 8px 12px;
+}
+
+body.heading-round h2 {
+  display: inline-block;
+  border: 3px solid #2f7d57;
+  border-radius: 999px;
+  background: #fff;
+  color: #245f43;
+  padding: 7px 18px;
+}
+
+body.heading-marker h2 {
+  border: 0;
+  color: #245f43;
+  padding: 0;
+  background: linear-gradient(transparent 58%, #fbf2df 58%);
+  width: fit-content;
+}
+
+body.heading-sideband h2 {
+  border: 0;
+  border-top: 4px solid #2f7d57;
+  background: #e8f3ed;
+  color: #245f43;
+  padding: 10px 12px;
+}
+
 .lead {
   max-width: 760px;
   margin: 12px 0 0;
@@ -2658,6 +3036,50 @@ main > .block-half {
   height: 100%;
   object-fit: cover;
   display: block;
+  transform: scale(var(--photo-zoom, 1));
+  transform-origin: var(--photo-origin, 50% 50%);
+}
+
+.disaster-contact-form {
+  border: 2px solid #2f7d57;
+  border-radius: 8px;
+  background: #fff;
+  padding: 16px;
+  display: grid;
+  gap: 10px;
+}
+
+.disaster-contact-form .form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.disaster-contact-form input,
+.disaster-contact-form select,
+.disaster-contact-form textarea {
+  border: 2px solid #d8e0e7;
+  border-radius: 8px;
+  padding: 9px 10px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.disaster-contact-form button {
+  justify-self: start;
+  border: 0;
+  border-radius: 8px;
+  background: #2f7d57;
+  color: #fff;
+  padding: 10px 16px;
+  font-weight: 800;
+}
+
+.earthquake-mail-option {
+  border: 2px dashed #2f7d57;
+  border-radius: 8px;
+  background: #e8f3ed;
+  padding: 16px;
 }
 
 .photo-gallery {
@@ -2906,6 +3328,20 @@ body.heading-line h2 {
 body.heading-band h2 {
   border: 0;
   text-align: left;
+}
+
+body.heading-card h2,
+body.heading-round h2,
+body.heading-marker h2,
+body.heading-sideband h2 {
+  text-align: left;
+}
+
+body.heading-card h2::before,
+body.heading-round h2::before,
+body.heading-marker h2::before,
+body.heading-sideband h2::before {
+  display: none;
 }
 
 @media (max-width: 760px) {
@@ -3577,15 +4013,17 @@ exports.deleteUserByAdmin = onCall(async (request) => {
       const headerPhoto = escapeHtml(activeHeaderPhotoUrl(state.currentPageIndex) || placeholderPhoto());
       const headerPhotoClass = activeHeaderPhotoEnabled(state.currentPageIndex) ? "has-header-photo" : "";
       const headerPosition = escapeHtml(headerPhotoPosition());
+      const headerSize = `${headerPhotoZoom()}% auto`;
       updateVisibleInputs();
       renderPageTabs();
       state.html = buildExportHtml();
       state.css = buildExportCss();
       state.blockHtml = buildPeraichiLikeHtml();
-      els.preview.className = `site-preview ${template.className} ${els.navPosition.value === "left" ? "nav-left" : "nav-top"} heading-${currentHeadingStyle()} ${headerPhotoClass}`;
+      els.preview.className = `site-preview ${template.className} ${els.navPosition.value === "left" ? "nav-left" : "nav-top"} nav-style-${currentNavStyle()} heading-${currentHeadingStyle()} ${headerPhotoClass}`;
       els.preview.style.setProperty("--preview-photo", `url('${previewPhoto}')`);
       els.preview.style.setProperty("--header-photo", `url('${headerPhoto}')`);
       els.preview.style.setProperty("--header-photo-position", headerPosition);
+      els.preview.style.setProperty("--header-photo-size", headerSize);
       state.isPreviewRendering = true;
       els.preview.innerHTML = buildPreviewHtml();
       state.isPreviewRendering = false;
@@ -3992,6 +4430,24 @@ functions/index.js にCloud Functionsの雛形を入れています。
       applyHeadingStyle(els.headingStyleSelect.value);
       render();
     });
+    els.navStyleSelect.addEventListener("change", () => {
+      applyNavStyle(els.navStyleSelect.value);
+      render();
+    });
+    [els.headerPhotoX, els.headerPhotoY, els.headerPhotoZoom].forEach((input) => {
+      input.addEventListener("input", () => {
+        els.headerPhotoPosition.value = "custom";
+        state.headerPhotoPosition = headerPhotoPosition();
+        state.headerPhotoZoom = headerPhotoZoom();
+        render();
+      });
+    });
+    [els.photoX, els.photoY, els.photoZoom].forEach((input) => {
+      input.addEventListener("input", () => {
+        saveCurrentPage();
+        render();
+      });
+    });
     els.themeSwatches.addEventListener("click", (event) => {
       const button = event.target.closest("[data-theme]");
       if (!button) return;
@@ -4144,6 +4600,66 @@ functions/index.js にCloud Functionsの雛形を入れています。
       optionalEls.noticeBoxes[state.activeNoticeIndex]?.scrollIntoView({ block: "center", behavior: "smooth" });
       els.status.textContent = `お知らせ${state.activeNoticeIndex + 1}を左で編集できます`;
     }
+
+    let photoDragState = null;
+
+    els.preview.addEventListener("pointerdown", (event) => {
+      const photo = event.target.closest("[data-photo-adjust-block-id], [data-photo-adjust-page]");
+      if (!photo) return;
+      event.preventDefault();
+      state.activeNoticeIndex = -1;
+      const blockId = photo.dataset.photoAdjustBlockId;
+      const block = blockId ? state.extraBlocks.find((item) => item.id === blockId) : null;
+      if (blockId && !block) return;
+      if (block) state.activeBlockId = block.id;
+      photoDragState = block
+        ? {
+            scope: "block",
+            block,
+            startX: event.clientX,
+            startY: event.clientY,
+            originalX: Number(block.photoX ?? 50),
+            originalY: Number(block.photoY ?? 50)
+          }
+        : {
+            scope: "page",
+            startX: event.clientX,
+            startY: event.clientY,
+            originalX: Number(els.photoX.value) || 50,
+            originalY: Number(els.photoY.value) || 50
+          };
+      photo.setPointerCapture?.(event.pointerId);
+    });
+
+    els.preview.addEventListener("pointermove", (event) => {
+      if (!photoDragState) return;
+      event.preventDefault();
+      const dx = event.clientX - photoDragState.startX;
+      const dy = event.clientY - photoDragState.startY;
+      const nextX = Math.min(100, Math.max(0, Math.round(photoDragState.originalX + dx / 3)));
+      const nextY = Math.min(100, Math.max(0, Math.round(photoDragState.originalY + dy / 3)));
+      if (photoDragState.scope === "page") {
+        els.photoX.value = nextX;
+        els.photoY.value = nextY;
+      } else {
+        photoDragState.block.photoX = nextX;
+        photoDragState.block.photoY = nextY;
+      }
+      render(true);
+    });
+
+    window.addEventListener("pointerup", () => {
+      if (!photoDragState) return;
+      const wasBlockDrag = photoDragState.scope === "block";
+      photoDragState = null;
+      if (wasBlockDrag) {
+        renderAddedBlocks();
+        scrollActiveBlockIntoView();
+      } else {
+        saveCurrentPage();
+      }
+      els.status.textContent = "写真の位置を調整しました";
+    });
 
     els.preview.addEventListener("click", (event) => {
       const previewNotice = event.target.closest("[data-preview-target='notice']");
@@ -4349,7 +4865,7 @@ functions/index.js にCloud Functionsの雛形を入れています。
       if (!block) return;
       state.activeBlockId = block.id;
       state.activeNoticeIndex = -1;
-      if (["heading", "text", "width", "textLinkText", "textLinkUrl", "photoLinkUrl"].includes(path)) {
+      if (["heading", "text", "width", "textLinkText", "textLinkUrl", "photoLinkUrl", "photoX", "photoY", "photoZoom"].includes(path)) {
         block[path] = input.value;
         if (path === "textLinkUrl" && !isDataUrl(input.value)) block.textLinkFileName = "";
         if (path === "photoLinkUrl" && !isDataUrl(input.value)) block.photoLinkFileName = "";
@@ -4395,6 +4911,7 @@ functions/index.js にCloud Functionsの雛形を入れています。
     initializeTemplates();
     initializeThemes();
     applyHeadingStyle(state.headingStyle);
+    applyNavStyle(state.navStyle);
     initializePages();
     renderPhotoLibrary();
     render();
