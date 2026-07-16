@@ -1483,22 +1483,21 @@
 
     const templates = [
       { id: "blank", name: "1. 白紙", note: "自治会名だけ表示", className: "t-blank" },
-      { id: "standard", name: "2. 標準", note: "写真上・お知らせ3枚", className: "t-standard" },
-      { id: "photoHero", name: "3. 写真大きめ", note: "写真を最初に大きく表示", className: "t-photo-hero" },
-      { id: "photoLeft", name: "4. 写真左", note: "写真左・説明右", className: "t-photo-left" },
-      { id: "photoRight", name: "5. 写真右", note: "説明左・写真右", className: "t-photo-right" },
-      { id: "newsFirst", name: "6. お知らせ優先", note: "お知らせを最初に表示", className: "t-news-first" },
-      { id: "scheduleFirst", name: "7. 行事予定優先", note: "年間予定を目立たせる", className: "t-schedule-first" },
-      { id: "tableNews", name: "8. 表形式", note: "お知らせを表で表示", className: "t-table-news" },
-      { id: "joinFocus", name: "9. 会員募集", note: "入会案内を強める", className: "t-join-focus" },
-      { id: "disaster", name: "10. 防災重視", note: "防災・重要情報向け", className: "t-disaster" },
+      { id: "standard", name: "2. 標準", note: "落ち着いた余白", className: "t-standard" },
+      { id: "photoHero", name: "3. 大きめ", note: "見出しを広く表示", className: "t-photo-hero" },
+      { id: "photoLeft", name: "4. 左寄せ", note: "本文を左寄せ", className: "t-photo-left" },
+      { id: "photoRight", name: "5. 右寄せ", note: "本文を右寄せ", className: "t-photo-right" },
+      { id: "newsFirst", name: "6. すっきり", note: "標準より詰めた表示", className: "t-news-first" },
+      { id: "scheduleFirst", name: "7. ゆったり", note: "見出しを見やすく", className: "t-schedule-first" },
+      { id: "tableNews", name: "8. 線あり", note: "区切り線を強める", className: "t-table-news" },
+      { id: "joinFocus", name: "9. 強調", note: "案内を目立たせる", className: "t-join-focus" },
+      { id: "disaster", name: "10. 重要情報", note: "防災などに向く色合い", className: "t-disaster" },
       { id: "compact", name: "11. コンパクト", note: "短く一覧向け", className: "t-compact t-magazine" }
     ];
 
     const blockCategories = [
       { id: "basic", name: "文字" },
       { id: "media", name: "写真・リンク" },
-      { id: "list", name: "一覧" },
       { id: "layout", name: "写真と文字" },
       { id: "safety", name: "災害連絡" }
     ];
@@ -1526,9 +1525,6 @@
       { id: "photo", category: "media", name: "写真ブロック" },
       { id: "photoTextLeft", category: "layout", name: "写真左・文字右" },
       { id: "textPhotoRight", category: "layout", name: "文字左・写真右" },
-      { id: "recentInfo", category: "list", name: "直近情報一覧" },
-      { id: "newsCards", category: "list", name: "カード一覧" },
-      { id: "newsTable", category: "list", name: "表形式" },
       { id: "disasterForm", category: "safety", name: "災害時連絡フォーム" },
       { id: "earthquakeMail", category: "safety", name: "緊急地震速報メール案内" }
     ];
@@ -1697,7 +1693,27 @@
             heading: "住みよい地域づくりを、みんなで。",
             text: "行事、活動、広報誌、回覧板を見やすくまとめた自治会ホームページです。直近情報を最初のページで一覧できるようにします。"
           }),
-          standardBlock("recentInfo", { heading: "新着情報", text: "直近のお知らせを一覧で掲載します。" }),
+          standardBlock("headingText", {
+            heading: "お知らせ",
+            text: "夏の町内清掃を行います。朝8時に公民館前へ集合してください。軍手、帽子、飲み物をご用意ください。"
+          }),
+          standardBlock("headingText", {
+            heading: "夏祭りのご案内",
+            text: "夕方5時より、公民館前広場で開催予定です。詳細は回覧板でお知らせします。"
+          }),
+          standardBlock("headingText", {
+            heading: "防災訓練について",
+            text: "防災関係の詳しい掲載は、立ち上げ後に継続検討します。"
+          }),
+          standardBlock("photo", {
+            heading: "活動写真",
+            photoCount: 1,
+            photoUrls: ["", "", ""]
+          }),
+          standardBlock("headingText", {
+            heading: "行事予定",
+            text: "7月20日: 町内清掃 / 8月3日: 夏祭り / 9月1日: 防災訓練"
+          }),
           standardBlock("pdfLinks", {
             heading: "よく見られる情報",
             text: "広報誌、回覧板、加入案内などへ移動できます。",
@@ -1709,7 +1725,7 @@
           })
         ], {
           catchText: "地域の行事、防災、回覧板のお知らせをまとめて掲載しています。",
-          templateId: "newsFirst"
+          templateId: "blank"
         }),
         base("自治会について", [
           standardBlock("headingText", {
@@ -1776,7 +1792,18 @@
             heading: "地域で受け継ぐ行事",
             text: "地域のつながりを大切にしながら、季節ごとの行事を実施しています。写真や案内PDFを追加して、行事の様子をわかりやすく掲載できます。"
           }),
-          standardBlock("newsCards", { heading: "行事一覧", text: "春の地域清掃、夏祭り、防災訓練などを掲載します。" })
+          standardBlock("headingText", {
+            heading: "春の地域清掃",
+            text: "地域の皆さまで協力して、道路や公園まわりをきれいにします。"
+          }),
+          standardBlock("headingText", {
+            heading: "夏祭り",
+            text: "子どもから高齢者まで楽しめる、地域交流の行事です。"
+          }),
+          standardBlock("headingText", {
+            heading: "防災訓練",
+            text: "災害時に落ち着いて行動できるよう、避難や連絡方法を確認します。"
+          })
         ]),
         base("問い合わせ", [
           standardBlock("headingText", {
@@ -2262,10 +2289,10 @@
       const template = currentTemplate();
       const blockTypes = state.extraBlocks.map((block) => block.type);
       const isBlank = template.id === "blank";
-      const needsPhoto = activeHeaderPhotoEnabled() || !isBlank || blockTypes.some((type) => ["photo", "photoTextLeft", "textPhotoRight"].includes(type));
-      const needsNotices = !isBlank || blockTypes.some((type) => ["recentInfo", "newsCards", "newsTable"].includes(type));
-      const needsSchedule = !isBlank;
-      const needsContact = !isBlank;
+      const needsPhoto = true;
+      const needsNotices = blockTypes.some((type) => ["recentInfo", "newsCards", "newsTable"].includes(type));
+      const needsSchedule = blockTypes.includes("schedule");
+      const needsContact = blockTypes.includes("contact");
       const needsCatch = !isBlank;
 
       optionalEls.catchBox.classList.toggle("is-hidden", !needsCatch);
@@ -2620,13 +2647,7 @@
 
     function extraBlocksMarkup(context) {
       if (!state.extraBlocks.length) return "";
-      if (context.templateId === "blank") {
-        return state.extraBlocks.map((block) => extraBlockMarkup(block, context)).join("");
-      }
-      return `
-        <div class="extra-divider">追加ブロック</div>
-        ${state.extraBlocks.map((block) => extraBlockMarkup(block, context)).join("")}
-      `;
+      return state.extraBlocks.map((block) => extraBlockMarkup(block, context)).join("");
     }
 
     function renderAddedBlocks() {
@@ -2751,32 +2772,7 @@
       const noticeTable = noticesTableMarkup(notices);
       const photoBlock = photoUrls.length ? photoMarkup(photoUrls, siteName, pagePhotoSettings(), "page") : "";
       const context = { siteName, catchText, photoUrls, photoBlock, noticeCards, noticeTable, notices, templateId: template.id };
-      let bodyBlocks = "";
-
-      if (template.id === "photoLeft" || template.id === "photoRight") {
-        bodyBlocks = `
-          <section class="feature-row ${template.id === "photoRight" ? "reverse" : ""}">
-            ${template.id === "photoRight" ? `<div class="feature-text"><h2>自治会について</h2><p>${catchText}</p></div>${photoBlock}` : `${photoBlock}<div class="feature-text"><h2>自治会について</h2><p>${catchText}</p></div>`}
-          </section>
-          ${noticeBlock}
-          ${scheduleMarkup()}
-          ${contactMarkup()}
-        `;
-      } else if (template.id === "newsFirst") {
-        bodyBlocks = `${noticeBlock}${photoBlock}${scheduleMarkup()}${contactMarkup()}`;
-      } else if (template.id === "scheduleFirst") {
-        bodyBlocks = `${scheduleMarkup()}${noticeBlock}${photoBlock}${contactMarkup()}`;
-      } else if (template.id === "joinFocus") {
-        bodyBlocks = `${joinMarkup()}${photoBlock}${noticeBlock}${scheduleMarkup()}${contactMarkup()}`;
-      } else if (template.id === "disaster") {
-        bodyBlocks = `${disasterMarkup()}${noticeBlock}${scheduleMarkup()}${photoBlock}${contactMarkup()}`;
-      } else if (template.id === "compact") {
-        bodyBlocks = `${noticeBlock}${scheduleMarkup()}${contactMarkup()}`;
-      } else if (template.id === "blank") {
-        bodyBlocks = "";
-      } else {
-        bodyBlocks = `${photoBlock}${noticeBlock}${scheduleMarkup()}${contactMarkup()}`;
-      }
+      const bodyBlocks = extraBlocksMarkup(context);
 
       if (template.id === "blank") {
         return `
@@ -2789,7 +2785,7 @@
             </div>
           </header>
           <main>
-            ${extraBlocksMarkup(context)}
+            ${bodyBlocks}
           </main>
         `;
       }
@@ -2805,7 +2801,6 @@
         </header>
         <main>
           ${bodyBlocks}
-          ${extraBlocksMarkup(context)}
         </main>
       `;
     }
