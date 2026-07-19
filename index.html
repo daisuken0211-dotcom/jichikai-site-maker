@@ -4418,25 +4418,6 @@ exports.deleteUserByAdmin = onCall(async (request) => {
       return "sakumaFarmHomepageAccess";
     }
 
-    function endOfYear(year) {
-      return new Date(year, 11, 31, 23, 59, 59).getTime();
-    }
-
-    function endOfMonth(year, monthIndex) {
-      return new Date(year, monthIndex + 1, 0, 23, 59, 59).getTime();
-    }
-
-    function validAccessCodes() {
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, "0");
-      return [
-        { code: `SAKUMA-${year}`, type: "yearly", expiresAt: endOfYear(year) },
-        { code: `SAKUMA-${year}${month}`, type: "monthly", expiresAt: endOfMonth(year, now.getMonth()) },
-        { code: "SAKUMA-FREE", type: "free", expiresAt: endOfYear(year) }
-      ];
-    }
-
     function licensedAccess() {
       try {
         const data = JSON.parse(localStorage.getItem(accessStorageKey()) || "null");
@@ -4446,13 +4427,8 @@ exports.deleteUserByAdmin = onCall(async (request) => {
       }
     }
 
-    function verifyAccessCode(code) {
-      const normalized = String(code || "").trim().toUpperCase();
-      return validAccessCodes().find((item) => item.code === normalized) || null;
-    }
-
     async function verifyAccessCodeOnServer(code) {
-      if (!accessCodeConfig.apiUrl) return verifyAccessCode(code);
+      if (!accessCodeConfig.apiUrl) throw new Error("利用コード確認サーバーが設定されていません");
       const response = await fetch(accessCodeConfig.apiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -4464,9 +4440,11 @@ exports.deleteUserByAdmin = onCall(async (request) => {
       if (!response.ok) throw new Error("利用コードを確認できませんでした");
       const result = await response.json();
       if (!result || !result.ok) return null;
+      const expiresAt = result.expiresAt ? new Date(result.expiresAt).getTime() : 0;
+      if (!expiresAt || expiresAt <= Date.now()) return null;
       return {
         type: result.type || "server",
-        expiresAt: result.expiresAt ? new Date(result.expiresAt).getTime() : endOfYear(new Date().getFullYear())
+        expiresAt
       };
     }
 
