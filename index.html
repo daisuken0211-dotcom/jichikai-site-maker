@@ -492,10 +492,6 @@
       gap: 8px;
     }
 
-    .button-row.single-action {
-      grid-template-columns: 1fr 1fr;
-    }
-
     .btn {
       min-height: 46px;
       border: 2px solid var(--line);
@@ -516,48 +512,6 @@
       border-color: #bfd3e5;
       background: var(--soft-blue);
       color: #244661;
-    }
-
-    .ftp-box {
-      display: none;
-      border: 1px solid #bfd3e5;
-      border-radius: 8px;
-      background: #f8fbfd;
-      padding: 12px;
-      margin-top: 10px;
-    }
-
-    .ftp-box.open {
-      display: grid;
-      gap: 10px;
-    }
-
-    .ftp-box h3 {
-      margin: 0;
-      font-size: 16px;
-      line-height: 1.4;
-      color: var(--green-dark);
-    }
-
-    .ftp-guide {
-      border: 1px solid #d8e0e7;
-      border-radius: 8px;
-      background: #fff;
-      padding: 10px;
-      color: #334155;
-      font-size: 13px;
-      line-height: 1.7;
-    }
-
-    .ftp-guide ol {
-      margin: 6px 0 0 1.4em;
-      padding: 0;
-    }
-
-    .ftp-note {
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.6;
     }
 
     .preview-wrap {
@@ -1485,43 +1439,7 @@
           <button class="btn secondary" id="downloadHtmlBtn" type="button">表示中コードを保存</button>
         </div>
 
-        <div class="button-row single-action">
-          <button class="btn primary" id="downloadZipBtn" type="button">HTML一式をZIPで保存</button>
-          <button class="btn secondary" id="ftpUploadBtn" type="button">FTPアップロード</button>
-        </div>
-
-        <div class="ftp-box" id="ftpBox">
-          <h3>FTPアップロード設定</h3>
-          <div class="ftp-note">ブラウザからFTPへ直接送信はできません。ここではFTP情報を控えて、アップロード用ZIPと手順を作ります。</div>
-          <div class="field">
-            <label for="ftpHost">FTPサーバーアドレス</label>
-            <input id="ftpHost" placeholder="例: ftp.example.ne.jp">
-          </div>
-          <div class="field">
-            <label for="ftpUser">FTPユーザー名</label>
-            <input id="ftpUser" placeholder="例: user123">
-          </div>
-          <div class="field">
-            <label for="ftpRemoteDir">アップ先フォルダ</label>
-            <input id="ftpRemoteDir" placeholder="例: /public_html/">
-          </div>
-          <div class="field">
-            <label for="ftpMemo">メモ</label>
-            <textarea id="ftpMemo" placeholder="例: パスワードは契約書を見る。FTPソフトはCyberduckを使う。"></textarea>
-          </div>
-          <div class="button-row">
-            <button class="btn primary" id="saveFtpSettingsBtn" type="button">FTP設定を保存</button>
-            <button class="btn secondary" id="downloadFtpGuideBtn" type="button">FTP用ZIPと手順</button>
-          </div>
-          <div class="ftp-guide" id="ftpGuide">
-            <strong>使い方</strong>
-            <ol>
-              <li>「FTP用ZIPと手順」を押してZIPを保存します。</li>
-              <li>ZIPを開き、中のファイル一式をFTPソフトでアップ先フォルダへ入れます。</li>
-              <li>パスワードはこの画面には保存しません。</li>
-            </ol>
-          </div>
-        </div>
+        <button class="btn primary" id="downloadZipBtn" type="button">HTML一式をZIPで保存</button>
       </div>
     </section>
 
@@ -1671,14 +1589,6 @@
       contactText: document.getElementById("contactText"),
       preview: document.getElementById("preview"),
       codeOutput: document.getElementById("codeOutput"),
-      ftpUploadBtn: document.getElementById("ftpUploadBtn"),
-      ftpBox: document.getElementById("ftpBox"),
-      ftpHost: document.getElementById("ftpHost"),
-      ftpUser: document.getElementById("ftpUser"),
-      ftpRemoteDir: document.getElementById("ftpRemoteDir"),
-      ftpMemo: document.getElementById("ftpMemo"),
-      saveFtpSettingsBtn: document.getElementById("saveFtpSettingsBtn"),
-      downloadFtpGuideBtn: document.getElementById("downloadFtpGuideBtn"),
       status: document.getElementById("status")
     };
 
@@ -4571,73 +4481,7 @@ exports.deleteUserByAdmin = onCall(async (request) => {
       return mode === "branded" ? applySakumaFarmCredit(content) : content;
     }
 
-    function ftpStorageKey() {
-      return "sakumaFarmHomepageFtpSettings";
-    }
-
-    function ftpSettings() {
-      return {
-        host: String(els.ftpHost.value || "").trim(),
-        user: String(els.ftpUser.value || "").trim(),
-        remoteDir: String(els.ftpRemoteDir.value || "").trim(),
-        memo: String(els.ftpMemo.value || "").trim()
-      };
-    }
-
-    function saveFtpSettings() {
-      const settings = ftpSettings();
-      localStorage.setItem(ftpStorageKey(), JSON.stringify(settings));
-      els.status.textContent = "FTP設定を保存しました。パスワードは保存しません";
-      return settings;
-    }
-
-    function loadFtpSettings() {
-      try {
-        const settings = JSON.parse(localStorage.getItem(ftpStorageKey()) || "{}");
-        els.ftpHost.value = settings.host || "";
-        els.ftpUser.value = settings.user || "";
-        els.ftpRemoteDir.value = settings.remoteDir || "";
-        els.ftpMemo.value = settings.memo || "";
-      } catch {
-        localStorage.removeItem(ftpStorageKey());
-      }
-    }
-
-    function buildFtpGuide(settings = ftpSettings()) {
-      return `FTPアップロード手順
-
-このZIPを開いて、中のファイル一式をFTPソフトでアップロードしてください。
-ブラウザ版の作成画面からFTPサーバーへ直接送信はできません。
-
-FTP設定
-- サーバーアドレス: ${settings.host || "未設定"}
-- ユーザー名: ${settings.user || "未設定"}
-- アップ先フォルダ: ${settings.remoteDir || "未設定"}
-- メモ: ${settings.memo || "なし"}
-
-アップロードするもの
-- index.html
-- styles.css
-- page-2.html など、2ページ目以降がある場合のHTML
-- images フォルダー
-- files フォルダー
-
-手順
-1. このZIPをダブルクリックして開きます。
-2. FTPソフトを開きます。
-3. サーバーアドレス、ユーザー名、パスワードを入れて接続します。
-4. アップ先フォルダを開きます。
-5. ZIPの中身をすべてアップ先フォルダへ入れます。
-6. ブラウザでホームページのURLを開いて確認します。
-
-注意
-- パスワードはこの作成画面には保存していません。
-- images や files フォルダー名を変えると、写真やPDFリンクが切れることがあります。
-- 古いファイルが残っている場合は、同じ名前のファイルを上書きしてください。
-`;
-    }
-
-    function downloadZip(mode = "licensed", options = {}) {
+    function downloadZip(mode = "licensed") {
       render();
       const exportFiles = buildPageHtmlFiles();
       const pageFiles = exportFiles.pageFiles.map((file) => ({
@@ -4675,7 +4519,7 @@ functions/index.js にCloud Functionsの雛形を入れています。
 利用者側には利用者一覧や削除ボタンを表示しません。
 本番ではFirebase Blazeプラン、Firebase CLIログイン、functionsのデプロイが必要です。
 `;
-      const zipFiles = [
+      const zip = makeZip([
         ...pageFiles,
         ...exportFiles.imageFiles,
         ...exportFiles.fileFiles,
@@ -4691,18 +4535,14 @@ functions/index.js にCloud Functionsの雛形を入れています。
         { name: "functions/package.json", content: buildFunctionsPackageJson() },
         { name: "functions/index.js", content: buildFunctionsIndexJs() },
         { name: "README.txt", content: readme }
-      ];
-      if (options.includeFtpGuide) {
-        zipFiles.push({ name: "ftp-upload-guide.txt", content: buildFtpGuide(options.ftpSettings || ftpSettings()) });
-      }
-      const zip = makeZip(zipFiles);
+      ]);
       const url = URL.createObjectURL(zip);
       const link = document.createElement("a");
       link.href = url;
       link.download = "jichikai-homepage.zip";
       link.click();
       URL.revokeObjectURL(url);
-      els.status.textContent = options.includeFtpGuide ? "FTP用ZIPを保存しました" : "ZIPを保存しました";
+      els.status.textContent = "ZIPを保存しました";
     }
 
     function currentCode(mode = "licensed") {
@@ -4734,20 +4574,6 @@ functions/index.js にCloud Functionsの雛形を入れています。
       if (!mode) return;
       downloadZip(mode);
     });
-    els.ftpUploadBtn.addEventListener("click", () => {
-      els.ftpBox.classList.toggle("open");
-      if (els.ftpBox.classList.contains("open")) {
-        els.status.textContent = "FTP設定を開きました。パスワードは保存しません";
-      }
-    });
-    els.saveFtpSettingsBtn.addEventListener("click", saveFtpSettings);
-    els.downloadFtpGuideBtn.addEventListener("click", async () => {
-      const settings = saveFtpSettings();
-      const mode = await requestedExportMode();
-      if (!mode) return;
-      downloadZip(mode, { includeFtpGuide: true, ftpSettings: settings });
-    });
-    loadFtpSettings();
     els.themeSelect.addEventListener("change", () => {
       applyTheme(els.themeSelect.value);
       render();
