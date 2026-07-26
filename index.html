@@ -499,16 +499,20 @@
     .editor-mode-tabs {
       position: sticky;
       top: 0;
-      z-index: 2;
-      display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
+      z-index: 20;
+      display: flex;
+      flex-wrap: wrap;
       gap: 0;
-      padding: 8px 10px 0;
+      margin: -14px -14px 0;
+      padding: 10px 12px 0;
       background: #fff;
       border-bottom: 1px solid var(--line);
+      box-shadow: 0 8px 14px rgba(255, 255, 255, .96);
     }
 
     .editor-mode-tab {
+      flex: 1 1 74px;
+      min-width: 0;
       min-height: 42px;
       border: 1px solid var(--line);
       border-bottom: 0;
@@ -516,8 +520,12 @@
       background: #eef4f8;
       color: #475569;
       font-weight: 900;
-      padding: 7px 6px;
-      white-space: nowrap;
+      padding: 7px 4px;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      word-break: keep-all;
+      line-height: 1.15;
+      font-size: clamp(12px, 2.6vw, 15px);
     }
 
     .editor-mode-tab + .editor-mode-tab {
@@ -557,6 +565,22 @@
     .template-panel {
       display: grid;
       gap: 10px;
+    }
+
+    .char-count {
+      color: #64748b;
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1.25;
+      text-align: right;
+    }
+
+    .char-count.warning {
+      color: #b45309;
+    }
+
+    .char-count.over {
+      color: #b91c1c;
     }
 
     .template-panel select {
@@ -1659,6 +1683,7 @@
     const els = {
       editorModeTabs: document.getElementById("editorModeTabs"),
       editorPanes: Array.from(document.querySelectorAll("[data-editor-pane]")),
+      editorForm: document.querySelector(".editor-panel .form"),
       pageTabs: document.getElementById("pageTabs"),
       addPageBtn: document.getElementById("addPageBtn"),
       deletePageBtn: document.getElementById("deletePageBtn"),
@@ -1724,6 +1749,63 @@
       els.editorPanes.forEach((pane) => {
         pane.classList.toggle("active", pane.dataset.editorPane === state.activeEditorTab);
       });
+    }
+
+    function textLimitForInput(input) {
+      if (!input || input.type === "hidden" || input.type === "file" || input.type === "range") return 0;
+      const id = input.id || "";
+      if (id === "siteName") return 40;
+      if (id === "pageTitle") return 30;
+      if (id === "catchText") return 90;
+      if (id === "customHeading") return 50;
+      if (id === "customText") return 360;
+      if (id === "scheduleText" || id === "contactText") return 220;
+      if (input.matches("[data-notice-title]")) return 45;
+      if (input.matches("[data-notice-body]")) return 160;
+      const blockField = input.dataset.blockField || "";
+      const [, path = ""] = blockField.split(":");
+      if (path === "heading") return 50;
+      if (path === "text" || path.startsWith("textParts.")) return 320;
+      if (path === "textLinkText" || path.endsWith(".text")) return 40;
+      return 0;
+    }
+
+    function updateTextCounter(input) {
+      const limit = textLimitForInput(input);
+      if (!limit) return;
+      if (input.maxLength !== limit) input.maxLength = limit;
+      let counter = input.nextElementSibling;
+      if (!counter || !counter.classList.contains("char-count")) {
+        counter = document.createElement("div");
+        counter.className = "char-count";
+        input.insertAdjacentElement("afterend", counter);
+      }
+      const remaining = limit - input.value.length;
+      counter.textContent = remaining >= 0 ? `あと ${remaining} 文字` : `${Math.abs(remaining)} 文字多いです`;
+      counter.classList.toggle("warning", remaining <= Math.ceil(limit * .15) && remaining >= 0);
+      counter.classList.toggle("over", remaining < 0);
+    }
+
+    function refreshTextCounters(root = document) {
+      root.querySelectorAll("input, textarea").forEach(updateTextCounter);
+    }
+
+    function renderKeepingEditorPosition(skipAddedBlocks = false) {
+      const scrollTop = els.editorForm ? els.editorForm.scrollTop : 0;
+      const active = document.activeElement;
+      const shouldRestoreFocus = active && els.editorForm?.contains(active) && active.isConnected;
+      const selectionStart = shouldRestoreFocus && typeof active.selectionStart === "number" ? active.selectionStart : null;
+      const selectionEnd = shouldRestoreFocus && typeof active.selectionEnd === "number" ? active.selectionEnd : null;
+      const inputScrollTop = shouldRestoreFocus ? active.scrollTop : 0;
+      render(skipAddedBlocks);
+      if (els.editorForm) els.editorForm.scrollTop = scrollTop;
+      if (shouldRestoreFocus && active.isConnected) {
+        active.focus({ preventScroll: true });
+        if (selectionStart !== null && typeof active.setSelectionRange === "function") {
+          active.setSelectionRange(selectionStart, selectionEnd);
+        }
+        active.scrollTop = inputScrollTop;
+      }
     }
 
     function escapeHtml(value) {
@@ -2940,13 +3022,21 @@
           }).join("")
         : `<div class="status">まだ追加ブロックはありません</div>`;
       autoResizeBlockTextareas();
+      refreshTextCounters(els.addedBlocks);
     }
 
-    function autoResizeBlockTextareas() {
-      els.addedBlocks.querySelectorAll("textarea").forEach((textarea) => {
-        textarea.style.height = "auto";
-        textarea.style.height = `${Math.max(40, textarea.scrollHeight)}px`;
-      });
+    function autoResizeTextarea(textarea) {
+      if (!textarea) return;
+      const scrollTop = els.editorForm ? els.editorForm.scrollTop : 0;
+      const inputScrollTop = textarea.scrollTop;
+      textarea.style.height = "auto";
+      textarea.style.height = `${Math.max(40, textarea.scrollHeight)}px`;
+      textarea.scrollTop = inputScrollTop;
+      if (els.editorForm) els.editorForm.scrollTop = scrollTop;
+    }
+
+    function autoResizeBlockTextareas(root = els.addedBlocks) {
+      root.querySelectorAll("textarea").forEach(autoResizeTextarea);
     }
 
     function buildPreviewHtml() {
@@ -4329,6 +4419,7 @@ exports.deleteUserByAdmin = onCall(async (request) => {
       els.codeOutput.textContent = state.activeTab === "html" ? state.html : state.activeTab === "css" ? state.css : state.blockHtml;
       if (!skipAddedBlocks) renderAddedBlocks();
       updateNoticeSelection();
+      refreshTextCounters(els.editorForm);
       els.status.textContent = "ソースを生成しました";
     }
 
@@ -5210,8 +5301,9 @@ functions/index.js にCloud Functionsの雛形を入れています。
           if (key === "url" && !isDataUrl(input.value)) link.fileName = "";
         }
       }
-      if (input.tagName === "TEXTAREA") autoResizeBlockTextareas();
-      render(true);
+      if (input.tagName === "TEXTAREA") autoResizeTextarea(input);
+      updateTextCounter(input);
+      renderKeepingEditorPosition(true);
     });
 
     optionalEls.noticeBoxes.forEach((box, index) => {
@@ -5238,7 +5330,10 @@ functions/index.js にCloud Functionsの雛形を入れています。
     });
 
     document.querySelectorAll("input, textarea, select").forEach((input) => {
-      input.addEventListener("input", render);
+      input.addEventListener("input", () => {
+        updateTextCounter(input);
+        renderKeepingEditorPosition();
+      });
     });
 
     initializeTemplates();
