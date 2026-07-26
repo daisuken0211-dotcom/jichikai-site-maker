@@ -492,6 +492,80 @@
       gap: 8px;
     }
 
+    .button-row.action-row {
+      grid-template-columns: 1fr;
+    }
+
+    .editor-mode-tabs {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 0;
+      padding: 8px 10px 0;
+      background: #fff;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .editor-mode-tab {
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-bottom: 0;
+      border-radius: 10px 10px 0 0;
+      background: #eef4f8;
+      color: #475569;
+      font-weight: 900;
+      padding: 7px 6px;
+      white-space: nowrap;
+    }
+
+    .editor-mode-tab + .editor-mode-tab {
+      margin-left: -1px;
+    }
+
+    .editor-mode-tab.active {
+      background: #fff;
+      color: var(--green-dark);
+      border-color: #bfd3e5;
+      box-shadow: 0 -2px 0 var(--green) inset;
+    }
+
+    .editor-pane {
+      display: none;
+      gap: 10px;
+    }
+
+    .editor-pane.active {
+      display: grid;
+    }
+
+    .pane-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #f8fafc;
+      color: #334155;
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .template-panel {
+      display: grid;
+      gap: 10px;
+    }
+
+    .template-panel select {
+      min-height: 46px;
+      font-weight: 900;
+      border-width: 2px;
+      background: #fff;
+    }
+
     .btn {
       min-height: 46px;
       border: 2px solid var(--line);
@@ -1231,6 +1305,16 @@
       .editor-panel .form {
         overflow: visible;
       }
+
+      .editor-mode-tabs {
+        display: flex;
+        overflow-x: auto;
+        scrollbar-gutter: stable;
+      }
+
+      .editor-mode-tab {
+        min-width: 92px;
+      }
     }
   </style>
 </head>
@@ -1246,192 +1330,220 @@
     <section class="panel editor-panel">
       <div class="panel-head">はめ込む内容</div>
       <div class="form">
-        <div class="section-box">
-          <label>ページ</label>
-          <div class="page-tabs" id="pageTabs"></div>
-          <div class="page-actions">
-            <button class="btn secondary" id="addPageBtn" type="button">新しいページを追加</button>
-            <button class="small-btn" id="deletePageBtn" type="button">ページ削除</button>
+        <div class="editor-mode-tabs" id="editorModeTabs">
+          <button class="editor-mode-tab active" type="button" data-editor-tab="page">ページ</button>
+          <button class="editor-mode-tab" type="button" data-editor-tab="header">帯</button>
+          <button class="editor-mode-tab" type="button" data-editor-tab="blocks">ブロック</button>
+          <button class="editor-mode-tab" type="button" data-editor-tab="design">デザイン</button>
+          <button class="editor-mode-tab" type="button" data-editor-tab="template">テンプレート</button>
+        </div>
+
+        <div class="editor-pane active" data-editor-pane="page">
+          <div class="pane-title">ページの基本情報</div>
+          <div class="section-box">
+            <label>ページ</label>
+            <div class="page-tabs" id="pageTabs"></div>
+            <div class="page-actions">
+              <button class="btn secondary" id="addPageBtn" type="button">新しいページを追加</button>
+              <button class="small-btn" id="deletePageBtn" type="button">ページ削除</button>
+            </div>
+            <div class="field">
+              <label for="pageTitle">このページ名</label>
+              <input id="pageTitle" value="ホーム">
+            </div>
           </div>
+
           <div class="field">
-            <label for="pageTitle">このページ名</label>
-            <input id="pageTitle" value="ホーム">
+            <label for="siteName">自治会名</label>
+            <input id="siteName" value="みどり町自治会">
           </div>
-          <div class="field">
-            <label for="navPosition">リンクバー</label>
-            <select id="navPosition">
-              <option value="top">上に固定</option>
-              <option value="left">左に固定</option>
-            </select>
+
+          <div class="field optional-box" id="catchBox">
+            <label for="catchText">最初に見せる言葉</label>
+            <textarea id="catchText">住みよいまちづくりのために、地域の情報をわかりやすくお届けします。</textarea>
           </div>
-          <div class="field">
-            <label for="navStyleSelect">リンクバーの見た目</label>
-            <select id="navStyleSelect">
-              <option value="pill">丸ボタン</option>
-              <option value="box">四角カード</option>
-              <option value="underline">下線だけ</option>
-              <option value="solid">濃い色の帯</option>
-              <option value="softbar">やさしい帯</option>
-            </select>
+
+          <div class="section-box">
+            <label>作りかけ保存・読み込み</label>
+            <div class="compact-row">
+              <button class="btn secondary" id="saveProjectBtn" type="button">設定を保存</button>
+              <button class="btn secondary" id="loadProjectBtn" type="button">設定を読み込む</button>
+            </div>
+            <input id="projectFileInput" type="file" accept="application/json,.json" hidden>
+            <input id="linkFileInput" type="file" accept="application/pdf,.pdf,image/*,.doc,.docx,.xls,.xlsx,.ppt,.pptx" hidden>
+            <input id="blockPhotoInput" type="file" accept="image/*" hidden>
           </div>
         </div>
 
-        <div class="section-box">
-          <label>全体の色合い</label>
-          <div class="theme-swatches" id="themeSwatches"></div>
-          <select id="themeSelect">
-            <option value="green">緑</option>
-            <option value="blue">青</option>
-            <option value="red">赤</option>
-            <option value="orange">オレンジ</option>
-            <option value="purple">紫</option>
-            <option value="teal">青緑</option>
-            <option value="navy">紺</option>
-            <option value="pink">桃色</option>
-            <option value="brown">茶色</option>
-            <option value="black">黒</option>
-            <option value="gray">落ち着いた灰色</option>
-          </select>
-          <label for="headingStyleSelect">見出しの形</label>
-          <select id="headingStyleSelect">
-            <option value="simple">シンプル</option>
-            <option value="line">上下線で見出し</option>
-            <option value="band">色付き帯で見出し</option>
-            <option value="card">左太線カード</option>
-            <option value="round">丸囲み</option>
-            <option value="marker">マーカー線</option>
-            <option value="sideband">淡い帯</option>
-          </select>
-          <label>
-            <input id="headerPhotoEnabled" type="checkbox">
-            上の帯に専用写真を薄く表示
-          </label>
-          <label for="headerPhotoScope">帯写真を出すページ</label>
-          <select id="headerPhotoScope">
-            <option value="top">トップだけ</option>
-            <option value="all">全ページ</option>
-          </select>
-          <label for="headerPhotoPosition">帯写真の位置</label>
-          <select id="headerPhotoPosition">
-            <option value="center center">中央</option>
-            <option value="center top">上</option>
-            <option value="center bottom">下</option>
-            <option value="left center">左</option>
-            <option value="right center">右</option>
-            <option value="left top">左上</option>
-            <option value="right top">右上</option>
-            <option value="left bottom">左下</option>
-            <option value="right bottom">右下</option>
-            <option value="custom">細かく調整</option>
-          </select>
-          <div class="compact-row">
-            <label>帯写真 左右
-              <input id="headerPhotoX" type="range" min="0" max="100" value="50">
+        <div class="editor-pane" data-editor-pane="header">
+          <div class="pane-title">上の帯・帯写真</div>
+          <div class="section-box">
+            <label>
+              <input id="headerPhotoEnabled" type="checkbox">
+              上の帯に専用写真を薄く表示
             </label>
-            <label>帯写真 上下
-              <input id="headerPhotoY" type="range" min="0" max="100" value="50">
+            <label for="headerPhotoScope">帯写真を出すページ</label>
+            <select id="headerPhotoScope">
+              <option value="top">トップだけ</option>
+              <option value="all">全ページ</option>
+            </select>
+            <label for="headerPhotoPosition">帯写真の位置</label>
+            <select id="headerPhotoPosition">
+              <option value="center center">中央</option>
+              <option value="center top">上</option>
+              <option value="center bottom">下</option>
+              <option value="left center">左</option>
+              <option value="right center">右</option>
+              <option value="left top">左上</option>
+              <option value="right top">右上</option>
+              <option value="left bottom">左下</option>
+              <option value="right bottom">右下</option>
+              <option value="custom">細かく調整</option>
+            </select>
+            <div class="compact-row">
+              <label>帯写真 左右
+                <input id="headerPhotoX" type="range" min="0" max="100" value="50">
+              </label>
+              <label>帯写真 上下
+                <input id="headerPhotoY" type="range" min="0" max="100" value="50">
+              </label>
+            </div>
+            <label>帯写真 拡大
+              <input id="headerPhotoZoom" type="range" min="100" max="180" value="100">
             </label>
+            <button class="btn secondary" id="chooseHeaderPhotoBtn" type="button">帯写真をファイルから選ぶ</button>
+            <input id="headerPhotoInput" type="file" accept="image/*" hidden>
+            <input id="headerPhotoUrl" placeholder="帯写真URL または下の写真一覧から帯写真を選択">
           </div>
-          <label>帯写真 拡大
-            <input id="headerPhotoZoom" type="range" min="100" max="180" value="100">
-          </label>
-          <button class="btn secondary" id="chooseHeaderPhotoBtn" type="button">帯写真をファイルから選ぶ</button>
-          <input id="headerPhotoInput" type="file" accept="image/*" hidden>
-          <input id="headerPhotoUrl" placeholder="帯写真URL または下の写真一覧から帯写真を選択">
         </div>
 
-        <div class="section-box">
-          <label>作りかけ保存・読み込み</label>
-          <div class="compact-row">
-            <button class="btn secondary" id="saveProjectBtn" type="button">設定を保存</button>
-            <button class="btn secondary" id="loadProjectBtn" type="button">設定を読み込む</button>
+        <div class="editor-pane" data-editor-pane="blocks">
+          <div class="pane-title">追加する部品と写真</div>
+          <div class="section-box optional-box" id="photoBox">
+            <label>写真フォルダー</label>
+            <div class="status">PCの写真は自動でホームページ用に軽くします</div>
+            <div class="status">選んだ写真・PDFはサーバーへ送信しません。この画面内で処理してZIPに入れます。</div>
+            <div class="status">写真は「写真ブロック」を追加して入れます。写真ブロックごとに1枚・2枚・3枚を選べます。</div>
+            <div class="photo-actions">
+              <button class="btn secondary" id="choosePhotoFolderBtn" type="button">PCの写真フォルダーを選ぶ</button>
+              <button class="small-btn" id="clearPhotoLibraryBtn" type="button">一覧クリア</button>
+            </div>
+            <input id="photoFolderInput" type="file" accept="image/*" multiple webkitdirectory hidden>
+            <div class="photo-library" id="photoLibrary"></div>
+            <input id="photoUrl1" type="hidden">
+            <input id="photoUrl2" type="hidden">
+            <input id="photoUrl3" type="hidden">
+            <input id="photoX" type="hidden" value="50">
+            <input id="photoY" type="hidden" value="50">
+            <input id="photoZoom" type="hidden" value="100">
           </div>
-          <input id="projectFileInput" type="file" accept="application/json,.json" hidden>
-          <input id="linkFileInput" type="file" accept="application/pdf,.pdf,image/*,.doc,.docx,.xls,.xlsx,.ppt,.pptx" hidden>
-          <input id="blockPhotoInput" type="file" accept="image/*" hidden>
-        </div>
 
-        <div class="field">
-          <label for="siteName">自治会名</label>
-          <input id="siteName" value="みどり町自治会">
-        </div>
-
-        <div class="field optional-box" id="catchBox">
-          <label for="catchText">最初に見せる言葉</label>
-          <textarea id="catchText">住みよいまちづくりのために、地域の情報をわかりやすくお届けします。</textarea>
-        </div>
-
-        <div class="section-box optional-box" id="photoBox">
-          <label>写真フォルダー</label>
-          <div class="status">PCの写真は自動でホームページ用に軽くします</div>
-          <div class="status">選んだ写真・PDFはサーバーへ送信しません。この画面内で処理してZIPに入れます。</div>
-          <div class="status">写真は「写真ブロック」を追加して入れます。写真ブロックごとに1枚・2枚・3枚を選べます。</div>
-          <div class="photo-actions">
-            <button class="btn secondary" id="choosePhotoFolderBtn" type="button">PCの写真フォルダーを選ぶ</button>
-            <button class="small-btn" id="clearPhotoLibraryBtn" type="button">一覧クリア</button>
+          <div class="section-box">
+            <label>この下に追加するブロック</label>
+            <div class="block-panel-label">1. 追加する部品を選ぶ</div>
+            <div class="block-tabs" id="blockTabs"></div>
+            <div class="block-picker" id="blockPicker"></div>
+            <div class="block-panel-label">2. 追加した部品の内容・配置を編集</div>
+            <div class="added-blocks" id="addedBlocks"></div>
           </div>
-          <input id="photoFolderInput" type="file" accept="image/*" multiple webkitdirectory hidden>
-          <div class="photo-library" id="photoLibrary"></div>
-          <input id="photoUrl1" type="hidden">
-          <input id="photoUrl2" type="hidden">
-          <input id="photoUrl3" type="hidden">
-          <input id="photoX" type="hidden" value="50">
-          <input id="photoY" type="hidden" value="50">
-          <input id="photoZoom" type="hidden" value="100">
+
+          <div class="section-box optional-box" id="customBox">
+            <label>白紙ブロック用の見出し・本文</label>
+            <input id="customHeading" placeholder="例: 自治会の活動紹介">
+            <textarea id="customText" placeholder="ここに自由に文章を入れます。写真左・文字右などの追加ブロックにも使えます。"></textarea>
+          </div>
+
+          <div class="section-box optional-box notice-box" data-notice-box="0">
+            <label>お知らせ 1</label>
+            <input data-notice-title="0" value="町内清掃のお知らせ">
+            <textarea data-notice-body="0">7月20日朝8時より町内清掃を行います。公民館前に集合してください。</textarea>
+          </div>
+
+          <div class="section-box optional-box notice-box" data-notice-box="1">
+            <label>お知らせ 2</label>
+            <input data-notice-title="1" value="夏祭りのご案内">
+            <textarea data-notice-body="1">8月3日午後5時より、公民館前広場で夏祭りを開催します。</textarea>
+          </div>
+
+          <div class="section-box optional-box notice-box" data-notice-box="2">
+            <label>お知らせ 3</label>
+            <input data-notice-title="2" value="防災訓練について">
+            <textarea data-notice-body="2">9月1日に防災訓練を行います。詳細は回覧板でお知らせします。</textarea>
+          </div>
+
+          <div class="field optional-box" id="scheduleBox">
+            <label for="scheduleText">行事予定</label>
+            <textarea id="scheduleText">毎月第1日曜日: 町内清掃 / 毎月15日: 回覧板配布 / 9月1日: 防災訓練</textarea>
+          </div>
+
+          <div class="field optional-box" id="contactBox">
+            <label for="contactText">連絡先</label>
+            <textarea id="contactText">お問い合わせは自治会役員または班長までお願いします。</textarea>
+          </div>
         </div>
 
-        <div class="field">
-          <label for="templateSelect">表示テンプレート</label>
-          <select id="templateSelect"></select>
+        <div class="editor-pane" data-editor-pane="design">
+          <div class="pane-title">色・見出し・リンクバー</div>
+          <div class="section-box">
+            <label>全体の色合い</label>
+            <div class="theme-swatches" id="themeSwatches"></div>
+            <select id="themeSelect">
+              <option value="green">緑</option>
+              <option value="blue">青</option>
+              <option value="red">赤</option>
+              <option value="orange">オレンジ</option>
+              <option value="purple">紫</option>
+              <option value="teal">青緑</option>
+              <option value="navy">紺</option>
+              <option value="pink">桃色</option>
+              <option value="brown">茶色</option>
+              <option value="black">黒</option>
+              <option value="gray">落ち着いた灰色</option>
+            </select>
+            <label for="headingStyleSelect">見出しの形</label>
+            <select id="headingStyleSelect">
+              <option value="simple">シンプル</option>
+              <option value="line">上下線で見出し</option>
+              <option value="band">色付き帯で見出し</option>
+              <option value="card">左太線カード</option>
+              <option value="round">丸囲み</option>
+              <option value="marker">マーカー線</option>
+              <option value="sideband">淡い帯</option>
+            </select>
+            <div class="field">
+              <label for="navPosition">リンクバー</label>
+              <select id="navPosition">
+                <option value="top">上に固定</option>
+                <option value="left">左に固定</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="navStyleSelect">リンクバーの見た目</label>
+              <select id="navStyleSelect">
+                <option value="pill">丸ボタン</option>
+                <option value="box">四角カード</option>
+                <option value="underline">下線だけ</option>
+                <option value="solid">濃い色の帯</option>
+                <option value="softbar">やさしい帯</option>
+              </select>
+            </div>
+          </div>
         </div>
 
-        <div class="section-box">
-          <label>この下に追加するブロック</label>
-          <div class="block-panel-label">1. 追加する部品を選ぶ</div>
-          <div class="block-tabs" id="blockTabs"></div>
-          <div class="block-picker" id="blockPicker"></div>
-          <div class="block-panel-label">2. 追加した部品の内容・配置を編集</div>
-          <div class="added-blocks" id="addedBlocks"></div>
+        <div class="editor-pane" data-editor-pane="template">
+          <div class="pane-title">全体の型を選ぶ</div>
+          <div class="section-box template-panel">
+            <label for="templateSelect">表示テンプレート</label>
+            <select id="templateSelect"></select>
+            <div class="button-row">
+              <button class="btn secondary" id="sampleBtn" type="button">例を入れる</button>
+              <button class="btn secondary" id="standardSetBtn" type="button">自治会HP標準セット</button>
+            </div>
+          </div>
         </div>
 
-        <div class="section-box optional-box" id="customBox">
-          <label>白紙ブロック用の見出し・本文</label>
-          <input id="customHeading" placeholder="例: 自治会の活動紹介">
-          <textarea id="customText" placeholder="ここに自由に文章を入れます。写真左・文字右などの追加ブロックにも使えます。"></textarea>
-        </div>
-
-        <div class="section-box optional-box notice-box" data-notice-box="0">
-          <label>お知らせ 1</label>
-          <input data-notice-title="0" value="町内清掃のお知らせ">
-          <textarea data-notice-body="0">7月20日朝8時より町内清掃を行います。公民館前に集合してください。</textarea>
-        </div>
-
-        <div class="section-box optional-box notice-box" data-notice-box="1">
-          <label>お知らせ 2</label>
-          <input data-notice-title="1" value="夏祭りのご案内">
-          <textarea data-notice-body="1">8月3日午後5時より、公民館前広場で夏祭りを開催します。</textarea>
-        </div>
-
-        <div class="section-box optional-box notice-box" data-notice-box="2">
-          <label>お知らせ 3</label>
-          <input data-notice-title="2" value="防災訓練について">
-          <textarea data-notice-body="2">9月1日に防災訓練を行います。詳細は回覧板でお知らせします。</textarea>
-        </div>
-
-        <div class="field optional-box" id="scheduleBox">
-          <label for="scheduleText">行事予定</label>
-          <textarea id="scheduleText">毎月第1日曜日: 町内清掃 / 毎月15日: 回覧板配布 / 9月1日: 防災訓練</textarea>
-        </div>
-
-        <div class="field optional-box" id="contactBox">
-          <label for="contactText">連絡先</label>
-          <textarea id="contactText">お問い合わせは自治会役員または班長までお願いします。</textarea>
-        </div>
-
-        <div class="button-row">
+        <div class="button-row action-row">
           <button class="btn primary" id="generateBtn" type="button">ソースを作る</button>
-          <button class="btn secondary" id="sampleBtn" type="button">例を入れる</button>
-          <button class="btn secondary" id="standardSetBtn" type="button">自治会HP標準セット</button>
         </div>
 
         <div class="button-row">
@@ -1467,6 +1579,7 @@
   <script>
     const state = {
       activeTab: "html",
+      activeEditorTab: "page",
       activeBlockCategory: "basic",
       html: "",
       css: "",
@@ -1544,6 +1657,8 @@
     ];
 
     const els = {
+      editorModeTabs: document.getElementById("editorModeTabs"),
+      editorPanes: Array.from(document.querySelectorAll("[data-editor-pane]")),
       pageTabs: document.getElementById("pageTabs"),
       addPageBtn: document.getElementById("addPageBtn"),
       deletePageBtn: document.getElementById("deletePageBtn"),
@@ -1600,6 +1715,16 @@
       scheduleBox: document.getElementById("scheduleBox"),
       contactBox: document.getElementById("contactBox")
     };
+
+    function applyEditorTab(tabId) {
+      state.activeEditorTab = tabId || "page";
+      els.editorModeTabs.querySelectorAll("[data-editor-tab]").forEach((button) => {
+        button.classList.toggle("active", button.dataset.editorTab === state.activeEditorTab);
+      });
+      els.editorPanes.forEach((pane) => {
+        pane.classList.toggle("active", pane.dataset.editorPane === state.activeEditorTab);
+      });
+    }
 
     function escapeHtml(value) {
       return String(value || "")
@@ -4558,6 +4683,11 @@ functions/index.js にCloud Functionsの雛形を入れています。
     }
 
     document.getElementById("generateBtn").addEventListener("click", render);
+    els.editorModeTabs.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-editor-tab]");
+      if (!button) return;
+      applyEditorTab(button.dataset.editorTab);
+    });
     document.getElementById("copyHtmlBtn").addEventListener("click", async () => {
       const mode = await requestedExportMode();
       if (!mode) return;
@@ -4749,6 +4879,7 @@ functions/index.js にCloud Functionsの雛形を入れています。
     function activateNotice(index) {
       state.activeBlockId = "";
       state.activeNoticeIndex = Math.min(Math.max(Number(index) || 0, 0), 2);
+      applyEditorTab("blocks");
       renderAddedBlocks();
       render(true);
       updateNoticeSelection();
@@ -4843,6 +4974,7 @@ functions/index.js にCloud Functionsの雛形を入れています。
         if (!state.extraBlocks.some((block) => block.id === blockId)) return;
         state.activeBlockId = blockId;
         state.activeNoticeIndex = -1;
+        applyEditorTab("blocks");
         renderAddedBlocks();
         render(true);
         updateNoticeSelection();
@@ -5111,6 +5243,7 @@ functions/index.js にCloud Functionsの雛形を入れています。
 
     initializeTemplates();
     initializeThemes();
+    applyEditorTab(state.activeEditorTab);
     applyHeadingStyle(state.headingStyle);
     applyNavStyle(state.navStyle);
     initializePages();
