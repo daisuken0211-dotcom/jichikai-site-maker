@@ -30,6 +30,8 @@
       color: var(--ink);
       background: var(--paper);
       line-height: 1.65;
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
     }
 
     button,
@@ -467,9 +469,15 @@
 
     .link-grid {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) auto;
-      gap: 6px;
-      align-items: center;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      align-items: stretch;
+    }
+
+    .link-grid .small-btn {
+      width: 100%;
+      min-height: 44px;
+      white-space: nowrap;
     }
 
     .link-grid .photo-choice-meta {
@@ -497,46 +505,53 @@
     }
 
     .editor-mode-tabs {
-      position: sticky;
-      top: 0;
+      position: static;
       z-index: 20;
       display: flex;
       flex-wrap: wrap;
-      gap: 0;
-      margin: -14px -14px 0;
-      padding: 10px 12px 0;
+      gap: 8px;
+      margin: 0;
+      padding: 8px 12px;
       background: #fff;
-      border-bottom: 1px solid var(--line);
-      box-shadow: 0 8px 14px rgba(255, 255, 255, .96);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      box-shadow: none;
+      overflow: visible;
     }
 
     .editor-mode-tab {
-      flex: 1 1 74px;
-      min-width: 0;
-      min-height: 42px;
-      border: 1px solid var(--line);
-      border-bottom: 0;
-      border-radius: 10px 10px 0 0;
+      flex: 1 1 96px;
+      min-width: max-content;
+      min-height: 44px;
+      border: 2px solid var(--line);
+      border-radius: 999px;
       background: #eef4f8;
       color: #475569;
       font-weight: 900;
-      padding: 7px 4px;
-      white-space: normal;
-      overflow-wrap: anywhere;
+      padding: 8px 16px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: clip;
       word-break: keep-all;
       line-height: 1.15;
-      font-size: clamp(12px, 2.6vw, 15px);
+      font-size: 16px;
+    }
+
+    .editor-mode-tabs.detail-mode .editor-mode-tab {
+      flex-basis: 112px;
+      min-width: max-content;
+      font-size: 16px;
     }
 
     .editor-mode-tab + .editor-mode-tab {
-      margin-left: -1px;
+      margin-left: 0;
     }
 
     .editor-mode-tab.active {
-      background: #fff;
-      color: var(--green-dark);
-      border-color: #bfd3e5;
-      box-shadow: 0 -2px 0 var(--green) inset;
+      background: var(--green);
+      color: #fff;
+      border-color: var(--green);
+      box-shadow: 0 4px 0 rgba(36, 95, 67, .16);
     }
 
     .editor-pane {
@@ -565,6 +580,159 @@
     .template-panel {
       display: grid;
       gap: 10px;
+    }
+
+    .editor-mode-switch {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      justify-content: flex-start;
+      margin: 0 0 2px;
+      padding: 0;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: transparent;
+      border-color: transparent;
+    }
+
+    .editor-mode-switch button {
+      flex: 0 0 auto;
+      min-height: 38px;
+      border: 2px solid var(--line);
+      border-radius: 999px;
+      background: #f8fafc;
+      color: #334155;
+      font-weight: 900;
+      font-size: 15px;
+      line-height: 1.2;
+      padding: 7px 16px;
+      white-space: nowrap;
+    }
+
+    .editor-mode-switch button.active {
+      border-color: var(--green);
+      background: var(--green);
+      color: #fff;
+      box-shadow: none;
+    }
+
+    .easy-shortcuts {
+      display: grid;
+      gap: 10px;
+      padding: 12px;
+      border: 1px solid #c7dfd2;
+      border-radius: 8px;
+      background: var(--soft-green);
+    }
+
+    .easy-shortcuts.hidden {
+      display: none;
+    }
+
+    .easy-title {
+      color: var(--green-dark);
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .easy-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .easy-action {
+      min-height: 44px;
+      border: 2px solid rgba(36, 95, 67, .22);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--green-dark);
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .easy-note {
+      color: #475569;
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1.45;
+    }
+
+    .heading-style-sample {
+      display: grid;
+      gap: 8px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .heading-style-sample h2 {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.35;
+    }
+
+    .heading-style-sample.heading-simple h2 {
+      border-left: 6px solid var(--green);
+      color: var(--ink);
+      background: transparent;
+      padding: 0 0 0 10px;
+    }
+
+    .heading-style-sample.heading-line h2 {
+      border-bottom: 1px solid var(--line);
+      color: var(--green-dark);
+      padding: 8px 0;
+    }
+
+    .heading-style-sample.heading-line h2::before {
+      content: "";
+      display: block;
+      height: 3px;
+      margin-bottom: 8px;
+      background: var(--green);
+    }
+
+    .heading-style-sample.heading-band h2 {
+      border-radius: 8px;
+      background: var(--green);
+      color: #fff;
+      padding: 8px 12px;
+    }
+
+    .heading-style-sample.heading-card h2 {
+      border: 2px solid var(--green);
+      border-left-width: 10px;
+      border-radius: 8px;
+      background: #fff;
+      color: var(--green-dark);
+      padding: 8px 12px;
+    }
+
+    .heading-style-sample.heading-round h2 {
+      display: inline-block;
+      width: fit-content;
+      border: 3px solid var(--green);
+      border-radius: 999px;
+      background: #fff;
+      color: var(--green-dark);
+      padding: 7px 18px;
+    }
+
+    .heading-style-sample.heading-marker h2 {
+      width: fit-content;
+      color: var(--green-dark);
+      background: linear-gradient(transparent 58%, var(--soft-gold) 58%);
+      padding: 0;
+    }
+
+    .heading-style-sample.heading-sideband h2 {
+      border-top: 4px solid var(--green);
+      background: var(--soft-green);
+      color: var(--green-dark);
+      padding: 10px 12px;
     }
 
     .char-count {
@@ -633,6 +801,11 @@
       background: var(--soft-green);
       border-bottom: 1px solid #c7dfd2;
       padding: 30px 0;
+      cursor: pointer;
+    }
+
+    .site-preview h2 {
+      cursor: pointer;
     }
 
     .site-preview .header-inner {
@@ -997,6 +1170,12 @@
       transition: outline-color .18s ease, box-shadow .18s ease;
     }
 
+    .site-preview .is-design-hint {
+      outline: 4px solid rgba(200, 138, 45, .28);
+      outline-offset: 5px;
+      box-shadow: 0 0 0 8px rgba(200, 138, 45, .10);
+    }
+
     .cards {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1332,12 +1511,13 @@
 
       .editor-mode-tabs {
         display: flex;
-        overflow-x: auto;
-        scrollbar-gutter: stable;
+        flex-wrap: wrap;
+        overflow: visible;
+        margin: 0;
       }
 
       .editor-mode-tab {
-        min-width: 92px;
+        min-width: max-content;
       }
     }
   </style>
@@ -1354,6 +1534,23 @@
     <section class="panel editor-panel">
       <div class="panel-head">はめ込む内容</div>
       <div class="form">
+        <div class="editor-mode-switch" id="editorModeSwitch">
+          <button class="active" type="button" data-editor-mode="easy">かんたんモード</button>
+          <button type="button" data-editor-mode="detail">詳細モード</button>
+        </div>
+
+        <div class="easy-shortcuts" id="easyShortcuts">
+          <div class="easy-title">よく使う作業</div>
+          <div class="easy-actions">
+            <button class="easy-action" type="button" data-easy-action="text">文章を追加</button>
+            <button class="easy-action" type="button" data-easy-action="photo">写真を追加</button>
+            <button class="easy-action" type="button" data-easy-action="pdf">PDFを追加</button>
+            <button class="easy-action" type="button" data-easy-action="design">色・帯を変更</button>
+            <button class="easy-action" type="button" data-easy-action="word">Word下書き</button>
+          </div>
+          <div class="easy-note">プレビューの部品を押すと、その場所を左で直せます。帯を押すと帯写真、見出しを押すと色や見出しの形を変えられます。</div>
+        </div>
+
         <div class="editor-mode-tabs" id="editorModeTabs">
           <button class="editor-mode-tab active" type="button" data-editor-tab="page">ページ</button>
           <button class="editor-mode-tab" type="button" data-editor-tab="header">帯</button>
@@ -1534,6 +1731,10 @@
               <option value="marker">マーカー線</option>
               <option value="sideband">淡い帯</option>
             </select>
+            <div class="heading-style-sample heading-simple" id="headingStyleSample">
+              <div class="easy-note">選んだ形はここで確認できます。ホームページ内の見出しにも反映されます。</div>
+              <h2>見出しサンプル</h2>
+            </div>
             <div class="field">
               <label for="navPosition">リンクバー</label>
               <select id="navPosition">
@@ -1603,6 +1804,7 @@
   <script>
     const state = {
       activeTab: "html",
+      editorMode: "easy",
       activeEditorTab: "page",
       activeBlockCategory: "basic",
       html: "",
@@ -1680,7 +1882,26 @@
       { id: "earthquakeMail", category: "safety", name: "緊急地震速報メール案内" }
     ];
 
+    const editorTabLabels = {
+      easy: {
+        page: "基本",
+        header: "帯",
+        blocks: "部品",
+        design: "色",
+        template: "型"
+      },
+      detail: {
+        page: "ページ",
+        header: "帯",
+        blocks: "ブロック",
+        design: "デザイン",
+        template: "型選択"
+      }
+    };
+
     const els = {
+      editorModeSwitch: document.getElementById("editorModeSwitch"),
+      easyShortcuts: document.getElementById("easyShortcuts"),
       editorModeTabs: document.getElementById("editorModeTabs"),
       editorPanes: Array.from(document.querySelectorAll("[data-editor-pane]")),
       editorForm: document.querySelector(".editor-panel .form"),
@@ -1692,6 +1913,7 @@
       navStyleSelect: document.getElementById("navStyleSelect"),
       themeSelect: document.getElementById("themeSelect"),
       headingStyleSelect: document.getElementById("headingStyleSelect"),
+      headingStyleSample: document.getElementById("headingStyleSample"),
       headerPhotoEnabled: document.getElementById("headerPhotoEnabled"),
       headerPhotoScope: document.getElementById("headerPhotoScope"),
       headerPhotoPosition: document.getElementById("headerPhotoPosition"),
@@ -1748,6 +1970,19 @@
       });
       els.editorPanes.forEach((pane) => {
         pane.classList.toggle("active", pane.dataset.editorPane === state.activeEditorTab);
+      });
+    }
+
+    function applyEditorMode(mode = state.editorMode) {
+      state.editorMode = mode === "detail" ? "detail" : "easy";
+      const labels = editorTabLabels[state.editorMode];
+      els.editorModeSwitch.querySelectorAll("[data-editor-mode]").forEach((button) => {
+        button.classList.toggle("active", button.dataset.editorMode === state.editorMode);
+      });
+      els.easyShortcuts.classList.toggle("hidden", state.editorMode !== "easy");
+      els.editorModeTabs.classList.toggle("detail-mode", state.editorMode === "detail");
+      els.editorModeTabs.querySelectorAll("[data-editor-tab]").forEach((button) => {
+        button.textContent = labels[button.dataset.editorTab] || button.textContent;
       });
     }
 
@@ -1873,6 +2108,35 @@
           { text: "", url: "", fileName: "" }
         ]
       };
+    }
+
+    function addBlock(type, options = {}) {
+      const block = { ...defaultBlock(type), ...(options.block || {}) };
+      if (block.text && (!options.block || !Array.isArray(options.block.textParts))) {
+        block.textParts = [block.text, "", ""];
+      }
+      const activeIndex = state.extraBlocks.findIndex((item) => item.id === state.activeBlockId);
+      const insertIndex = activeIndex >= 0 ? activeIndex + 1 : state.extraBlocks.length;
+      state.extraBlocks.splice(insertIndex, 0, block);
+      state.activeBlockId = block.id;
+      state.activeNoticeIndex = -1;
+      applyEditorTab("blocks");
+      if (options.category) state.activeBlockCategory = options.category;
+      renderBlockPicker();
+      render();
+      renderPhotoLibrary();
+      setTimeout(scrollActiveBlockIntoView, 0);
+      if (options.choosePhoto && ["photo", "photoTextLeft", "textPhotoRight"].includes(block.type)) {
+        state.pendingBlockPhotoTarget = { blockIndex: insertIndex, slotIndex: 0 };
+        els.status.textContent = "写真ブロックを追加しました。続けて写真を選んでください";
+        setTimeout(() => {
+          els.blockPhotoInput.value = "";
+          els.blockPhotoInput.click();
+        }, 0);
+        return block;
+      }
+      els.status.textContent = "部品を追加しました。左側で内容を入れてください";
+      return block;
     }
 
     function standardBlock(type, values = {}) {
@@ -2099,6 +2363,7 @@
     function applyHeadingStyle(style = state.headingStyle) {
       state.headingStyle = ["simple", "line", "band", "card", "round", "marker", "sideband"].includes(style) ? style : "simple";
       els.headingStyleSelect.value = state.headingStyle;
+      els.headingStyleSample.className = `heading-style-sample heading-${state.headingStyle}`;
     }
 
     function applyNavStyle(style = state.navStyle) {
@@ -2398,6 +2663,7 @@
       saveCurrentPage();
       return {
         version: 1,
+        editorMode: state.editorMode,
         themeId: state.themeId,
         headingStyle: state.headingStyle,
         navStyle: state.navStyle,
@@ -2417,6 +2683,7 @@
         return;
       }
       state.themeId = themes[data.themeId] ? data.themeId : "green";
+      state.editorMode = data.editorMode === "detail" ? "detail" : "easy";
       state.headingStyle = ["simple", "line", "band", "card", "round", "marker", "sideband"].includes(data.headingStyle) ? data.headingStyle : "simple";
       state.navStyle = ["pill", "box", "underline", "solid", "softbar"].includes(data.navStyle) ? data.navStyle : "pill";
       state.headerPhotoEnabled = Boolean(data.headerPhotoEnabled);
@@ -2434,6 +2701,7 @@
       state.pages = cloneData(data.pages);
       state.currentPageIndex = Math.min(Math.max(Number(data.currentPageIndex) || 0, 0), state.pages.length - 1);
       applyTheme(state.themeId);
+      applyEditorMode(state.editorMode);
       applyHeadingStyle(state.headingStyle);
       applyNavStyle(state.navStyle);
       applyPageData(state.pages[state.currentPageIndex]);
@@ -3059,7 +3327,7 @@
       if (template.id === "blank") {
         return `
           ${pageNavMarkup()}
-          <header>
+          <header data-preview-area="header">
             <div class="header-inner">
               <h1>${heroTitle}</h1>
               ${heroLead ? `<p class="lead">${heroLead}</p>` : ""}
@@ -3074,7 +3342,7 @@
 
       return `
         ${pageNavMarkup()}
-        <header>
+        <header data-preview-area="header">
           <div class="header-inner">
             <h1>${heroTitle}</h1>
             ${heroLead ? `<p class="lead">${heroLead}</p>` : ""}
@@ -4416,6 +4684,11 @@ exports.deleteUserByAdmin = onCall(async (request) => {
       state.isPreviewRendering = true;
       els.preview.innerHTML = buildPreviewHtml();
       state.isPreviewRendering = false;
+      if (state.activeEditorTab === "header") {
+        els.preview.querySelector("[data-preview-area='header']")?.classList.add("is-design-hint");
+      } else if (state.activeEditorTab === "design") {
+        els.preview.querySelector("h2")?.classList.add("is-design-hint");
+      }
       els.codeOutput.textContent = state.activeTab === "html" ? state.html : state.activeTab === "css" ? state.css : state.blockHtml;
       if (!skipAddedBlocks) renderAddedBlocks();
       updateNoticeSelection();
@@ -4774,6 +5047,32 @@ functions/index.js にCloud Functionsの雛形を入れています。
     }
 
     document.getElementById("generateBtn").addEventListener("click", render);
+    els.editorModeSwitch.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-editor-mode]");
+      if (!button) return;
+      applyEditorMode(button.dataset.editorMode);
+      applyEditorTab(state.activeEditorTab);
+      renderKeepingEditorPosition(true);
+      els.status.textContent = state.editorMode === "easy" ? "かんたんモードにしました" : "詳細設定を表示しました";
+    });
+    els.easyShortcuts.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-easy-action]");
+      if (!button) return;
+      const action = button.dataset.easyAction;
+      if (action === "text") {
+        addBlock("headingText", { category: "basic", block: { heading: "新しい見出し", text: "ここに本文を入れます。" } });
+      } else if (action === "photo") {
+        addBlock("photo", { category: "media", choosePhoto: true });
+      } else if (action === "pdf") {
+        addBlock("pdfLinks", { category: "media", block: { heading: "PDF資料", text: "必要なPDFを選んで入れます。" } });
+      } else if (action === "design") {
+        applyEditorTab("design");
+        els.status.textContent = "全体の色や見出しの形を選べます";
+      } else if (action === "word") {
+        addBlock("headingText", { category: "basic", block: { heading: "Word下書きから作る", text: "Wordの文章をコピーして、ここに貼り付けてください。見出しや本文に分けて整えられます。" } });
+        els.status.textContent = "まずはWordの文章をコピーして本文に貼り付ける形が安全です";
+      }
+    });
     els.editorModeTabs.addEventListener("click", (event) => {
       const button = event.target.closest("[data-editor-tab]");
       if (!button) return;
@@ -5051,6 +5350,29 @@ functions/index.js にCloud Functionsの雛形を入れています。
     });
 
     els.preview.addEventListener("click", (event) => {
+      const previewHeader = event.target.closest("[data-preview-area='header']");
+      if (previewHeader) {
+        event.preventDefault();
+        state.activeBlockId = "";
+        state.activeNoticeIndex = -1;
+        applyEditorTab("header");
+        render(true);
+        els.status.textContent = "帯写真や帯の見せ方を左で変えられます";
+        return;
+      }
+
+      const previewHeading = event.target.closest("h2");
+      if (previewHeading && state.editorMode === "easy") {
+        const previewBlock = previewHeading.closest("[data-preview-block-id]");
+        if (previewBlock) state.activeBlockId = previewBlock.dataset.previewBlockId;
+        state.activeNoticeIndex = -1;
+        applyEditorTab("design");
+        renderAddedBlocks();
+        render(true);
+        els.status.textContent = "見出しの色や形を左で変えられます";
+        return;
+      }
+
       const previewNotice = event.target.closest("[data-preview-target='notice']");
       if (previewNotice) {
         event.preventDefault();
@@ -5095,27 +5417,8 @@ functions/index.js にCloud Functionsの雛形を入れています。
     els.blockPicker.addEventListener("click", (event) => {
       const button = event.target.closest("[data-add-block-type]");
       if (!button) return;
-      const block = defaultBlock(button.dataset.addBlockType);
-      const activeIndex = state.extraBlocks.findIndex((item) => item.id === state.activeBlockId);
-      const insertIndex = activeIndex >= 0 ? activeIndex + 1 : state.extraBlocks.length;
-      state.extraBlocks.splice(insertIndex, 0, block);
-      state.activeBlockId = block.id;
-      state.activeNoticeIndex = -1;
-      render();
-      renderPhotoLibrary();
-      setTimeout(scrollActiveBlockIntoView, 0);
-      if (["photo", "photoTextLeft", "textPhotoRight"].includes(block.type)) {
-        state.pendingBlockPhotoTarget = { blockIndex: insertIndex, slotIndex: 0 };
-        els.status.textContent = "写真ブロックを追加しました。続けて写真を選んでください";
-        setTimeout(() => {
-          els.blockPhotoInput.value = "";
-          els.blockPhotoInput.click();
-        }, 0);
-        return;
-      }
-      els.status.textContent = activeIndex >= 0
-        ? "選んでいた部品の下に追加しました。左の上へ・下へで移動できます"
-        : "一番下に追加しました。左の上へ・下へで移動できます";
+      const type = button.dataset.addBlockType;
+      addBlock(type, { choosePhoto: ["photo", "photoTextLeft", "textPhotoRight"].includes(type) });
     });
 
     function activateAddedBlockFromEvent(event) {
@@ -5338,6 +5641,7 @@ functions/index.js にCloud Functionsの雛形を入れています。
 
     initializeTemplates();
     initializeThemes();
+    applyEditorMode(state.editorMode);
     applyEditorTab(state.activeEditorTab);
     applyHeadingStyle(state.headingStyle);
     applyNavStyle(state.navStyle);
