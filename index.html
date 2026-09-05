@@ -141,6 +141,13 @@
       gap: 7px;
     }
 
+    .field-help {
+      color: #64748b;
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1.45;
+    }
+
     label {
       font-weight: 900;
       color: #334155;
@@ -318,19 +325,70 @@
     }
 
     .page-tabs {
-      display: flex;
+      display: grid;
       gap: 6px;
-      flex-wrap: wrap;
+      max-height: 260px;
+      overflow: auto;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #f8fafc;
     }
 
     .page-tab {
+      position: relative;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: center;
+      gap: 8px;
+      margin-left: calc(var(--depth, 0) * 22px);
       border: 2px solid var(--line);
-      border-radius: 999px;
+      border-radius: 8px;
       background: #fff;
       color: #334155;
       font-weight: 900;
-      min-height: 36px;
-      padding: 5px 12px;
+      min-height: 42px;
+      padding: 7px 10px;
+      text-align: left;
+      white-space: normal;
+    }
+
+    .page-tab-title {
+      display: block;
+      line-height: 1.25;
+    }
+
+    .page-tab-parent {
+      display: block;
+      color: #64748b;
+      font-size: 12px;
+      line-height: 1.35;
+      margin-top: 2px;
+    }
+
+    .page-tab::before {
+      content: attr(data-tree-mark);
+      display: grid;
+      place-items: center;
+      min-width: 38px;
+      min-height: 24px;
+      border-radius: 999px;
+      background: #eef4f8;
+      color: #64748b;
+      font-size: 12px;
+      line-height: 1.2;
+    }
+
+    .page-tab[data-depth]:not([data-depth="0"])::after {
+      content: "";
+      position: absolute;
+      left: -14px;
+      top: -8px;
+      bottom: 50%;
+      width: 12px;
+      border-left: 2px solid #cbd8e3;
+      border-bottom: 2px solid #cbd8e3;
+      border-radius: 0 0 0 6px;
     }
 
     .page-tab.active {
@@ -339,10 +397,41 @@
       color: var(--green-dark);
     }
 
+    .page-tab.active::before {
+      background: var(--green);
+      color: #fff;
+    }
+
     .page-actions {
       display: grid;
-      grid-template-columns: 1fr auto;
+      grid-template-columns: 1fr 1fr auto;
       gap: 8px;
+    }
+
+    .tree-tools {
+      display: grid;
+      gap: 8px;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .tree-tools-title {
+      color: var(--green-dark);
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .tree-tool-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .tree-tool-grid .small-btn {
+      min-height: 40px;
+      white-space: nowrap;
     }
 
     .add-block-row {
@@ -861,6 +950,12 @@
       background: var(--green);
     }
 
+    .site-preview .site-nav a.parent-link {
+      background: #fff;
+      color: #475569;
+      border-style: dashed;
+    }
+
     .site-preview.nav-style-box .site-nav a {
       border-radius: 8px;
       background: #fff;
@@ -1278,6 +1373,68 @@
       margin-top: 10px;
     }
 
+    .child-page-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .child-page-card {
+      display: block;
+      min-height: 64px;
+      border: 2px solid #c7dfd2;
+      border-radius: 8px;
+      background: var(--soft-green);
+      color: var(--green-dark);
+      padding: 14px 16px;
+      text-decoration: none;
+      font-weight: 900;
+    }
+
+    .child-page-card span {
+      display: block;
+      color: #64748b;
+      font-size: 12px;
+      line-height: 1.4;
+      margin-top: 4px;
+    }
+
+    .site-preview .hierarchy-nav {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      width: min(100% - 60px, 920px);
+      margin: 10px auto 0;
+      padding: 0;
+      border: 0;
+      background: transparent;
+    }
+
+    .site-preview .hierarchy-nav a {
+      border: 2px solid #c7dfd2;
+      border-radius: 999px;
+      background: var(--soft-green);
+      color: var(--green-dark);
+      padding: 7px 12px;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 900;
+      line-height: 1.2;
+    }
+
+    .site-preview .hierarchy-nav a.active {
+      background: var(--green);
+      color: #fff;
+    }
+
+    .site-preview .hierarchy-nav a.parent-link {
+      border-style: dashed;
+      background: #fff;
+      color: #475569;
+    }
+
     .placeholder-link {
       opacity: .62;
     }
@@ -1545,6 +1702,7 @@
             <button class="easy-action" type="button" data-easy-action="text">文章を追加</button>
             <button class="easy-action" type="button" data-easy-action="photo">写真を追加</button>
             <button class="easy-action" type="button" data-easy-action="pdf">PDFを追加</button>
+            <button class="easy-action" type="button" data-easy-action="children">下層ページを追加</button>
             <button class="easy-action" type="button" data-easy-action="design">色・帯を変更</button>
             <button class="easy-action" type="button" data-easy-action="word">Word下書き</button>
           </div>
@@ -1566,11 +1724,26 @@
             <div class="page-tabs" id="pageTabs"></div>
             <div class="page-actions">
               <button class="btn secondary" id="addPageBtn" type="button">新しいページを追加</button>
+              <button class="btn secondary" id="addChildPageBtn" type="button">このページの下層に追加</button>
               <button class="small-btn" id="deletePageBtn" type="button">ページ削除</button>
+            </div>
+            <div class="tree-tools">
+              <div class="tree-tools-title">選択中ページの並び・階層</div>
+              <div class="tree-tool-grid">
+                <button class="small-btn" id="movePageUpBtn" type="button">同じ階層で上へ</button>
+                <button class="small-btn" id="movePageDownBtn" type="button">同じ階層で下へ</button>
+                <button class="small-btn" id="makeRootPageBtn" type="button">第1階層に戻す</button>
+                <button class="small-btn" id="applyParentPageBtn" type="button">選んだ親の下へ</button>
+              </div>
             </div>
             <div class="field">
               <label for="pageTitle">このページ名</label>
               <input id="pageTitle" value="ホーム">
+            </div>
+            <div class="field">
+              <label for="parentPageSelect">ページ階層（親ページ）</label>
+              <select id="parentPageSelect"></select>
+              <div class="field-help">親子関係を決める場所です。第1階層は大きなメニュー、親を選んだページはその親ページから移動するページになります。</div>
             </div>
           </div>
 
@@ -1589,6 +1762,10 @@
             <div class="compact-row">
               <button class="btn secondary" id="saveProjectBtn" type="button">設定を保存</button>
               <button class="btn secondary" id="loadProjectBtn" type="button">設定を読み込む</button>
+            </div>
+            <div class="compact-row">
+              <button class="btn secondary" id="saveBaseBtn" type="button">今をベース保存</button>
+              <button class="btn secondary" id="loadBaseBtn" type="button">自分のベースに変更</button>
             </div>
             <input id="projectFileInput" type="file" accept="application/json,.json" hidden>
             <input id="linkFileInput" type="file" accept="application/pdf,.pdf,image/*,.doc,.docx,.xls,.xlsx,.ppt,.pptx" hidden>
@@ -1764,6 +1941,7 @@
               <button class="btn secondary" id="sampleBtn" type="button">例を入れる</button>
               <button class="btn secondary" id="standardSetBtn" type="button">自治会HP標準セット</button>
             </div>
+            <button class="btn secondary" id="sitemapSetBtn" type="button">山口連区ベースを作る</button>
           </div>
         </div>
 
@@ -1833,6 +2011,7 @@
       apiUrl: "https://sakuma-farm-homepage-auth.sakuma-farm-jichikai.workers.dev/check-code",
       appId: "jichikai-site-maker"
     };
+    const customBaseStorageKey = "sakuma-jichikai-site-maker-base";
 
     const templates = [
       { id: "blank", name: "1. 白紙", note: "自治会名だけ表示", className: "t-blank" },
@@ -1907,8 +2086,14 @@
       editorForm: document.querySelector(".editor-panel .form"),
       pageTabs: document.getElementById("pageTabs"),
       addPageBtn: document.getElementById("addPageBtn"),
+      addChildPageBtn: document.getElementById("addChildPageBtn"),
       deletePageBtn: document.getElementById("deletePageBtn"),
+      movePageUpBtn: document.getElementById("movePageUpBtn"),
+      movePageDownBtn: document.getElementById("movePageDownBtn"),
+      makeRootPageBtn: document.getElementById("makeRootPageBtn"),
+      applyParentPageBtn: document.getElementById("applyParentPageBtn"),
       pageTitle: document.getElementById("pageTitle"),
+      parentPageSelect: document.getElementById("parentPageSelect"),
       navPosition: document.getElementById("navPosition"),
       navStyleSelect: document.getElementById("navStyleSelect"),
       themeSelect: document.getElementById("themeSelect"),
@@ -1926,6 +2111,8 @@
       themeSwatches: document.getElementById("themeSwatches"),
       saveProjectBtn: document.getElementById("saveProjectBtn"),
       loadProjectBtn: document.getElementById("loadProjectBtn"),
+      saveBaseBtn: document.getElementById("saveBaseBtn"),
+      loadBaseBtn: document.getElementById("loadBaseBtn"),
       projectFileInput: document.getElementById("projectFileInput"),
       linkFileInput: document.getElementById("linkFileInput"),
       blockPhotoInput: document.getElementById("blockPhotoInput"),
@@ -2320,8 +2507,319 @@
       };
     }
 
+    function createSitemapJichikaiProject(siteName = "山口連区自治会") {
+      const ids = {
+        top: createPageId(),
+        about: createPageId(),
+        history: createPageId(),
+        rediscovery: createPageId(),
+        annual: createPageId(),
+        activity: createPageId(),
+        map: createPageId(),
+        circular: createPageId(),
+        recentPdf: createPageId(),
+        facility: createPageId(),
+        rule: createPageId(),
+        join: createPageId()
+      };
+      const base = (key, title, parentKey, extraBlocks, options = {}) => ({
+        pageId: ids[key],
+        parentPageId: parentKey ? ids[parentKey] : "",
+        title,
+        slug: "",
+        siteName,
+        catchText: options.catchText || "",
+        headerPhotoEnabled: Boolean(options.headerPhotoEnabled),
+        headerPhotoUrl: "",
+        photoUrls: ["", "", ""],
+        templateId: "blank",
+        customHeading: "",
+        customText: "",
+        notices: [
+          standardNotice("行事のお知らせ", "直近のお知らせをここに掲載します。"),
+          standardNotice("重要なお知らせ", "必要な情報を追加してください。"),
+          standardNotice("", "")
+        ],
+        scheduleText: "",
+        contactText: "自治会連絡先をここに掲載します。",
+        extraBlocks
+      });
+      const pages = [
+        base("top", `${siteName}ホームページ`, "", [
+          standardBlock("headingText", {
+            heading: `${siteName}ホームページ`,
+            text: "山口連区の紹介、行事、回覧板、施設案内などをまとめて掲載します。"
+          }),
+          standardBlock("headingText", {
+            heading: "直近のお知らせ",
+            text: "行事お知らせ、行事報告、重要伝達事項をここに掲載します。"
+          }),
+          standardBlock("buttonLinks", {
+            heading: "関連リンク",
+            text: "外部サイトへのリンクを設定できます。",
+            links: [
+              { text: "公民館HP", url: "", fileName: "" },
+              { text: "まち協HP", url: "", fileName: "" },
+              { text: "瀬戸市HP", url: "", fileName: "" }
+            ]
+          }),
+          standardBlock("headingText", {
+            heading: "自治会連絡先",
+            text: "自治会連絡先を最下段に表示します。"
+          })
+        ], { catchText: "山口連区自治会紹介と直近お知らせを表示します。" }),
+        base("about", "山口連区の概要", "top", [
+          standardBlock("headingText", {
+            heading: "山口連区の紹介",
+            text: "地域の概要、自治会の目的、活動の全体像を掲載します。"
+          })
+        ]),
+        base("history", "歴史", "about", [
+          standardBlock("headingText", {
+            heading: "地域の歴史",
+            text: "歴史ページは郷土資料館に原稿依頼する想定です。原稿が届いたら本文として貼り付けます。"
+          })
+        ]),
+        base("rediscovery", "やまぐち再発見記事", "history", [
+          standardBlock("pdfLinks", {
+            heading: "やまぐち再発見記事PDF",
+            text: "広報やまぐちの再発見記事PDFを掲載します。",
+            links: [
+              { text: "記事PDFを見る", url: "", fileName: "" },
+              { text: "", url: "", fileName: "" },
+              { text: "", url: "", fileName: "" }
+            ]
+          })
+        ]),
+        base("annual", "年間自治会行事", "about", [
+          standardBlock("pdfLinks", {
+            heading: "年間行事",
+            text: "年間行事ページはPDF貼り付けで年度更新します。",
+            links: [
+              { text: "年間行事PDF", url: "", fileName: "" },
+              { text: "", url: "", fileName: "" },
+              { text: "", url: "", fileName: "" }
+            ]
+          })
+        ]),
+        base("activity", "自治会活動", "about", [
+          standardBlock("headingText", {
+            heading: "自治会活動",
+            text: "年間の活動内容を写真で紹介します。"
+          }),
+          standardBlock("photo", {
+            heading: "活動写真",
+            photoCount: 3,
+            photoUrls: ["", "", ""]
+          })
+        ]),
+        base("map", "山口散策MAP", "about", [
+          standardBlock("headingText", {
+            heading: "山口散策MAP",
+            text: "山口散策MAPをデジタルマップで掲載します。地図サービスのURLやPDFをリンクできます。"
+          }),
+          standardBlock("buttonLinks", {
+            heading: "地図リンク",
+            text: "デジタルマップへのリンクを設定します。",
+            links: [
+              { text: "山口散策MAPを見る", url: "", fileName: "" },
+              { text: "", url: "", fileName: "" },
+              { text: "", url: "", fileName: "" }
+            ]
+          })
+        ]),
+        base("circular", "デジタル回覧板", "top", [
+          standardBlock("headingText", {
+            heading: "デジタル回覧板",
+            text: "月ごとの配布資料をPDFで収録します。"
+          })
+        ]),
+        base("recentPdf", "直近6か月分PDF", "circular", [
+          standardBlock("pdfLinks", {
+            heading: "直近6か月分PDF",
+            text: "PDFリンクを最大3つずつ並べられます。足りない場合は同じ部品を追加してください。",
+            links: [
+              { text: "今月の回覧板", url: "", fileName: "" },
+              { text: "先月の回覧板", url: "", fileName: "" },
+              { text: "前々月の回覧板", url: "", fileName: "" }
+            ]
+          }),
+          standardBlock("pdfLinks", {
+            heading: "そのほかの回覧板",
+            text: "残り3か月分を入れます。",
+            links: [
+              { text: "3か月前", url: "", fileName: "" },
+              { text: "4か月前", url: "", fileName: "" },
+              { text: "5か月前", url: "", fileName: "" }
+            ]
+          })
+        ]),
+        base("facility", "北憩いの家・南憩いの家", "top", [
+          standardBlock("headingText", {
+            heading: "施設紹介",
+            text: "南北憩いの家施設を写真で紹介します。"
+          }),
+          standardBlock("photo", {
+            heading: "施設写真",
+            photoCount: 2,
+            photoUrls: ["", "", ""]
+          })
+        ]),
+        base("rule", "利用規約", "facility", [
+          standardBlock("headingText", {
+            heading: "利用規約",
+            text: "利用対象、予約方法、注意事項などを掲載します。"
+          }),
+          standardBlock("pdfLinks", {
+            heading: "規約PDF",
+            text: "規約PDFがある場合はこちらに設定します。",
+            links: [
+              { text: "利用規約PDF", url: "", fileName: "" },
+              { text: "", url: "", fileName: "" },
+              { text: "", url: "", fileName: "" }
+            ]
+          })
+        ]),
+        base("join", "自治会に入りましょう", "top", [
+          standardBlock("headingText", {
+            heading: "自治会に入りましょう",
+            text: "令和元年に作成したリーフレットを修正して掲載する想定です。"
+          }),
+          standardBlock("pdfLinks", {
+            heading: "加入案内リーフレット",
+            text: "PDFや画像を入れて、加入案内として掲載できます。",
+            links: [
+              { text: "加入案内を見る", url: "", fileName: "" },
+              { text: "", url: "", fileName: "" },
+              { text: "", url: "", fileName: "" }
+            ]
+          })
+        ])
+      ].map((page, index) => ({
+        ...page,
+        slug: slugForPage(index)
+      }));
+
+      return {
+        version: 1,
+        editorMode: "easy",
+        themeId: "green",
+        headingStyle: "line",
+        navStyle: "pill",
+        navPosition: "top",
+        currentPageIndex: 0,
+        pages
+      };
+    }
+
     function cloneData(value) {
       return JSON.parse(JSON.stringify(value));
+    }
+
+    function normalizePages(pages) {
+      const normalized = cloneData(pages || []);
+      normalized.forEach((page, index) => {
+        if (!page.pageId) page.pageId = createPageId();
+        page.slug = slugForPage(index);
+      });
+      const ids = new Set(normalized.map((page) => page.pageId));
+      normalized.forEach((page) => {
+        if (!ids.has(page.parentPageId) || page.parentPageId === page.pageId) page.parentPageId = "";
+      });
+      return normalized;
+    }
+
+    function pageTreeItems() {
+      const visited = new Set();
+      const roots = state.pages
+        .map((page, index) => ({ page, index }))
+        .filter((item) => !item.page.parentPageId);
+      const walk = (items, depth = 0) => items.flatMap((item) => {
+        if (visited.has(item.page.pageId)) return [];
+        visited.add(item.page.pageId);
+        const children = state.pages
+          .map((page, index) => ({ page, index }))
+          .filter((child) => child.page.parentPageId === item.page.pageId);
+        return [{ ...item, depth }, ...walk(children, depth + 1)];
+      });
+      const ordered = walk(roots);
+      state.pages.forEach((page, index) => {
+        if (!visited.has(page.pageId)) ordered.push({ page, index, depth: 0 });
+      });
+      return ordered;
+    }
+
+    function currentPageSiblings() {
+      const current = state.pages[state.currentPageIndex];
+      if (!current) return [];
+      const parentId = current.parentPageId || "";
+      return state.pages
+        .map((page, index) => ({ page, index }))
+        .filter((item) => (item.page.parentPageId || "") === parentId);
+    }
+
+    function swapPages(indexA, indexB) {
+      if (indexA < 0 || indexB < 0 || indexA >= state.pages.length || indexB >= state.pages.length) return false;
+      const currentId = pageId(state.pages[state.currentPageIndex]);
+      const next = [...state.pages];
+      [next[indexA], next[indexB]] = [next[indexB], next[indexA]];
+      state.pages = normalizePages(next);
+      state.currentPageIndex = state.pages.findIndex((page) => pageId(page) === currentId);
+      if (state.currentPageIndex < 0) state.currentPageIndex = 0;
+      applyPageData(state.pages[state.currentPageIndex]);
+      render();
+      return true;
+    }
+
+    function moveCurrentPageInTree(direction) {
+      saveCurrentPage();
+      const siblings = currentPageSiblings();
+      const siblingIndex = siblings.findIndex((item) => item.index === state.currentPageIndex);
+      const targetSiblingIndex = direction === "up" ? siblingIndex - 1 : siblingIndex + 1;
+      const target = siblings[targetSiblingIndex];
+      if (!target) {
+        els.status.textContent = direction === "up" ? "同じ階層の一番上です" : "同じ階層の一番下です";
+        return;
+      }
+      swapPages(state.currentPageIndex, target.index);
+      els.status.textContent = "ページの並びを変更しました";
+    }
+
+    function changeCurrentPageParent(parentId) {
+      saveCurrentPage();
+      const current = state.pages[state.currentPageIndex];
+      if (!current) return;
+      const currentId = pageId(current);
+      if (parentId && (parentId === currentId || descendantPageIds(currentId).has(parentId))) {
+        els.status.textContent = "自分自身や下の階層には入れられません";
+        return;
+      }
+      current.parentPageId = parentId || "";
+      state.pages[state.currentPageIndex] = current;
+      applyPageData(current);
+      render();
+      els.status.textContent = parentId ? "選択中ページを指定した親ページの下へ移動しました" : "選択中ページを第1階層へ戻しました";
+    }
+
+    function descendantPageIds(parentId) {
+      const ids = new Set();
+      const visit = (id) => {
+        state.pages
+          .filter((page) => page.parentPageId === id)
+          .forEach((page) => {
+            if (ids.has(page.pageId)) return;
+            ids.add(page.pageId);
+            visit(page.pageId);
+          });
+      };
+      visit(parentId);
+      return ids;
+    }
+
+    function parentTitleForPage(page) {
+      if (!page?.parentPageId) return "第1階層・上のメニュー";
+      const parent = state.pages.find((item) => pageId(item) === page.parentPageId);
+      return parent ? `親ページ: ${parent.title || "ページ"}` : "第1階層・上のメニュー";
     }
 
     function currentTheme() {
@@ -2600,8 +3098,19 @@
       return index === 0 ? "index.html" : `page-${index + 1}.html`;
     }
 
+    function createPageId() {
+      return `page-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    }
+
+    function pageId(page) {
+      if (!page.pageId) page.pageId = createPageId();
+      return page.pageId;
+    }
+
     function defaultPage(index = 0, siteName = "みどり町自治会") {
       return {
+        pageId: createPageId(),
+        parentPageId: "",
         title: index === 0 ? "ホーム" : `ページ${index + 1}`,
         slug: slugForPage(index),
         siteName,
@@ -2634,6 +3143,8 @@
       const page = state.pages[state.currentPageIndex] || defaultPage(state.currentPageIndex);
       return {
         ...page,
+        pageId: pageId(page),
+        parentPageId: els.parentPageSelect.value || "",
         title: els.pageTitle.value.trim() || `ページ${state.currentPageIndex + 1}`,
         slug: slugForPage(state.currentPageIndex),
         siteName: els.siteName.value,
@@ -2698,7 +3209,7 @@
       els.headerPhotoY.value = positionMatch ? positionMatch[2] : 50;
       els.headerPhotoZoom.value = state.headerPhotoZoom;
       els.navPosition.value = data.navPosition === "left" ? "left" : "top";
-      state.pages = cloneData(data.pages);
+      state.pages = normalizePages(data.pages);
       state.currentPageIndex = Math.min(Math.max(Number(data.currentPageIndex) || 0, 0), state.pages.length - 1);
       applyTheme(state.themeId);
       applyEditorMode(state.editorMode);
@@ -2715,7 +3226,7 @@
         .map((url) => String(url || "").trim())
         .filter(Boolean)
         .slice(0, 3);
-      const migratedBlocks = cloneData(page.extraBlocks || []);
+      const migratedBlocks = cloneData(page.extraBlocks || []).filter((block) => block.type !== "childPages");
       const hasPhotoBlockWithPhotos = migratedBlocks.some((block) =>
         ["photo", "photoTextLeft", "textPhotoRight"].includes(block.type)
         && (block.photoUrls || []).some(Boolean)
@@ -2729,6 +3240,7 @@
         });
       }
       els.pageTitle.value = page.title || "ホーム";
+      renderParentPageSelect(page.parentPageId || "");
       els.siteName.value = page.siteName || "みどり町自治会";
       els.catchText.value = page.catchText || "";
       els.headerPhotoEnabled.checked = page.headerPhotoEnabled ?? state.headerPhotoEnabled;
@@ -2753,12 +3265,41 @@
     }
 
     function renderPageTabs() {
-      els.pageTabs.innerHTML = state.pages.map((page, index) => `
-        <button class="page-tab ${index === state.currentPageIndex ? "active" : ""}" type="button" data-page-index="${index}">
-          ${escapeHtml(page.title || `ページ${index + 1}`)}
+      state.pages = normalizePages(state.pages);
+      els.pageTabs.innerHTML = pageTreeItems().map(({ page, index, depth }) => {
+        const label = depth === 0 ? "第1階層" : `第${depth + 1}階層`;
+        return `
+        <button class="page-tab ${index === state.currentPageIndex ? "active" : ""}" type="button" data-page-index="${index}" data-depth="${depth}" data-tree-mark="${escapeHtml(label)}" style="--depth:${depth}">
+          <span>
+            <span class="page-tab-title">${escapeHtml(page.title || `ページ${index + 1}`)}</span>
+            <span class="page-tab-parent">${escapeHtml(parentTitleForPage(page))}</span>
+          </span>
         </button>
-      `).join("");
+      `;
+      }).join("");
       els.deletePageBtn.disabled = state.pages.length <= 1;
+      const siblings = currentPageSiblings();
+      const siblingIndex = siblings.findIndex((item) => item.index === state.currentPageIndex);
+      els.movePageUpBtn.disabled = siblingIndex <= 0;
+      els.movePageDownBtn.disabled = siblingIndex < 0 || siblingIndex >= siblings.length - 1;
+      els.makeRootPageBtn.disabled = !(state.pages[state.currentPageIndex]?.parentPageId);
+      renderParentPageSelect(els.parentPageSelect.value || "");
+    }
+
+    function renderParentPageSelect(selectedId = "") {
+      const currentPage = state.pages[state.currentPageIndex];
+      const currentId = currentPage ? pageId(currentPage) : "";
+      const options = state.pages
+        .map((page, index) => ({ page, index, id: pageId(page) }))
+        .filter((item) => item.id !== currentId && !descendantPageIds(currentId).has(item.id))
+        .map((item) => {
+          const depth = pageTreeItems().find((treeItem) => treeItem.index === item.index)?.depth || 0;
+          const label = `${"　".repeat(depth)}${item.page.title || `ページ${item.index + 1}`}`;
+          return `<option value="${escapeHtml(item.id)}" ${item.id === selectedId ? "selected" : ""}>${escapeHtml(label)} の下の階層に入れる</option>`;
+        })
+        .join("");
+      els.parentPageSelect.innerHTML = `<option value="">第1階層（上のメニューに出す）</option>${options}`;
+      els.parentPageSelect.value = state.pages.some((page) => pageId(page) === selectedId && pageId(page) !== currentId) ? selectedId : "";
     }
 
     function initializePages() {
@@ -2768,12 +3309,112 @@
     }
 
     function pageNavMarkup(activeIndex = state.currentPageIndex) {
-      const links = state.pages.map((page, index) => {
-        const title = escapeHtml(page.title || `ページ${index + 1}`);
-        const href = escapeHtml(slugForPage(index));
-        return `<a class="${index === activeIndex ? "active" : ""}" href="${href}">${title}</a>`;
+      const links = mainNavItems(activeIndex).map((item) => {
+        const title = escapeHtml(item.title);
+        const href = escapeHtml(slugForPage(item.index));
+        const className = [item.active ? "active" : "", item.kind === "parent" ? "parent-link" : ""].filter(Boolean).join(" ");
+        return `<a class="${className}" href="${href}">${title}</a>`;
       }).join("");
       return `<nav class="site-nav ${els.navPosition.value === "left" ? "site-nav-left" : "site-nav-top"}">${links}</nav>`;
+    }
+
+    function isDescendantOf(page, ancestorId) {
+      let parentId = page && page.parentPageId;
+      const guard = new Set();
+      while (parentId && !guard.has(parentId)) {
+        if (parentId === ancestorId) return true;
+        guard.add(parentId);
+        const parent = state.pages.find((candidate) => pageId(candidate) === parentId);
+        parentId = parent && parent.parentPageId;
+      }
+      return false;
+    }
+
+    function mainNavItems(activeIndex = state.currentPageIndex) {
+      const activePage = state.pages[activeIndex];
+      const rootItems = state.pages
+        .map((page, index) => ({ page, index }))
+        .filter((item) => !item.page.parentPageId);
+      if (!rootItems.length) return [];
+
+      let items = rootItems;
+      if (rootItems.length === 1) {
+        const rootId = pageId(rootItems[0].page);
+        const firstLevel = state.pages
+          .map((page, index) => ({ page, index }))
+          .filter((item) => item.page.parentPageId === rootId);
+        if (firstLevel.length) {
+          items = [{ ...rootItems[0], navTitle: "ホーム" }, ...firstLevel];
+        }
+      }
+
+      return items.map((item) => {
+        const itemId = pageId(item.page);
+        return {
+          index: item.index,
+          title: item.navTitle || item.page.title || `ページ${item.index + 1}`,
+          active: item.index === activeIndex || isDescendantOf(activePage, itemId),
+          kind: item.page.parentPageId ? "child" : "root"
+        };
+      });
+    }
+
+    function contextualNavItems(activeIndex = state.currentPageIndex) {
+      const current = state.pages[activeIndex];
+      if (!current) return [];
+      const currentId = pageId(current);
+      const children = state.pages
+        .map((page, index) => ({ page, index }))
+        .filter((item) => item.page.parentPageId === currentId);
+      if (children.length) {
+        return children.map((item) => ({
+          index: item.index,
+          title: item.page.title || `ページ${item.index + 1}`,
+          active: false,
+          kind: "child"
+        }));
+      }
+      if (current.parentPageId) {
+        const parentIndex = state.pages.findIndex((page) => pageId(page) === current.parentPageId);
+        const siblings = state.pages
+          .map((page, index) => ({ page, index }))
+          .filter((item) => item.page.parentPageId === current.parentPageId);
+        const items = parentIndex >= 0
+          ? [{ index: parentIndex, title: `親ページへ戻る（${state.pages[parentIndex].title || "親ページ"}）`, active: false, kind: "parent" }]
+          : [];
+        return items.concat(siblings.map((item) => ({
+          index: item.index,
+          title: item.page.title || `ページ${item.index + 1}`,
+          active: item.index === activeIndex,
+          kind: "sibling"
+        })));
+      }
+      return state.pages
+        .map((page, index) => ({ page, index }))
+        .filter((item) => !item.page.parentPageId)
+        .map((item) => ({
+          index: item.index,
+          title: item.page.title || `ページ${item.index + 1}`,
+          active: item.index === activeIndex,
+          kind: "root"
+        }));
+    }
+
+    function hierarchyNavMarkup(activeIndex = state.currentPageIndex) {
+      const current = state.pages[activeIndex];
+      if (!current) return "";
+      const roots = state.pages.filter((page) => !page.parentPageId);
+      const isSingleRootHome = roots.length === 1 && pageId(current) === pageId(roots[0]);
+      const hasChildren = state.pages.some((page) => page.parentPageId === pageId(current));
+      if (isSingleRootHome || (!hasChildren && !current.parentPageId)) return "";
+
+      const links = contextualNavItems(activeIndex).map((item) => {
+        const title = escapeHtml(item.title);
+        const href = escapeHtml(slugForPage(item.index));
+        const className = [item.active ? "active" : "", item.kind === "parent" ? "parent-link" : ""].filter(Boolean).join(" ");
+        return `<a class="${className}" href="${href}">${title}</a>`;
+      }).join("");
+      return `<div class="hierarchy-nav" aria-label="関連ページへの移動">${links}</div>`;
     }
 
     function updateVisibleInputs() {
@@ -3110,6 +3751,26 @@
       return `<section class="${blockClass(block, "feature-text")}"${previewBlockAttr(block)}><h2>${custom.heading}</h2><p>${custom.text}</p>${linkButtonsMarkup(block)}</section>`;
     }
 
+    function childPagesMarkup(block) {
+      return "";
+    }
+
+    function childPagesSectionMarkup(heading = "下層ページ", text = "見たい項目を選んでください。", block = null) {
+      const current = state.pages[state.currentPageIndex];
+      const currentId = current ? pageId(current) : "";
+      const children = state.pages
+        .map((page, index) => ({ page, index }))
+        .filter((item) => item.page.parentPageId === currentId);
+      const cards = children.length
+        ? children.map((item) => {
+            const title = escapeHtml(item.page.title || `ページ${item.index + 1}`);
+            const lead = escapeHtml(item.page.catchText || "");
+            return `<a class="child-page-card" href="${escapeHtml(slugForPage(item.index))}">${title}${lead ? `<span>${lead}</span>` : ""}</a>`;
+          }).join("")
+        : `<span class="archive-link placeholder-link">このページの下の階層に入れたページがここに表示されます</span>`;
+      return `<section class="${blockClass(block, "feature-text child-page-section")}"${block ? previewBlockAttr(block) : ""}><h2>${escapeHtml(heading)}</h2>${text ? `<p>${escapeHtml(text)}</p>` : ""}<div class="child-page-grid">${cards}</div></section>`;
+    }
+
     function photoTextMarkup(photoUrls, siteName, block, reverse = false) {
       const custom = customHeadingText(block);
       const photo = photoMarkup(blockPhotoUrls(block, photoUrls), siteName, block, "block");
@@ -3152,6 +3813,7 @@
       if (blockType === "headingOnly") return headingOnlyMarkup(block);
       if (blockType === "textOnly") return textOnlyMarkup(block);
       if (blockType === "headingText") return headingTextMarkup(block);
+      if (blockType === "childPages") return childPagesMarkup(block);
       if (blockType === "pdfLinks" || blockType === "buttonLinks") return linksBlockMarkup(block);
       if (blockType === "photo") return wrapPhotoLink(`<section class="${blockClass(block)}"${previewBlockAttr(block)}>${photoMarkup(blockPhotoUrls(block, context.photoUrls), context.siteName, block, "block")}</section>`, block);
       if (blockType === "photoTextLeft") return photoTextMarkup(context.photoUrls, context.siteName, block, false);
@@ -3176,8 +3838,8 @@
       els.addedBlocks.innerHTML = state.extraBlocks.length
         ? state.extraBlocks.map((block, index) => {
             const type = extraBlockTypes.find((item) => item.id === block.type);
-            const needsHeading = ["headingOnly", "headingText", "photoTextLeft", "textPhotoRight", "pdfLinks", "buttonLinks", "disasterForm", "earthquakeMail"].includes(block.type);
-            const needsText = ["textOnly", "headingText", "photoTextLeft", "textPhotoRight", "pdfLinks", "buttonLinks", "disasterForm", "earthquakeMail"].includes(block.type);
+            const needsHeading = ["headingOnly", "headingText", "childPages", "photoTextLeft", "textPhotoRight", "pdfLinks", "buttonLinks", "disasterForm", "earthquakeMail"].includes(block.type);
+            const needsText = ["textOnly", "headingText", "childPages", "photoTextLeft", "textPhotoRight", "pdfLinks", "buttonLinks", "disasterForm", "earthquakeMail"].includes(block.type);
             const needsLinks = ["pdfLinks", "buttonLinks"].includes(block.type);
             const needsTextLink = ["headingOnly", "textOnly", "headingText", "photoTextLeft", "textPhotoRight"].includes(block.type);
             const needsPhotoLink = ["photo", "photoTextLeft", "textPhotoRight"].includes(block.type);
@@ -3323,6 +3985,7 @@
       const photoBlock = photoUrls.length ? photoMarkup(photoUrls, siteName, pagePhotoSettings(), "page") : "";
       const context = { siteName, catchText, photoUrls, photoBlock, noticeCards, noticeTable, notices, templateId: template.id };
       const bodyBlocks = extraBlocksMarkup(context);
+      const hierarchyNav = hierarchyNavMarkup();
 
       if (template.id === "blank") {
         return `
@@ -3334,6 +3997,7 @@
               ${heroPageLabel ? `<span class="page-title-label">${heroPageLabel}</span>` : ""}
             </div>
           </header>
+          ${hierarchyNav}
           <main>
             ${bodyBlocks}
           </main>
@@ -3349,6 +4013,7 @@
             ${heroPageLabel ? `<span class="page-title-label">${heroPageLabel}</span>` : ""}
           </div>
         </header>
+        ${hierarchyNav}
         <main>
           ${bodyBlocks}
         </main>
@@ -3463,6 +4128,12 @@ nav {
 .site-nav a.active {
   color: #fff;
   background: #2f7d57;
+}
+
+.site-nav a.parent-link {
+  background: #fff;
+  color: #475569;
+  border-style: dashed;
 }
 
 body.nav-style-box .site-nav a {
@@ -3910,6 +4581,68 @@ main > .block-half {
   justify-content: start;
   gap: 8px;
   margin-top: 10px;
+}
+
+.child-page-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.child-page-card {
+  display: block;
+  min-height: 66px;
+  border: 2px solid #c7dfd2;
+  border-radius: 8px;
+  background: #e8f3ed;
+  color: #245f43;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-weight: 900;
+}
+
+.child-page-card span {
+  display: block;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.45;
+  margin-top: 4px;
+}
+
+.hierarchy-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  width: min(100% - 60px, 920px);
+  margin: 10px auto 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.hierarchy-nav a {
+  border: 2px solid #c7dfd2;
+  border-radius: 999px;
+  background: #e8f3ed;
+  color: #245f43;
+  padding: 7px 12px;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.hierarchy-nav a.active {
+  background: #2f7d57;
+  color: #fff;
+}
+
+.hierarchy-nav a.parent-link {
+  border-style: dashed;
+  background: #fff;
+  color: #475569;
 }
 
 .placeholder-link {
@@ -5065,6 +5798,8 @@ functions/index.js にCloud Functionsの雛形を入れています。
         addBlock("photo", { category: "media", choosePhoto: true });
       } else if (action === "pdf") {
         addBlock("pdfLinks", { category: "media", block: { heading: "PDF資料", text: "必要なPDFを選んで入れます。" } });
+      } else if (action === "children") {
+        els.addChildPageBtn.click();
       } else if (action === "design") {
         applyEditorTab("design");
         els.status.textContent = "全体の色や見出しの形を選べます";
@@ -5130,6 +5865,28 @@ functions/index.js にCloud Functionsの雛形を入れています。
       const site = (els.siteName.value || "jichikai").replace(/[\\/:*?"<>|]/g, "");
       download(`${site}-settings.json`, JSON.stringify(projectData(), null, 2));
       els.status.textContent = "設定を保存しました";
+    });
+    els.saveBaseBtn.addEventListener("click", () => {
+      try {
+        localStorage.setItem(customBaseStorageKey, JSON.stringify(projectData()));
+        els.status.textContent = "今のページ構成を自分のベースとして保存しました";
+      } catch (error) {
+        els.status.textContent = "ベースを保存できませんでした";
+      }
+    });
+    els.loadBaseBtn.addEventListener("click", () => {
+      try {
+        const saved = localStorage.getItem(customBaseStorageKey);
+        if (!saved) {
+          els.status.textContent = "まだ自分のベースは保存されていません";
+          return;
+        }
+        if (!confirm("自分のベースに変更します。現在の作成内容は置き換わります。よろしいですか？")) return;
+        loadProjectData(JSON.parse(saved));
+        els.status.textContent = "自分のベースに変更しました";
+      } catch (error) {
+        els.status.textContent = "保存したベースを読み込めませんでした";
+      }
     });
     els.loadProjectBtn.addEventListener("click", () => els.projectFileInput.click());
     els.projectFileInput.addEventListener("change", async () => {
@@ -5229,6 +5986,14 @@ functions/index.js にCloud Functionsの雛形を入れています。
       els.status.textContent = "自治会HP標準セットを入れました。不要なページやブロックは削除できます。";
     });
 
+    document.getElementById("sitemapSetBtn").addEventListener("click", () => {
+      const siteName = els.siteName.value.trim() || "山口連区自治会";
+      const message = "サイトマップ案に近いページ構成を入れます。現在の作成内容は置き換わります。よろしいですか？";
+      if (!confirm(message)) return;
+      loadProjectData(createSitemapJichikaiProject(siteName));
+      els.status.textContent = "サイトマップ案のページ構成を入れました。親ページや不要なページは左側で直せます。";
+    });
+
     els.pageTabs.addEventListener("click", (event) => {
       const button = event.target.closest("[data-page-index]");
       if (!button) return;
@@ -5241,15 +6006,46 @@ functions/index.js にCloud Functionsの雛形を入れています。
     els.addPageBtn.addEventListener("click", () => {
       saveCurrentPage();
       const page = defaultPage(state.pages.length, els.siteName.value || "みどり町自治会");
+      page.parentPageId = "";
       state.pages.push(page);
       state.currentPageIndex = state.pages.length - 1;
       applyPageData(page);
       render();
     });
 
+    els.addChildPageBtn.addEventListener("click", () => {
+      saveCurrentPage();
+      const parent = state.pages[state.currentPageIndex];
+      const page = defaultPage(state.pages.length, els.siteName.value || "みどり町自治会");
+      page.parentPageId = parent ? pageId(parent) : "";
+      page.title = "新しい下層ページ";
+      page.extraBlocks = [
+        { ...defaultBlock("headingText"), heading: "新しい見出し", text: "ここに本文を入れます。" }
+      ];
+      state.pages.push(page);
+      state.currentPageIndex = state.pages.length - 1;
+      applyPageData(page);
+      render();
+      els.status.textContent = "選んでいたページの下の階層に新しいページを追加しました";
+    });
+
+    els.movePageUpBtn.addEventListener("click", () => moveCurrentPageInTree("up"));
+    els.movePageDownBtn.addEventListener("click", () => moveCurrentPageInTree("down"));
+    els.makeRootPageBtn.addEventListener("click", () => changeCurrentPageParent(""));
+    els.applyParentPageBtn.addEventListener("click", () => changeCurrentPageParent(els.parentPageSelect.value || ""));
+    els.parentPageSelect.addEventListener("change", () => {
+      changeCurrentPageParent(els.parentPageSelect.value || "");
+    });
+
     els.deletePageBtn.addEventListener("click", () => {
       if (state.pages.length <= 1) return;
-      state.pages.splice(state.currentPageIndex, 1);
+      const removed = state.pages.splice(state.currentPageIndex, 1)[0];
+      if (removed?.pageId) {
+        state.pages.forEach((page) => {
+          if (page.parentPageId === removed.pageId) page.parentPageId = "";
+        });
+      }
+      state.pages = normalizePages(state.pages);
       state.currentPageIndex = Math.max(0, state.currentPageIndex - 1);
       applyPageData(state.pages[state.currentPageIndex]);
       render();
@@ -5396,7 +6192,7 @@ functions/index.js にCloud Functionsの雛形を入れています。
         return;
       }
 
-      const link = event.target.closest(".site-nav a");
+      const link = event.target.closest(".site-nav a, .hierarchy-nav a, .child-page-card");
       if (!link) return;
       event.preventDefault();
       saveCurrentPage();
