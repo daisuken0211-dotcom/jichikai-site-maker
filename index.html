@@ -462,6 +462,18 @@
       color: var(--green-dark);
     }
 
+    .site-preview [contenteditable="true"] {
+      outline: 2px dashed transparent;
+      outline-offset: 4px;
+      cursor: text;
+    }
+
+    .site-preview [contenteditable="true"]:hover,
+    .site-preview [contenteditable="true"]:focus {
+      outline-color: rgba(47, 125, 87, .45);
+      background: rgba(232, 243, 237, .5);
+    }
+
     .block-picker {
       display: flex;
       flex-wrap: wrap;
@@ -571,6 +583,20 @@
 
     .link-grid .photo-choice-meta {
       grid-column: 1 / -1;
+    }
+
+    .page-link-edit-row {
+      display: grid;
+      gap: 8px;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .page-link-edit-row .small-btn,
+    .page-link-edit-row .photo-choice-meta {
+      width: 100%;
     }
 
     .small-btn {
@@ -1373,6 +1399,31 @@
       margin-top: 10px;
     }
 
+    .page-link-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .page-link-button {
+      display: block;
+      border: 2px solid var(--green);
+      border-radius: 999px;
+      background: var(--soft-green);
+      color: var(--green-dark);
+      padding: 10px 14px;
+      text-align: center;
+      text-decoration: none;
+      font-weight: 900;
+    }
+
+    .page-link-button:hover,
+    .page-link-button:focus-visible {
+      background: var(--green);
+      color: #fff;
+    }
+
     .child-page-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -1702,7 +1753,6 @@
             <button class="easy-action" type="button" data-easy-action="text">文章を追加</button>
             <button class="easy-action" type="button" data-easy-action="photo">写真を追加</button>
             <button class="easy-action" type="button" data-easy-action="pdf">PDFを追加</button>
-            <button class="easy-action" type="button" data-easy-action="children">下層ページを追加</button>
             <button class="easy-action" type="button" data-easy-action="design">色・帯を変更</button>
             <button class="easy-action" type="button" data-easy-action="word">Word下書き</button>
           </div>
@@ -1724,10 +1774,10 @@
             <div class="page-tabs" id="pageTabs"></div>
             <div class="page-actions">
               <button class="btn secondary" id="addPageBtn" type="button">新しいページを追加</button>
-              <button class="btn secondary" id="addChildPageBtn" type="button">このページの下層に追加</button>
+              <button class="btn secondary is-hidden" id="addChildPageBtn" type="button">このページの下層に追加</button>
               <button class="small-btn" id="deletePageBtn" type="button">ページ削除</button>
             </div>
-            <div class="tree-tools">
+            <div class="tree-tools is-hidden">
               <div class="tree-tools-title">選択中ページの並び・階層</div>
               <div class="tree-tool-grid">
                 <button class="small-btn" id="movePageUpBtn" type="button">同じ階層で上へ</button>
@@ -1736,11 +1786,22 @@
                 <button class="small-btn" id="applyParentPageBtn" type="button">選んだ親の下へ</button>
               </div>
             </div>
-            <div class="field">
+            <div class="field is-hidden">
               <label for="pageTitle">このページ名</label>
               <input id="pageTitle" value="ホーム">
             </div>
             <div class="field">
+              <label>
+                <input id="showInMainNav" type="checkbox" checked>
+                上のリンクバーに表示する
+              </label>
+              <div class="field-help">チェックを外すと、上のリンクバーには出さず、ページ移動ボタンから案内できます。</div>
+            </div>
+            <div class="field">
+              <label for="pageNavLabel">上のリンクバーでの名前</label>
+              <input id="pageNavLabel" placeholder="空欄ならこのページ名を表示">
+            </div>
+            <div class="field is-hidden">
               <label for="parentPageSelect">ページ階層（親ページ）</label>
               <select id="parentPageSelect"></select>
               <div class="field-help">親子関係を決める場所です。第1階層は大きなメニュー、親を選んだページはその親ページから移動するページになります。</div>
@@ -1941,7 +2002,7 @@
               <button class="btn secondary" id="sampleBtn" type="button">例を入れる</button>
               <button class="btn secondary" id="standardSetBtn" type="button">自治会HP標準セット</button>
             </div>
-            <button class="btn secondary" id="sitemapSetBtn" type="button">山口連区ベースを作る</button>
+            <button class="btn secondary" id="sitemapSetBtn" type="button">山口自治会ページにする</button>
           </div>
         </div>
 
@@ -2054,6 +2115,7 @@
       { id: "headingText", category: "basic", name: "見出し＋本文" },
       { id: "pdfLinks", category: "media", name: "PDFリンク最大3つ" },
       { id: "buttonLinks", category: "media", name: "ボタンリンク最大3つ" },
+      { id: "pageLinks", category: "media", name: "ページ移動ボタン最大6つ" },
       { id: "photo", category: "media", name: "写真ブロック" },
       { id: "photoTextLeft", category: "layout", name: "写真左・文字右" },
       { id: "textPhotoRight", category: "layout", name: "文字左・写真右" },
@@ -2094,6 +2156,8 @@
       applyParentPageBtn: document.getElementById("applyParentPageBtn"),
       pageTitle: document.getElementById("pageTitle"),
       parentPageSelect: document.getElementById("parentPageSelect"),
+      showInMainNav: document.getElementById("showInMainNav"),
+      pageNavLabel: document.getElementById("pageNavLabel"),
       navPosition: document.getElementById("navPosition"),
       navStyleSelect: document.getElementById("navStyleSelect"),
       themeSelect: document.getElementById("themeSelect"),
@@ -2288,6 +2352,15 @@
           { x: 50, y: 50, zoom: 100 },
           { x: 50, y: 50, zoom: 100 },
           { x: 50, y: 50, zoom: 100 }
+        ],
+        pageLinkCount: 1,
+        pageLinks: [
+          { text: "", type: "page", pageId: "", url: "", fileName: "" },
+          { text: "", type: "page", pageId: "", url: "", fileName: "" },
+          { text: "", type: "page", pageId: "", url: "", fileName: "" },
+          { text: "", type: "page", pageId: "", url: "", fileName: "" },
+          { text: "", type: "page", pageId: "", url: "", fileName: "" },
+          { text: "", type: "page", pageId: "", url: "", fileName: "" }
         ],
         links: [
           { text: "PDFを見る", url: "", fileName: "" },
@@ -2524,7 +2597,7 @@
       };
       const base = (key, title, parentKey, extraBlocks, options = {}) => ({
         pageId: ids[key],
-        parentPageId: parentKey ? ids[parentKey] : "",
+        parentPageId: "",
         title,
         slug: "",
         siteName,
@@ -2718,13 +2791,15 @@
 
     function normalizePages(pages) {
       const normalized = cloneData(pages || []);
+      const hasNavigationSettings = normalized.some((page) => Object.prototype.hasOwnProperty.call(page, "showInMainNav"));
       normalized.forEach((page, index) => {
         if (!page.pageId) page.pageId = createPageId();
         page.slug = slugForPage(index);
+        page.showInMainNav = hasNavigationSettings ? page.showInMainNav !== false : index === 0;
+        page.navLabel = typeof page.navLabel === "string" ? page.navLabel : "";
       });
-      const ids = new Set(normalized.map((page) => page.pageId));
       normalized.forEach((page) => {
-        if (!ids.has(page.parentPageId) || page.parentPageId === page.pageId) page.parentPageId = "";
+        page.parentPageId = "";
       });
       return normalized;
     }
@@ -3112,6 +3187,8 @@
         pageId: createPageId(),
         parentPageId: "",
         title: index === 0 ? "ホーム" : `ページ${index + 1}`,
+        showInMainNav: index === 0,
+        navLabel: "",
         slug: slugForPage(index),
         siteName,
         catchText: "住みよいまちづくりのために、地域の情報をわかりやすくお届けします。",
@@ -3146,6 +3223,8 @@
         pageId: pageId(page),
         parentPageId: els.parentPageSelect.value || "",
         title: els.pageTitle.value.trim() || `ページ${state.currentPageIndex + 1}`,
+        showInMainNav: els.showInMainNav.checked,
+        navLabel: els.pageNavLabel.value.trim(),
         slug: slugForPage(state.currentPageIndex),
         siteName: els.siteName.value,
         catchText: els.catchText.value,
@@ -3240,6 +3319,8 @@
         });
       }
       els.pageTitle.value = page.title || "ホーム";
+      els.showInMainNav.checked = page.showInMainNav !== false;
+      els.pageNavLabel.value = page.navLabel || "";
       renderParentPageSelect(page.parentPageId || "");
       els.siteName.value = page.siteName || "みどり町自治会";
       els.catchText.value = page.catchText || "";
@@ -3266,23 +3347,22 @@
 
     function renderPageTabs() {
       state.pages = normalizePages(state.pages);
-      els.pageTabs.innerHTML = pageTreeItems().map(({ page, index, depth }) => {
-        const label = depth === 0 ? "第1階層" : `第${depth + 1}階層`;
+      els.pageTabs.innerHTML = state.pages.map((page, index) => {
+        const depth = 0;
+        const label = "ページ";
         return `
         <button class="page-tab ${index === state.currentPageIndex ? "active" : ""}" type="button" data-page-index="${index}" data-depth="${depth}" data-tree-mark="${escapeHtml(label)}" style="--depth:${depth}">
           <span>
             <span class="page-tab-title">${escapeHtml(page.title || `ページ${index + 1}`)}</span>
-            <span class="page-tab-parent">${escapeHtml(parentTitleForPage(page))}</span>
+            <span class="page-tab-parent">${page.showInMainNav ? "上のリンクバーに表示" : "ページ内ボタンから案内"}</span>
           </span>
         </button>
       `;
       }).join("");
       els.deletePageBtn.disabled = state.pages.length <= 1;
-      const siblings = currentPageSiblings();
-      const siblingIndex = siblings.findIndex((item) => item.index === state.currentPageIndex);
-      els.movePageUpBtn.disabled = siblingIndex <= 0;
-      els.movePageDownBtn.disabled = siblingIndex < 0 || siblingIndex >= siblings.length - 1;
-      els.makeRootPageBtn.disabled = !(state.pages[state.currentPageIndex]?.parentPageId);
+      els.movePageUpBtn.disabled = true;
+      els.movePageDownBtn.disabled = true;
+      els.makeRootPageBtn.disabled = true;
       renderParentPageSelect(els.parentPageSelect.value || "");
     }
 
@@ -3309,10 +3389,16 @@
     }
 
     function pageNavMarkup(activeIndex = state.currentPageIndex) {
-      const links = mainNavItems(activeIndex).map((item) => {
-        const title = escapeHtml(item.title);
+      const visiblePages = state.pages
+        .map((page, index) => ({ page, index, active: index === activeIndex }))
+        .filter((item) => item.index === 0 || item.page.showInMainNav);
+      const pages = visiblePages.length
+        ? visiblePages
+        : state.pages.slice(0, 1).map((page, index) => ({ page, index, active: index === activeIndex }));
+      const links = pages.map((item) => {
+        const title = escapeHtml(item.page.navLabel || item.page.title || `ページ${item.index + 1}`);
         const href = escapeHtml(slugForPage(item.index));
-        const className = [item.active ? "active" : "", item.kind === "parent" ? "parent-link" : ""].filter(Boolean).join(" ");
+        const className = item.active ? "active" : "";
         return `<a class="${className}" href="${href}">${title}</a>`;
       }).join("");
       return `<nav class="site-nav ${els.navPosition.value === "left" ? "site-nav-left" : "site-nav-top"}">${links}</nav>`;
@@ -3543,12 +3629,13 @@
 
     function textPartsMarkup(block) {
       const count = textPartCount(block);
-      const parts = ensureTextParts(block)
-        .slice(0, count)
-        .map((text) => escapeHtml(text.trim()))
-        .filter(Boolean);
-      const safeParts = parts.length ? parts : ["ここに本文を入れます。"];
-      return `<div class="text-parts count-${count}">${safeParts.map((text) => `<p>${text.replace(/\n/g, "<br>")}</p>`).join("")}</div>`;
+      const rawParts = ensureTextParts(block).slice(0, count);
+      const hasText = rawParts.some((text) => String(text || "").trim());
+      const safeParts = hasText ? rawParts : ["ここに本文を入れます。"];
+      return `<div class="text-parts count-${count}">${safeParts.map((text, index) => {
+        const safeText = escapeHtml(String(text || "").trim()).replace(/\n/g, "<br>");
+        return `<p${previewEditAttr("block", "textPart", block?.id || "", index)}>${safeText}</p>`;
+      }).join("")}</div>`;
     }
 
     function ensurePhotoSettings(block) {
@@ -3631,6 +3718,13 @@
       return ` data-preview-target="notice"${value}`;
     }
 
+    function previewEditAttr(kind, field, id = "", index = "") {
+      if (!state.isPreviewRendering) return "";
+      const idAttr = id ? ` data-preview-edit-id="${escapeHtml(id)}"` : "";
+      const indexAttr = index === "" ? "" : ` data-preview-edit-index="${index}"`;
+      return ` contenteditable="true" spellcheck="false" data-preview-edit-kind="${kind}" data-preview-edit-field="${field}"${idAttr}${indexAttr}`;
+    }
+
     function textLinkMarkup(block) {
       if (!block?.textLinkText && !block?.textLinkUrl) return "";
       const text = escapeHtml(block.textLinkText || "詳しく見る");
@@ -3700,7 +3794,7 @@
 
     function headingOnlyMarkup(block) {
       const custom = customHeadingText(block);
-      return `<section class="${blockClass(block, "text-block text-heading-only")}"${previewBlockAttr(block)}><h2>${custom.heading}</h2>${textLinkMarkup(block)}</section>`;
+      return `<section class="${blockClass(block, "text-block text-heading-only")}"${previewBlockAttr(block)}><h2${previewEditAttr("block", "heading", block?.id || "")}>${custom.heading}</h2>${textLinkMarkup(block)}</section>`;
     }
 
     function textOnlyMarkup(block) {
@@ -3709,7 +3803,7 @@
 
     function headingTextMarkup(block) {
       const custom = customHeadingText(block);
-      return `<section class="${blockClass(block, "text-block")}"${previewBlockAttr(block)}><h2>${custom.heading}</h2>${textPartsMarkup(block)}${textLinkMarkup(block)}</section>`;
+      return `<section class="${blockClass(block, "text-block")}"${previewBlockAttr(block)}><h2${previewEditAttr("block", "heading", block?.id || "")}>${custom.heading}</h2>${textPartsMarkup(block)}${textLinkMarkup(block)}</section>`;
     }
 
     function recentInfoMarkup(context) {
@@ -3749,6 +3843,39 @@
     function linksBlockMarkup(block) {
       const custom = customHeadingText(block);
       return `<section class="${blockClass(block, "feature-text")}"${previewBlockAttr(block)}><h2>${custom.heading}</h2><p>${custom.text}</p>${linkButtonsMarkup(block)}</section>`;
+    }
+
+    function pageLinkCount(block) {
+      return Math.min(6, Math.max(1, Number(block?.pageLinkCount) || 1));
+    }
+
+    function pageLinkTarget(link) {
+      if (!link) return null;
+      if (link.type === "page") {
+        const index = state.pages.findIndex((page) => pageId(page) === link.pageId);
+        return index >= 0 ? { index, href: slugForPage(index) } : null;
+      }
+      const url = String(link.url || "").trim();
+      return url ? { href: url, external: true } : null;
+    }
+
+    function pageLinksMarkup(block) {
+      const links = (block?.pageLinks || []).slice(0, pageLinkCount(block))
+        .map((link) => ({ link, target: pageLinkTarget(link) }))
+        .filter((item) => item.link?.text?.trim() && item.target);
+      if (!links.length) return `<span class="archive-link placeholder-link">ページ移動ボタンを設定してください</span>`;
+      return `<div class="page-link-grid">
+        ${links.map(({ link, target }) => {
+          const previewTarget = target.index == null || !state.isPreviewRendering ? "" : ` data-preview-page-index="${target.index}"`;
+          const externalAttrs = target.external ? ` target="_blank" rel="noopener"` : "";
+          return `<a class="page-link-button" href="${escapeHtml(target.href)}"${previewTarget}${externalAttrs}>${escapeHtml(link.text.trim())}</a>`;
+        }).join("")}
+      </div>`;
+    }
+
+    function pageLinksBlockMarkup(block) {
+      const custom = customHeadingText(block);
+      return `<section class="${blockClass(block, "feature-text")}"${previewBlockAttr(block)}><h2>${custom.heading}</h2><p>${custom.text}</p>${pageLinksMarkup(block)}</section>`;
     }
 
     function childPagesMarkup(block) {
@@ -3815,6 +3942,7 @@
       if (blockType === "headingText") return headingTextMarkup(block);
       if (blockType === "childPages") return childPagesMarkup(block);
       if (blockType === "pdfLinks" || blockType === "buttonLinks") return linksBlockMarkup(block);
+      if (blockType === "pageLinks") return pageLinksBlockMarkup(block);
       if (blockType === "photo") return wrapPhotoLink(`<section class="${blockClass(block)}"${previewBlockAttr(block)}>${photoMarkup(blockPhotoUrls(block, context.photoUrls), context.siteName, block, "block")}</section>`, block);
       if (blockType === "photoTextLeft") return photoTextMarkup(context.photoUrls, context.siteName, block, false);
       if (blockType === "textPhotoRight") return photoTextMarkup(context.photoUrls, context.siteName, block, true);
@@ -3838,9 +3966,10 @@
       els.addedBlocks.innerHTML = state.extraBlocks.length
         ? state.extraBlocks.map((block, index) => {
             const type = extraBlockTypes.find((item) => item.id === block.type);
-            const needsHeading = ["headingOnly", "headingText", "childPages", "photoTextLeft", "textPhotoRight", "pdfLinks", "buttonLinks", "disasterForm", "earthquakeMail"].includes(block.type);
-            const needsText = ["textOnly", "headingText", "childPages", "photoTextLeft", "textPhotoRight", "pdfLinks", "buttonLinks", "disasterForm", "earthquakeMail"].includes(block.type);
+            const needsHeading = ["headingOnly", "headingText", "childPages", "photoTextLeft", "textPhotoRight", "pdfLinks", "buttonLinks", "pageLinks", "disasterForm", "earthquakeMail"].includes(block.type);
+            const needsText = ["textOnly", "headingText", "childPages", "photoTextLeft", "textPhotoRight", "pdfLinks", "buttonLinks", "pageLinks", "disasterForm", "earthquakeMail"].includes(block.type);
             const needsLinks = ["pdfLinks", "buttonLinks"].includes(block.type);
+            const needsPageLinks = block.type === "pageLinks";
             const needsTextLink = ["headingOnly", "textOnly", "headingText", "photoTextLeft", "textPhotoRight"].includes(block.type);
             const needsPhotoLink = ["photo", "photoTextLeft", "textPhotoRight"].includes(block.type);
             const needsPhotoContent = ["photo", "photoTextLeft", "textPhotoRight"].includes(block.type);
@@ -3916,6 +4045,37 @@
                         ${link.fileName ? `<div class="photo-choice-meta">選択中: ${escapeHtml(link.fileName)}</div>` : ""}
                       </div>
                     `).join("") : ""}
+                    ${needsPageLinks ? `
+                      <label>このページから案内するボタン数
+                        <select data-block-field="${index}:pageLinkCount">
+                          ${[1, 2, 3, 4, 5, 6].map((count) => `<option value="${count}" ${pageLinkCount(block) === count ? "selected" : ""}>${count}個</option>`).join("")}
+                        </select>
+                      </label>
+                      <div class="field-help">ボタンを押した先で、さらに別のページへの案内も設定できます。</div>
+                      ${Array.from({ length: pageLinkCount(block) }, (_, linkIndex) => {
+                        const link = block.pageLinks?.[linkIndex] || {};
+                        const linkType = link.type === "url" ? "url" : "page";
+                        return `
+                          <div class="page-link-edit-row">
+                            <input data-block-field="${index}:pageLinks.${linkIndex}.text" value="${escapeHtml(link.text || "")}" placeholder="ボタン名 ${linkIndex + 1}">
+                            <select data-block-field="${index}:pageLinks.${linkIndex}.type">
+                              <option value="page" ${linkType === "page" ? "selected" : ""}>このサイトのページ</option>
+                              <option value="url" ${linkType === "url" ? "selected" : ""}>外部サイト・PDF</option>
+                            </select>
+                            ${linkType === "page" ? `
+                              <select data-block-field="${index}:pageLinks.${linkIndex}.pageId">
+                                <option value="">移動先を選ぶ</option>
+                                ${state.pages.map((page) => `<option value="${escapeHtml(pageId(page))}" ${pageId(page) === link.pageId ? "selected" : ""}>${escapeHtml(page.title || "ページ")}</option>`).join("")}
+                              </select>
+                            ` : `
+                              <input data-block-field="${index}:pageLinks.${linkIndex}.url" value="${escapeHtml(link.url || "")}" placeholder="URLまたはPDF">
+                              <button class="small-btn" type="button" data-choose-link-file="${index}:pageLinks.${linkIndex}">ファイルを選ぶ</button>
+                              ${link.fileName ? `<div class="photo-choice-meta">選択中: ${escapeHtml(link.fileName)}</div>` : ""}
+                            `}
+                          </div>
+                        `;
+                      }).join("")}
+                    ` : ""}
                   </div>
                   <div class="block-layout-area">
                     <div class="block-area-title">配置</div>
@@ -3985,19 +4145,16 @@
       const photoBlock = photoUrls.length ? photoMarkup(photoUrls, siteName, pagePhotoSettings(), "page") : "";
       const context = { siteName, catchText, photoUrls, photoBlock, noticeCards, noticeTable, notices, templateId: template.id };
       const bodyBlocks = extraBlocksMarkup(context);
-      const hierarchyNav = hierarchyNavMarkup();
-
       if (template.id === "blank") {
         return `
           ${pageNavMarkup()}
           <header data-preview-area="header">
             <div class="header-inner">
-              <h1>${heroTitle}</h1>
-              ${heroLead ? `<p class="lead">${heroLead}</p>` : ""}
+              <h1${previewEditAttr("page", "title")}>${heroTitle}</h1>
+              ${heroLead ? `<p class="lead"${previewEditAttr("page", "catchText")}>${heroLead}</p>` : ""}
               ${heroPageLabel ? `<span class="page-title-label">${heroPageLabel}</span>` : ""}
             </div>
           </header>
-          ${hierarchyNav}
           <main>
             ${bodyBlocks}
           </main>
@@ -4008,12 +4165,11 @@
         ${pageNavMarkup()}
         <header data-preview-area="header">
           <div class="header-inner">
-            <h1>${heroTitle}</h1>
-            ${heroLead ? `<p class="lead">${heroLead}</p>` : ""}
+            <h1${previewEditAttr("page", "title")}>${heroTitle}</h1>
+            ${heroLead ? `<p class="lead"${previewEditAttr("page", "catchText")}>${heroLead}</p>` : ""}
             ${heroPageLabel ? `<span class="page-title-label">${heroPageLabel}</span>` : ""}
           </div>
         </header>
-        ${hierarchyNav}
         <main>
           ${bodyBlocks}
         </main>
@@ -4581,6 +4737,31 @@ main > .block-half {
   justify-content: start;
   gap: 8px;
   margin-top: 10px;
+}
+
+.page-link-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.page-link-button {
+  display: block;
+  border: 2px solid #2f7d57;
+  border-radius: 999px;
+  background: #e8f3ed;
+  color: #245f43;
+  padding: 10px 14px;
+  text-align: center;
+  text-decoration: none;
+  font-weight: 800;
+}
+
+.page-link-button:hover,
+.page-link-button:focus-visible {
+  background: #2f7d57;
+  color: #fff;
 }
 
 .child-page-grid {
@@ -5340,6 +5521,18 @@ exports.deleteUserByAdmin = onCall(async (request) => {
     <div class="c-wrapper"><h2 class="pera1-editable" data-structure="e-heading">${custom.heading}</h2><div class="sentence pera1-editable" data-structure="e-text">${custom.text}</div></div>
   </div>`;
         }
+        if (block.type === "pageLinks") {
+          const custom = customHeadingText(block);
+          const links = (block.pageLinks || []).slice(0, pageLinkCount(block))
+            .map((link) => ({ link, target: pageLinkTarget(link) }))
+            .filter((item) => item.link?.text?.trim() && item.target);
+          const linksHtml = links.length
+            ? links.map(({ link, target }) => `<a href="${escapeHtml(target.href)}"${target.external ? ` target="_blank" rel="noopener"` : ""}>${escapeHtml(link.text.trim())}</a>`).join("<br>")
+            : "ページ移動ボタンを設定してください";
+          return `<div class="pera1-section block" data-structure="b-sentence-card" data-block-name="ページ移動ボタン" id="${sectionId}">
+    <div class="c-wrapper"><div class="note"><h2 class="pera1-editable" data-structure="e-heading">${custom.heading}</h2><div class="pera1-editable" data-structure="e-text">${custom.text}<br>${linksHtml}</div></div></div>
+  </div>`;
+        }
         if (block.type === "pdfLinks" || block.type === "buttonLinks") {
           const custom = customHeadingText(block);
           const links = (block.links || []).filter((link) => link.text.trim() || link.url.trim()).slice(0, 3);
@@ -5576,6 +5769,9 @@ exports.deleteUserByAdmin = onCall(async (request) => {
       callback(block.photoLinkUrl, block.photoLinkFileName || "photo-link-file");
       (block.links || []).forEach((link) => {
         callback(link.url, link.fileName || link.text || "file");
+      });
+      (block.pageLinks || []).forEach((link) => {
+        callback(link.url, link.fileName || link.text || "page-link-file");
       });
     }
 
@@ -6145,7 +6341,67 @@ functions/index.js にCloud Functionsの雛形を入れています。
       els.status.textContent = "写真の位置を調整しました";
     });
 
+    function applyPreviewEdit(editable) {
+      const kind = editable.dataset.previewEditKind;
+      const field = editable.dataset.previewEditField;
+      const text = editable.innerText.trim();
+      if (kind === "page") {
+        if (field === "title") {
+          els.pageTitle.value = text || "ホーム";
+          state.pages[state.currentPageIndex].title = els.pageTitle.value;
+        } else if (field === "catchText") {
+          els.catchText.value = text;
+          state.pages[state.currentPageIndex].catchText = text;
+        }
+        refreshTextCounters(els.editorForm);
+        renderPageTabs();
+        return;
+      }
+      if (kind !== "block") return;
+      const block = state.extraBlocks.find((item) => item.id === editable.dataset.previewEditId);
+      if (!block) return;
+      if (field === "heading") {
+        block.heading = text || "新しい見出し";
+      } else if (field === "textPart") {
+        const index = Number(editable.dataset.previewEditIndex) || 0;
+        const parts = ensureTextParts(block);
+        parts[index] = text;
+        block.textParts = parts;
+        block.text = parts.slice(0, textPartCount(block)).filter(Boolean).join("\n\n");
+      }
+    }
+
+    els.preview.addEventListener("focusin", (event) => {
+      const editable = event.target.closest("[data-preview-edit-kind]");
+      if (!editable) return;
+      const blockId = editable.dataset.previewEditId;
+      if (blockId && state.extraBlocks.some((block) => block.id === blockId)) {
+        state.activeBlockId = blockId;
+        state.activeNoticeIndex = -1;
+        applyEditorTab("blocks");
+        renderAddedBlocks();
+        scrollActiveBlockIntoView();
+      }
+      els.status.textContent = "プレビュー上で文字を直接直せます";
+    });
+
+    els.preview.addEventListener("input", (event) => {
+      const editable = event.target.closest("[data-preview-edit-kind]");
+      if (!editable) return;
+      applyPreviewEdit(editable);
+    });
+
+    els.preview.addEventListener("focusout", (event) => {
+      const editable = event.target.closest("[data-preview-edit-kind]");
+      if (!editable) return;
+      applyPreviewEdit(editable);
+      renderAddedBlocks();
+      render(true);
+      els.status.textContent = "プレビューの文字を反映しました";
+    });
+
     els.preview.addEventListener("click", (event) => {
+      if (event.target.closest("[data-preview-edit-kind]")) return;
       const previewHeader = event.target.closest("[data-preview-area='header']");
       if (previewHeader) {
         event.preventDefault();
@@ -6192,12 +6448,13 @@ functions/index.js にCloud Functionsの雛形を入れています。
         return;
       }
 
-      const link = event.target.closest(".site-nav a, .hierarchy-nav a, .child-page-card");
+      const link = event.target.closest(".site-nav a, .page-link-button, .hierarchy-nav a, .child-page-card");
       if (!link) return;
+      const href = link.getAttribute("href") || "";
+      const nextIndex = state.pages.findIndex((page, index) => slugForPage(index) === href);
+      if (nextIndex < 0) return;
       event.preventDefault();
       saveCurrentPage();
-      const nextIndex = state.pages.findIndex((page, index) => slugForPage(index) === link.getAttribute("href"));
-      if (nextIndex < 0) return;
       state.currentPageIndex = nextIndex;
       applyPageData(state.pages[state.currentPageIndex]);
       render();
@@ -6340,6 +6597,15 @@ functions/index.js にCloud Functionsの雛形を入れています。
             link.fileName = file.name;
             if (!link.text) link.text = file.name.replace(/\.[^.]+$/, "");
           }
+        } else if (target.target.startsWith("pageLinks.")) {
+          const linkIndex = Number(target.target.split(".")[1]);
+          block.pageLinks = block.pageLinks || [];
+          block.pageLinks[linkIndex] = block.pageLinks[linkIndex] || { text: "", type: "url", pageId: "", url: "", fileName: "" };
+          const link = block.pageLinks[linkIndex];
+          link.type = "url";
+          link.url = dataUrl;
+          link.fileName = file.name;
+          if (!link.text) link.text = file.name.replace(/\.[^.]+$/, "");
         }
         state.activeBlockId = block.id;
         renderAddedBlocks();
@@ -6399,6 +6665,24 @@ functions/index.js にCloud Functionsの雛形を入れています。
           link[key] = input.value;
           if (key === "url" && !isDataUrl(input.value)) link.fileName = "";
         }
+      } else if (path === "pageLinkCount") {
+        block.pageLinkCount = pageLinkCount({ pageLinkCount: input.value });
+        block.pageLinks = block.pageLinks || [];
+        renderAddedBlocks();
+      } else if (path.startsWith("pageLinks.")) {
+        const [, linkIndexText, key] = path.split(".");
+        const linkIndex = Number(linkIndexText);
+        block.pageLinks = block.pageLinks || [];
+        block.pageLinks[linkIndex] = block.pageLinks[linkIndex] || { text: "", type: "page", pageId: "", url: "", fileName: "" };
+        const link = block.pageLinks[linkIndex];
+        link[key] = input.value;
+        if (key === "url" && !isDataUrl(input.value)) link.fileName = "";
+        if (key === "type" && input.value === "page") {
+          link.url = "";
+          link.fileName = "";
+        }
+        if (key === "type" && input.value === "url") link.pageId = "";
+        if (key === "type" || key === "pageId") renderAddedBlocks();
       }
       if (input.tagName === "TEXTAREA") autoResizeTextarea(input);
       updateTextCounter(input);
