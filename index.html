@@ -404,8 +404,49 @@
 
     .page-actions {
       display: grid;
-      grid-template-columns: 1fr 1fr auto;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 8px;
+    }
+
+    .page-actions #deletePageBtn {
+      grid-column: 1 / -1;
+    }
+
+    .easy-page-manager {
+      display: grid;
+      gap: 8px;
+      padding: 10px;
+      border: 1px solid #b9d8c6;
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .easy-page-tabs {
+      max-height: 220px;
+    }
+
+    .easy-page-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .easy-page-action {
+      min-height: 46px;
+      border: 2px solid rgba(36, 95, 67, .22);
+      border-radius: 8px;
+      background: #f8fbf9;
+      color: var(--green-dark);
+      font-weight: 900;
+      line-height: 1.3;
+      padding: 8px 10px;
+    }
+
+    .easy-page-action.danger {
+      grid-column: 1 / -1;
+      border-color: #e5c8c8;
+      background: #fff8f8;
+      color: #9f2f2f;
     }
 
     .tree-tools {
@@ -499,6 +540,24 @@
 
     .is-hidden {
       display: none !important;
+    }
+
+    /* Text is edited directly in the preview; keep form values only for storage and export. */
+    .editor-panel .preview-only-text,
+    .editor-panel .preview-only-text-field,
+    .editor-panel .preview-only-block-text {
+      display: none !important;
+    }
+
+    .preview-edit-note {
+      border: 1px dashed var(--line);
+      border-radius: 8px;
+      background: #f8fafc;
+      color: #64748b;
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1.55;
+      padding: 10px 12px;
     }
 
     .added-blocks {
@@ -1147,6 +1206,15 @@
       display: block;
     }
 
+    .map-block .hero-photo {
+      min-height: min(70vh, 640px);
+      background: #fff;
+    }
+
+    .map-block .hero-photo img {
+      object-fit: contain;
+    }
+
     .template-note {
       display: inline-block;
       margin-top: 10px;
@@ -1397,6 +1465,141 @@
       justify-content: start;
       gap: 8px;
       margin-top: 10px;
+    }
+
+    .pdf-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .pdf-card {
+      display: grid;
+      gap: 8px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--green-dark);
+      text-decoration: none;
+      box-shadow: 0 4px 12px rgba(31, 41, 51, .08);
+    }
+
+    .pdf-thumb {
+      position: relative;
+      height: 190px;
+      overflow: hidden;
+      background: #eef2f7;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .pdf-thumb iframe {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      pointer-events: none;
+      background: #fff;
+    }
+
+    .pdf-thumb::after {
+      content: "PDF";
+      position: absolute;
+      left: 8px;
+      top: 8px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: rgba(31, 41, 51, .78);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 900;
+      pointer-events: none;
+    }
+
+    .pdf-thumb-hitarea {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 10px;
+      background: rgba(36, 95, 67, .72);
+      color: #fff;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 900;
+      opacity: 0;
+      transition: opacity .16s ease;
+      cursor: pointer;
+    }
+
+    .pdf-card:hover .pdf-thumb-hitarea,
+    .pdf-card:focus-visible .pdf-thumb-hitarea {
+      opacity: 1;
+    }
+
+    .pdf-card-title {
+      display: block;
+      padding: 0 10px 10px;
+      line-height: 1.45;
+    }
+
+    .pdf-card:focus-visible {
+      outline: 3px solid rgba(47, 125, 87, .42);
+      outline-offset: 3px;
+    }
+
+    .pdf-lightbox[hidden] {
+      display: none;
+    }
+
+    .pdf-lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: grid;
+      place-items: center;
+      padding: 16px;
+      background: rgba(15, 23, 42, .68);
+    }
+
+    .pdf-lightbox-dialog {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      width: min(1100px, 100%);
+      height: min(90vh, 860px);
+      overflow: hidden;
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 20px 60px rgba(15, 23, 42, .35);
+    }
+
+    .pdf-lightbox-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--line);
+      color: #334155;
+      font-weight: 900;
+    }
+
+    .pdf-lightbox-close {
+      min-height: 36px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: #334155;
+      font-weight: 900;
+      padding: 4px 12px;
+    }
+
+    .pdf-lightbox-frame {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #eef2f7;
     }
 
     .page-link-grid {
@@ -1756,7 +1959,16 @@
             <button class="easy-action" type="button" data-easy-action="design">色・帯を変更</button>
             <button class="easy-action" type="button" data-easy-action="word">Word下書き</button>
           </div>
-          <div class="easy-note">プレビューの部品を押すと、その場所を左で直せます。帯を押すと帯写真、見出しを押すと色や見出しの形を変えられます。</div>
+          <div class="easy-page-manager">
+            <div class="easy-title">ページを作る</div>
+            <div class="page-tabs easy-page-tabs" id="easyPageTabs"></div>
+            <div class="easy-page-actions">
+              <button class="easy-page-action" type="button" data-easy-page-action="new">ページを追加</button>
+              <button class="easy-page-action" type="button" data-easy-page-action="child">このページの下に新しいページを作る</button>
+              <button class="easy-page-action danger" type="button" data-easy-page-action="delete">このページを削除</button>
+            </div>
+          </div>
+          <div class="easy-note">文字はプレビューを押して直接編集します。ボタンの文字を編集するときだけControlキーを押しながら選びます。帯を押すと帯写真、見出しを押すと色や見出しの形を変えられます。写真やPDFは部品を追加してファイルを選びます。</div>
         </div>
 
         <div class="editor-mode-tabs" id="editorModeTabs">
@@ -1773,11 +1985,11 @@
             <label>ページ</label>
             <div class="page-tabs" id="pageTabs"></div>
             <div class="page-actions">
-              <button class="btn secondary" id="addPageBtn" type="button">新しいページを追加</button>
-              <button class="btn secondary is-hidden" id="addChildPageBtn" type="button">このページの下層に追加</button>
-              <button class="small-btn" id="deletePageBtn" type="button">ページ削除</button>
+              <button class="btn secondary" id="addPageBtn" type="button">ページを追加</button>
+              <button class="btn secondary" id="addChildPageBtn" type="button">このページの下に新しいページを作る</button>
+              <button class="small-btn" id="deletePageBtn" type="button">このページを削除</button>
             </div>
-            <div class="tree-tools is-hidden">
+            <div class="tree-tools">
               <div class="tree-tools-title">選択中ページの並び・階層</div>
               <div class="tree-tool-grid">
                 <button class="small-btn" id="movePageUpBtn" type="button">同じ階層で上へ</button>
@@ -1797,18 +2009,18 @@
               </label>
               <div class="field-help">チェックを外すと、上のリンクバーには出さず、ページ移動ボタンから案内できます。</div>
             </div>
-            <div class="field">
+            <div class="field preview-only-text-field">
               <label for="pageNavLabel">上のリンクバーでの名前</label>
               <input id="pageNavLabel" placeholder="空欄ならこのページ名を表示">
             </div>
-            <div class="field is-hidden">
+            <div class="field">
               <label for="parentPageSelect">ページ階層（親ページ）</label>
               <select id="parentPageSelect"></select>
               <div class="field-help">親子関係を決める場所です。第1階層は大きなメニュー、親を選んだページはその親ページから移動するページになります。</div>
             </div>
           </div>
 
-          <div class="field">
+          <div class="field preview-only-text">
             <label for="siteName">自治会名</label>
             <input id="siteName" value="みどり町自治会">
           </div>
@@ -1825,10 +2037,14 @@
               <button class="btn secondary" id="loadProjectBtn" type="button">設定を読み込む</button>
             </div>
             <div class="compact-row">
+              <button class="btn secondary" id="loadZipBtn" type="button">ZIPを読み込んで編集</button>
+            </div>
+            <div class="compact-row">
               <button class="btn secondary" id="saveBaseBtn" type="button">今をベース保存</button>
               <button class="btn secondary" id="loadBaseBtn" type="button">自分のベースに変更</button>
             </div>
             <input id="projectFileInput" type="file" accept="application/json,.json" hidden>
+            <input id="zipFileInput" type="file" accept=".zip,application/zip" hidden>
             <input id="linkFileInput" type="file" accept="application/pdf,.pdf,image/*,.doc,.docx,.xls,.xlsx,.ppt,.pptx" hidden>
             <input id="blockPhotoInput" type="file" accept="image/*" hidden>
           </div>
@@ -1902,7 +2118,7 @@
             <div class="block-panel-label">1. 追加する部品を選ぶ</div>
             <div class="block-tabs" id="blockTabs"></div>
             <div class="block-picker" id="blockPicker"></div>
-            <div class="block-panel-label">2. 追加した部品の内容・配置を編集</div>
+            <div class="block-panel-label">2. 追加した部品の写真・PDF・配置を設定</div>
             <div class="added-blocks" id="addedBlocks"></div>
           </div>
 
@@ -2015,7 +2231,7 @@
           <button class="btn secondary" id="downloadHtmlBtn" type="button">表示中コードを保存</button>
         </div>
 
-        <button class="btn primary" id="downloadZipBtn" type="button">HTML一式をZIPで保存</button>
+        <button class="btn primary" id="downloadZipBtn" type="button">USB用ZIPを保存（写真・PDF込み）</button>
       </div>
     </section>
 
@@ -2039,6 +2255,16 @@
 
     </section>
   </main>
+
+  <div class="pdf-lightbox" id="pdfLightbox" hidden>
+    <div class="pdf-lightbox-dialog" role="dialog" aria-modal="true" aria-labelledby="pdfLightboxTitle">
+      <div class="pdf-lightbox-toolbar">
+        <strong id="pdfLightboxTitle">PDFプレビュー</strong>
+        <button class="pdf-lightbox-close" id="pdfLightboxClose" type="button">閉じる</button>
+      </div>
+      <iframe class="pdf-lightbox-frame" id="pdfLightboxFrame" title="PDFプレビュー"></iframe>
+    </div>
+  </div>
 
   <script>
     const state = {
@@ -2113,10 +2339,11 @@
       { id: "headingOnly", category: "basic", name: "見出しだけ" },
       { id: "textOnly", category: "basic", name: "本文だけ" },
       { id: "headingText", category: "basic", name: "見出し＋本文" },
-      { id: "pdfLinks", category: "media", name: "PDFリンク最大3つ" },
+      { id: "pdfLinks", category: "media", name: "PDFリンク最大3つ（サムネイル）" },
       { id: "buttonLinks", category: "media", name: "ボタンリンク最大3つ" },
       { id: "pageLinks", category: "media", name: "ページ移動ボタン最大6つ" },
       { id: "photo", category: "media", name: "写真ブロック" },
+      { id: "map", category: "media", name: "散策マップ" },
       { id: "photoTextLeft", category: "layout", name: "写真左・文字右" },
       { id: "textPhotoRight", category: "layout", name: "文字左・写真右" },
       { id: "disasterForm", category: "safety", name: "災害時連絡フォーム" },
@@ -2143,6 +2370,7 @@
     const els = {
       editorModeSwitch: document.getElementById("editorModeSwitch"),
       easyShortcuts: document.getElementById("easyShortcuts"),
+      easyPageTabs: document.getElementById("easyPageTabs"),
       editorModeTabs: document.getElementById("editorModeTabs"),
       editorPanes: Array.from(document.querySelectorAll("[data-editor-pane]")),
       editorForm: document.querySelector(".editor-panel .form"),
@@ -2175,9 +2403,11 @@
       themeSwatches: document.getElementById("themeSwatches"),
       saveProjectBtn: document.getElementById("saveProjectBtn"),
       loadProjectBtn: document.getElementById("loadProjectBtn"),
+      loadZipBtn: document.getElementById("loadZipBtn"),
       saveBaseBtn: document.getElementById("saveBaseBtn"),
       loadBaseBtn: document.getElementById("loadBaseBtn"),
       projectFileInput: document.getElementById("projectFileInput"),
+      zipFileInput: document.getElementById("zipFileInput"),
       linkFileInput: document.getElementById("linkFileInput"),
       blockPhotoInput: document.getElementById("blockPhotoInput"),
       siteName: document.getElementById("siteName"),
@@ -2202,7 +2432,11 @@
       contactText: document.getElementById("contactText"),
       preview: document.getElementById("preview"),
       codeOutput: document.getElementById("codeOutput"),
-      status: document.getElementById("status")
+      status: document.getElementById("status"),
+      pdfLightbox: document.getElementById("pdfLightbox"),
+      pdfLightboxFrame: document.getElementById("pdfLightboxFrame"),
+      pdfLightboxTitle: document.getElementById("pdfLightboxTitle"),
+      pdfLightboxClose: document.getElementById("pdfLightboxClose")
     };
 
     const optionalEls = {
@@ -2386,7 +2620,7 @@
       render();
       renderPhotoLibrary();
       setTimeout(scrollActiveBlockIntoView, 0);
-      if (options.choosePhoto && ["photo", "photoTextLeft", "textPhotoRight"].includes(block.type)) {
+      if (options.choosePhoto && ["photo", "map", "photoTextLeft", "textPhotoRight"].includes(block.type)) {
         state.pendingBlockPhotoTarget = { blockIndex: insertIndex, slotIndex: 0 };
         els.status.textContent = "写真ブロックを追加しました。続けて写真を選んでください";
         setTimeout(() => {
@@ -2395,16 +2629,20 @@
         }, 0);
         return block;
       }
-      els.status.textContent = "部品を追加しました。左側で内容を入れてください";
+      els.status.textContent = "部品を追加しました。文字はプレビューを押して編集できます";
       return block;
     }
 
     function standardBlock(type, values = {}) {
-      return {
+      const block = {
         ...defaultBlock(type),
         ...values,
         links: values.links || defaultBlock(type).links
       };
+      if (values.text && !Array.isArray(values.textParts)) {
+        block.textParts = [values.text, "", ""];
+      }
+      return block;
     }
 
     function standardNotice(title, body) {
@@ -2597,7 +2835,7 @@
       };
       const base = (key, title, parentKey, extraBlocks, options = {}) => ({
         pageId: ids[key],
-        parentPageId: "",
+        parentPageId: parentKey ? ids[parentKey] : "",
         title,
         slug: "",
         siteName,
@@ -2617,24 +2855,29 @@
         contactText: "自治会連絡先をここに掲載します。",
         extraBlocks
       });
+      const rediscoveryPhotoBlocks = [];
+      for (let number = 73; number <= 103; number += 3) {
+        const numbers = [number, number + 1, number + 2].filter((item) => item <= 103);
+        rediscoveryPhotoBlocks.push(standardBlock("photo", {
+          heading: `やまぐち再発見 ${numbers[0]}号〜${numbers[numbers.length - 1]}号`,
+          photoCount: numbers.length,
+          photoUrls: ["", "", ""]
+        }));
+      }
       const pages = [
         base("top", `${siteName}ホームページ`, "", [
           standardBlock("headingText", {
             heading: `${siteName}ホームページ`,
             text: "山口連区の紹介、行事、回覧板、施設案内などをまとめて掲載します。"
           }),
-          standardBlock("headingText", {
-            heading: "直近のお知らせ",
-            text: "行事お知らせ、行事報告、重要伝達事項をここに掲載します。"
+          standardBlock("photo", {
+            heading: "山口の活動風景",
+            photoCount: 3,
+            photoUrls: ["", "", ""]
           }),
-          standardBlock("buttonLinks", {
-            heading: "関連リンク",
-            text: "外部サイトへのリンクを設定できます。",
-            links: [
-              { text: "公民館HP", url: "", fileName: "" },
-              { text: "まち協HP", url: "", fileName: "" },
-              { text: "瀬戸市HP", url: "", fileName: "" }
-            ]
+          standardBlock("headingText", {
+            heading: "年間行事（テスト）",
+            text: "4月：自治会総会\n5月：町内清掃\n7月：夏祭り\n9月：防災訓練\n11月：文化祭"
           }),
           standardBlock("headingText", {
             heading: "自治会連絡先",
@@ -2645,15 +2888,37 @@
           standardBlock("headingText", {
             heading: "山口連区の紹介",
             text: "地域の概要、自治会の目的、活動の全体像を掲載します。"
+          }),
+          standardBlock("pageLinks", {
+            heading: "概要の中を見る",
+            text: "歴史や自治会活動のページを選べます。",
+            pageLinkCount: 4,
+            pageLinks: [
+              { text: "歴史", type: "page", pageId: ids.history, url: "", fileName: "" },
+              { text: "年間自治会行事", type: "page", pageId: ids.annual, url: "", fileName: "" },
+              { text: "自治会活動", type: "page", pageId: ids.activity, url: "", fileName: "" },
+              { text: "山口散策MAP", type: "page", pageId: ids.map, url: "", fileName: "" }
+            ]
           })
         ]),
         base("history", "歴史", "about", [
           standardBlock("headingText", {
             heading: "地域の歴史",
             text: "歴史ページは郷土資料館に原稿依頼する想定です。原稿が届いたら本文として貼り付けます。"
+          }),
+          standardBlock("pageLinks", {
+            heading: "歴史資料を見る",
+            text: "やまぐち再発見の記事を掲載します。",
+            pageLinkCount: 1,
+            pageLinks: [{ text: "やまぐち再発見記事", type: "page", pageId: ids.rediscovery, url: "", fileName: "" }]
           })
         ]),
         base("rediscovery", "やまぐち再発見記事", "history", [
+          standardBlock("headingText", {
+            heading: "やまぐち再発見の記事一覧",
+            text: "73号から103号までの記事を掲載しています。写真を押すと拡大して確認できます。"
+          }),
+          ...rediscoveryPhotoBlocks,
           standardBlock("pdfLinks", {
             heading: "やまぐち再発見記事PDF",
             text: "広報やまぐちの再発見記事PDFを掲載します。",
@@ -2689,16 +2954,13 @@
         base("map", "山口散策MAP", "about", [
           standardBlock("headingText", {
             heading: "山口散策MAP",
-            text: "山口散策MAPをデジタルマップで掲載します。地図サービスのURLやPDFをリンクできます。"
+            text: "地域の場所や散策コースを、この地図で確認できます。地図を押すと大きく表示できます。"
           }),
-          standardBlock("buttonLinks", {
-            heading: "地図リンク",
-            text: "デジタルマップへのリンクを設定します。",
-            links: [
-              { text: "山口散策MAPを見る", url: "", fileName: "" },
-              { text: "", url: "", fileName: "" },
-              { text: "", url: "", fileName: "" }
-            ]
+          standardBlock("map", {
+            heading: "地図を大きく見る",
+            text: "散策マップを押すと拡大して確認できます。",
+            photoCount: 1,
+            photoUrls: ["", "", ""]
           })
         ]),
         base("circular", "デジタル回覧板", "top", [
@@ -2798,8 +3060,23 @@
         page.showInMainNav = hasNavigationSettings ? page.showInMainNav !== false : index === 0;
         page.navLabel = typeof page.navLabel === "string" ? page.navLabel : "";
       });
+      const pageIds = new Set(normalized.map((page) => page.pageId));
       normalized.forEach((page) => {
-        page.parentPageId = "";
+        const parentId = typeof page.parentPageId === "string" ? page.parentPageId : "";
+        page.parentPageId = parentId && parentId !== page.pageId && pageIds.has(parentId) ? parentId : "";
+      });
+      normalized.forEach((page) => {
+        const ancestors = new Set([page.pageId]);
+        let parentId = page.parentPageId;
+        while (parentId) {
+          if (ancestors.has(parentId)) {
+            page.parentPageId = "";
+            break;
+          }
+          ancestors.add(parentId);
+          const parent = normalized.find((candidate) => candidate.pageId === parentId);
+          parentId = parent ? parent.parentPageId : "";
+        }
       });
       return normalized;
     }
@@ -2979,19 +3256,27 @@
           return {
             title: firstPageValue("siteName", currentSiteName) || currentSiteName,
             lead: firstPageValue("catchText", currentCatchText),
-            pageLabel: pageTitle
+            pageLabel: pageTitle,
+            titleField: "siteName",
+            leadField: "catchText",
+            pageLabelField: "title"
           };
         }
         return {
           title: currentSiteName,
           lead: currentCatchText,
-          pageLabel: pageTitle
+          pageLabel: pageTitle,
+          titleField: "siteName",
+          leadField: "catchText",
+          pageLabelField: "title"
         };
       }
       return {
         title: pageTitle,
         lead: "",
-        pageLabel: currentSiteName
+        pageLabel: currentSiteName,
+        titleField: "title",
+        pageLabelField: "siteName"
       };
     }
 
@@ -3029,6 +3314,41 @@
       });
     }
 
+    function blobAsDataUrl(blob) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    async function loadBundledSampleAsset(path) {
+      try {
+        const response = await fetch(path);
+        if (!response.ok) throw new Error("sample asset unavailable");
+        return await blobAsDataUrl(await response.blob());
+      } catch (error) {
+        try {
+          const image = await loadImageFromPath(path);
+          const maxSide = 1400;
+          const sourceWidth = image.naturalWidth || image.width;
+          const sourceHeight = image.naturalHeight || image.height;
+          const scale = Math.min(1, maxSide / Math.max(sourceWidth, sourceHeight));
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.max(1, Math.round(sourceWidth * scale));
+          canvas.height = Math.max(1, Math.round(sourceHeight * scale));
+          const context = canvas.getContext("2d", { alpha: false });
+          context.fillStyle = "#ffffff";
+          context.fillRect(0, 0, canvas.width, canvas.height);
+          context.drawImage(image, 0, 0, canvas.width, canvas.height);
+          return canvas.toDataURL("image/jpeg", 0.78);
+        } catch (fallbackError) {
+          return path;
+        }
+      }
+    }
+
     function formatBytes(bytes) {
       if (!bytes) return "0KB";
       if (bytes >= 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)}MB`;
@@ -3048,6 +3368,15 @@
           reject(new Error("写真を読み込めませんでした"));
         };
         image.src = url;
+      });
+    }
+
+    function loadImageFromPath(path) {
+      return new Promise((resolve, reject) => {
+        const image = new Image();
+        image.onload = () => resolve(image);
+        image.onerror = () => reject(new Error("サンプル画像を読み込めませんでした"));
+        image.src = path;
       });
     }
 
@@ -3347,22 +3676,30 @@
 
     function renderPageTabs() {
       state.pages = normalizePages(state.pages);
-      els.pageTabs.innerHTML = state.pages.map((page, index) => {
-        const depth = 0;
-        const label = "ページ";
+      const treeItems = pageTreeItems();
+      const pageTabsHtml = treeItems.map(({ page, index, depth }) => {
+        const parent = page.parentPageId ? state.pages.find((candidate) => pageId(candidate) === page.parentPageId) : null;
+        const label = depth ? "子" : "親";
+        const parentText = depth
+          ? `第${depth + 1}階層・親: ${parent?.title || "ページ"}`
+          : "第1階層・上のリンクバー";
         return `
         <button class="page-tab ${index === state.currentPageIndex ? "active" : ""}" type="button" data-page-index="${index}" data-depth="${depth}" data-tree-mark="${escapeHtml(label)}" style="--depth:${depth}">
           <span>
             <span class="page-tab-title">${escapeHtml(page.title || `ページ${index + 1}`)}</span>
-            <span class="page-tab-parent">${page.showInMainNav ? "上のリンクバーに表示" : "ページ内ボタンから案内"}</span>
+            <span class="page-tab-parent">${escapeHtml(parentText)}</span>
           </span>
         </button>
       `;
       }).join("");
+      els.pageTabs.innerHTML = pageTabsHtml;
+      if (els.easyPageTabs) els.easyPageTabs.innerHTML = pageTabsHtml;
       els.deletePageBtn.disabled = state.pages.length <= 1;
-      els.movePageUpBtn.disabled = true;
-      els.movePageDownBtn.disabled = true;
-      els.makeRootPageBtn.disabled = true;
+      const siblings = currentPageSiblings();
+      const siblingIndex = siblings.findIndex((item) => item.index === state.currentPageIndex);
+      els.movePageUpBtn.disabled = siblingIndex <= 0;
+      els.movePageDownBtn.disabled = siblingIndex < 0 || siblingIndex >= siblings.length - 1;
+      els.makeRootPageBtn.disabled = !state.pages[state.currentPageIndex]?.parentPageId;
       renderParentPageSelect(els.parentPageSelect.value || "");
     }
 
@@ -3389,17 +3726,16 @@
     }
 
     function pageNavMarkup(activeIndex = state.currentPageIndex) {
-      const visiblePages = state.pages
-        .map((page, index) => ({ page, index, active: index === activeIndex }))
-        .filter((item) => item.index === 0 || item.page.showInMainNav);
-      const pages = visiblePages.length
-        ? visiblePages
-        : state.pages.slice(0, 1).map((page, index) => ({ page, index, active: index === activeIndex }));
-      const links = pages.map((item) => {
-        const title = escapeHtml(item.page.navLabel || item.page.title || `ページ${item.index + 1}`);
+      const pages = mainNavItems(activeIndex);
+      const links = (pages.length ? pages : state.pages.slice(0, 1).map((page, index) => ({
+        page,
+        index,
+        active: index === activeIndex
+      }))).map((item) => {
+        const title = escapeHtml(item.title || `ページ${item.index + 1}`);
         const href = escapeHtml(slugForPage(item.index));
         const className = item.active ? "active" : "";
-        return `<a class="${className}" href="${href}">${title}</a>`;
+        return `<a class="${className}" href="${href}"${previewEditAttr("page-nav", "label", "", item.index)}>${title}</a>`;
       }).join("");
       return `<nav class="site-nav ${els.navPosition.value === "left" ? "site-nav-left" : "site-nav-top"}">${links}</nav>`;
     }
@@ -3438,7 +3774,7 @@
         const itemId = pageId(item.page);
         return {
           index: item.index,
-          title: item.navTitle || item.page.title || `ページ${item.index + 1}`,
+          title: item.page.navLabel || item.navTitle || item.page.title || `ページ${item.index + 1}`,
           active: item.index === activeIndex || isDescendantOf(activePage, itemId),
           kind: item.page.parentPageId ? "child" : "root"
         };
@@ -3508,10 +3844,10 @@
       const blockTypes = state.extraBlocks.map((block) => block.type);
       const isBlank = template.id === "blank";
       const needsPhoto = true;
-      const needsNotices = blockTypes.some((type) => ["recentInfo", "newsCards", "newsTable"].includes(type));
-      const needsSchedule = blockTypes.includes("schedule");
-      const needsContact = blockTypes.includes("contact");
-      const needsCatch = !isBlank;
+      const needsNotices = false;
+      const needsSchedule = false;
+      const needsContact = false;
+      const needsCatch = false;
 
       optionalEls.catchBox.classList.toggle("is-hidden", !needsCatch);
       optionalEls.photoBox.classList.toggle("is-hidden", !needsPhoto);
@@ -3654,7 +3990,7 @@
 
     function currentActivePhotoBlock() {
       const block = state.extraBlocks.find((item) => item.id === state.activeBlockId);
-      return block && ["photo", "photoTextLeft", "textPhotoRight"].includes(block.type) ? block : null;
+      return block && ["photo", "map", "photoTextLeft", "textPhotoRight"].includes(block.type) ? block : null;
     }
 
     function photoStyleAttrs(block = null, index = 0) {
@@ -3725,11 +4061,21 @@
       return ` contenteditable="true" spellcheck="false" data-preview-edit-kind="${kind}" data-preview-edit-field="${field}"${idAttr}${indexAttr}`;
     }
 
+    function pageDisplayText(field, fallback = "") {
+      const page = state.pages[state.currentPageIndex];
+      return String(page?.displayTexts?.[field] || fallback);
+    }
+
+    function pageDisplayTextMarkup(field, fallback, tag = "span", className = "") {
+      const value = escapeHtml(pageDisplayText(field, fallback)).replace(/\n/g, "<br>");
+      return `<${tag}${className ? ` class="${className}"` : ""}${previewEditAttr("page", field)}>${value}</${tag}>`;
+    }
+
     function textLinkMarkup(block) {
       if (!block?.textLinkText && !block?.textLinkUrl) return "";
       const text = escapeHtml(block.textLinkText || "詳しく見る");
       const url = escapeHtml(block.textLinkUrl || "#");
-      return `<p class="text-link-line"><a href="${url}" target="_blank" rel="noopener">${text}</a></p>`;
+      return `<p class="text-link-line"><a href="${url}" target="_blank" rel="noopener"${previewEditAttr("block", "textLinkText", block?.id || "")}>${text}</a></p>`;
     }
 
     function wrapPhotoLink(markup, block) {
@@ -3741,31 +4087,33 @@
     function noticesCardsMarkup(notices) {
       const cards = notices.map((notice) => `
         <article class="preview-card"${previewNoticeAttr(notice.index ?? "")}>
-          <h3>${escapeHtml(notice.title || "お知らせ")}</h3>
-          <p>${escapeHtml(notice.body)}</p>
+          <h3${previewEditAttr("notice", "title", "", notice.index ?? "")}>${escapeHtml(notice.title || "お知らせ")}</h3>
+          <p${previewEditAttr("notice", "body", "", notice.index ?? "")}>${escapeHtml(notice.body).replace(/\n/g, "<br>")}</p>
         </article>
       `).join("");
       const activeClass = state.isPreviewRendering && state.activeNoticeIndex >= 0 ? " is-editing-preview" : "";
-      return `<section class="${activeClass.trim()}"${previewNoticeAttr()}><h2>お知らせ</h2><div class="cards">${cards}</div></section>`;
+      return `<section class="${activeClass.trim()}"${previewNoticeAttr()}><h2${previewEditAttr("page", "noticeHeading")}>${escapeHtml(pageDisplayText("noticeHeading", "お知らせ"))}</h2><div class="cards">${cards}</div></section>`;
     }
 
     function noticesTableMarkup(notices) {
       const rows = notices.map((notice, index) => `
         <tr${previewNoticeAttr(notice.index ?? index)}>
           <th>${index + 1}</th>
-          <td><strong>${escapeHtml(notice.title || "お知らせ")}</strong><br>${escapeHtml(notice.body)}</td>
+          <td><strong${previewEditAttr("notice", "title", "", notice.index ?? index)}>${escapeHtml(notice.title || "お知らせ")}</strong><br><span${previewEditAttr("notice", "body", "", notice.index ?? index)}>${escapeHtml(notice.body).replace(/\n/g, "<br>")}</span></td>
         </tr>
       `).join("");
       const activeClass = state.isPreviewRendering && state.activeNoticeIndex >= 0 ? " is-editing-preview" : "";
-      return `<section class="${activeClass.trim()}"${previewNoticeAttr()}><h2>お知らせ</h2><table class="notice-table">${rows}</table></section>`;
+      return `<section class="${activeClass.trim()}"${previewNoticeAttr()}><h2${previewEditAttr("page", "noticeHeading")}>${escapeHtml(pageDisplayText("noticeHeading", "お知らせ"))}</h2><table class="notice-table">${rows}</table></section>`;
     }
 
-    function scheduleMarkup() {
-      return `<section class="band">行事予定: ${escapeHtml(els.scheduleText.value)}</section>`;
+    function scheduleMarkup(block = null) {
+      const blockAttr = block ? previewBlockAttr(block) : "";
+      return `<section class="band"${blockAttr}><h2${previewEditAttr("page", "scheduleHeading")}>${escapeHtml(pageDisplayText("scheduleHeading", "行事予定"))}</h2><p${previewEditAttr("page", "scheduleText")}>${escapeHtml(els.scheduleText.value).replace(/\n/g, "<br>")}</p></section>`;
     }
 
-    function contactMarkup() {
-      return `<section><h2>連絡先</h2><p>${escapeHtml(els.contactText.value)}</p></section>`;
+    function contactMarkup(block = null) {
+      const blockAttr = block ? previewBlockAttr(block) : "";
+      return `<section${blockAttr}><h2${previewEditAttr("page", "contactHeading")}>${escapeHtml(pageDisplayText("contactHeading", "連絡先"))}</h2><p${previewEditAttr("page", "contactText")}>${escapeHtml(els.contactText.value).replace(/\n/g, "<br>")}</p></section>`;
     }
 
     function joinMarkup() {
@@ -3806,15 +4154,15 @@
       return `<section class="${blockClass(block, "text-block")}"${previewBlockAttr(block)}><h2${previewEditAttr("block", "heading", block?.id || "")}>${custom.heading}</h2>${textPartsMarkup(block)}${textLinkMarkup(block)}</section>`;
     }
 
-    function recentInfoMarkup(context) {
+    function recentInfoMarkup(context, block = null) {
       return `
-        <section>
-          <h2>直近のお知らせ</h2>
+        <section${block ? previewBlockAttr(block) : ""}>
+          <h2${previewEditAttr("page", "recentInfoHeading")}>${escapeHtml(pageDisplayText("recentInfoHeading", "直近のお知らせ"))}</h2>
           <table class="notice-table">
             ${context.notices.map((notice, index) => `
               <tr>
                 <th>${index + 1}</th>
-                <td><strong>${escapeHtml(notice.title || "お知らせ")}</strong><br>${escapeHtml(notice.body)}</td>
+                <td><strong${previewEditAttr("notice", "title", "", notice.index ?? index)}>${escapeHtml(notice.title || "お知らせ")}</strong><br><span${previewEditAttr("notice", "body", "", notice.index ?? index)}>${escapeHtml(notice.body).replace(/\n/g, "<br>")}</span></td>
               </tr>
             `).join("")}
           </table>
@@ -3826,23 +4174,73 @@
       return `<section class="feature-text"><h2>広報誌</h2><p>最新号と直近1年分の広報誌を掲載できます。PDFへのリンクや画像を並べる形にもできます。</p></section>`;
     }
 
-    function linkButtonsMarkup(block, className = "") {
+    function isPdfLink(link) {
+      const fileName = String(link?.fileName || "").trim();
+      const url = String(link?.url || "").trim();
+      return /\.pdf(?:$|[?#])/i.test(fileName) || /application\/pdf/i.test(url) || /\.pdf(?:$|[?#])/i.test(url);
+    }
+
+    function pdfPageFileName(pageIndex, blockIndex, linkIndex) {
+      return `pdf-${pageIndex + 1}-${blockIndex + 1}-${linkIndex + 1}.html`;
+    }
+
+    function pdfSourceWithFirstPage(source) {
+      const value = String(source || "");
+      return `${value}${value.includes("#") ? "&" : "#"}page=1&view=FitH`;
+    }
+
+    function pdfCardMarkup(link, linkIndex, context = {}) {
+      const rawSource = String(link?.url || "").trim();
+      const source = context.exported && context.fileMap?.get
+        ? context.fileMap.get(rawSource) || rawSource
+        : rawSource;
+      const title = String(link?.text || link?.fileName || "PDFを見る").trim() || "PDFを見る";
+      const pageTarget = context.exported
+        ? pdfPageFileName(context.pageIndex || 0, context.blockIndex || 0, linkIndex)
+        : "";
+      const sourceAttr = escapeHtml(source);
+      return `<a class="pdf-card" href="${escapeHtml(pageTarget || "#pdf-preview")}" data-pdf-preview="true" data-pdf-source="${sourceAttr}" data-pdf-title="${escapeHtml(title)}" data-pdf-page-target="${escapeHtml(pageTarget)}">
+        <span class="pdf-thumb">
+          <iframe src="${escapeHtml(pdfSourceWithFirstPage(source))}" title="${escapeHtml(title)}" loading="lazy"></iframe>
+          <span class="pdf-thumb-hitarea">クリックで拡大<br>ダブルクリックでPDF専用ページ</span>
+        </span>
+        <span class="pdf-card-title"${previewEditAttr("block", "linkText", context.block?.id || "", linkIndex)}>${escapeHtml(title)}</span>
+      </a>`;
+    }
+
+    function pdfLinksMarkup(block, context = {}) {
+      const links = (block.links || []).filter((link) => link.text.trim() || link.url.trim()).slice(0, 3);
+      if (!links.length) return `<span class="archive-link placeholder-link">PDFを設定してください</span>`;
+      const pdfLinks = links.filter((link) => isPdfLink(link) && link.url.trim());
+      const otherLinks = links.filter((link) => !pdfLinks.includes(link));
+      const pdfCards = pdfLinks.length
+        ? `<div class="pdf-grid">${pdfLinks.map((link) => pdfCardMarkup(link, links.indexOf(link), context)).join("")}</div>`
+        : "";
+      const otherMarkup = otherLinks.length
+        ? linkButtonsMarkup({ ...block, links: otherLinks }, "", { ...context, linkIndexes: otherLinks.map((link) => links.indexOf(link)) })
+        : "";
+      return `${pdfCards}${otherMarkup}`;
+    }
+
+    function linkButtonsMarkup(block, className = "", context = {}) {
       const links = (block.links || []).filter((link) => link.text.trim() || link.url.trim()).slice(0, 3);
       if (!links.length) return `<span class="archive-link placeholder-link">リンクを設定してください</span>`;
       return `<div class="link-buttons ${className}">
-        ${links.map((link) => {
+        ${links.map((link, linkIndex) => {
           const text = escapeHtml(link.text.trim() || "PDFを見る");
           const url = escapeHtml(link.url.trim());
+          const originalIndex = context.linkIndexes?.[linkIndex] ?? linkIndex;
           return url
-            ? `<a class="archive-link" href="${url}" target="_blank" rel="noopener">${text}</a>`
-            : `<span class="archive-link placeholder-link">${text}</span>`;
+            ? `<a class="archive-link" href="${url}" target="_blank" rel="noopener"${previewEditAttr("block", "linkText", context.block?.id || "", originalIndex)}>${text}</a>`
+            : `<span class="archive-link placeholder-link"${previewEditAttr("block", "linkText", context.block?.id || "", originalIndex)}>${text}</span>`;
         }).join("")}
       </div>`;
     }
 
-    function linksBlockMarkup(block) {
+    function linksBlockMarkup(block, context = {}) {
       const custom = customHeadingText(block);
-      return `<section class="${blockClass(block, "feature-text")}"${previewBlockAttr(block)}><h2>${custom.heading}</h2><p>${custom.text}</p>${linkButtonsMarkup(block)}</section>`;
+      const linksMarkup = block.type === "pdfLinks" ? pdfLinksMarkup(block, { ...context, block }) : linkButtonsMarkup(block, "", { ...context, block });
+      return `<section class="${blockClass(block, "feature-text")}"${previewBlockAttr(block)}><h2${previewEditAttr("block", "heading", block?.id || "")}>${custom.heading}</h2><p${previewEditAttr("block", "text", block?.id || "")}>${custom.text}</p>${linksMarkup}</section>`;
     }
 
     function pageLinkCount(block) {
@@ -3865,17 +4263,18 @@
         .filter((item) => item.link?.text?.trim() && item.target);
       if (!links.length) return `<span class="archive-link placeholder-link">ページ移動ボタンを設定してください</span>`;
       return `<div class="page-link-grid">
-        ${links.map(({ link, target }) => {
+        ${links.map(({ link, target }, linkIndex) => {
           const previewTarget = target.index == null || !state.isPreviewRendering ? "" : ` data-preview-page-index="${target.index}"`;
           const externalAttrs = target.external ? ` target="_blank" rel="noopener"` : "";
-          return `<a class="page-link-button" href="${escapeHtml(target.href)}"${previewTarget}${externalAttrs}>${escapeHtml(link.text.trim())}</a>`;
+          const originalIndex = block?.pageLinks?.indexOf(link) ?? linkIndex;
+          return `<a class="page-link-button" href="${escapeHtml(target.href)}"${previewTarget}${externalAttrs}${previewEditAttr("block", "pageLinkText", block?.id || "", originalIndex)}>${escapeHtml(link.text.trim())}</a>`;
         }).join("")}
       </div>`;
     }
 
     function pageLinksBlockMarkup(block) {
       const custom = customHeadingText(block);
-      return `<section class="${blockClass(block, "feature-text")}"${previewBlockAttr(block)}><h2>${custom.heading}</h2><p>${custom.text}</p>${pageLinksMarkup(block)}</section>`;
+      return `<section class="${blockClass(block, "feature-text")}"${previewBlockAttr(block)}><h2${previewEditAttr("block", "heading", block?.id || "")}>${custom.heading}</h2><p${previewEditAttr("block", "text", block?.id || "")}>${custom.text}</p>${pageLinksMarkup(block)}</section>`;
     }
 
     function childPagesMarkup(block) {
@@ -3898,18 +4297,24 @@
       return `<section class="${blockClass(block, "feature-text child-page-section")}"${block ? previewBlockAttr(block) : ""}><h2>${escapeHtml(heading)}</h2>${text ? `<p>${escapeHtml(text)}</p>` : ""}<div class="child-page-grid">${cards}</div></section>`;
     }
 
+    function mapBlockMarkup(block, context) {
+      const custom = customHeadingText(block);
+      const photos = blockPhotoUrls(block, context.photoUrls || []).slice(0, 1);
+      return `<section class="${blockClass(block, "map-block")}"${previewBlockAttr(block)}><h2${previewEditAttr("block", "heading", block?.id || "")}>${custom.heading}</h2><p${previewEditAttr("block", "text", block?.id || "")}>${custom.text}</p>${photoMarkup(photos, context.siteName, block, "block")}</section>`;
+    }
+
     function photoTextMarkup(photoUrls, siteName, block, reverse = false) {
       const custom = customHeadingText(block);
       const photo = photoMarkup(blockPhotoUrls(block, photoUrls), siteName, block, "block");
-      const text = `<div class="feature-text"><h2>${custom.heading}</h2>${textPartsMarkup(block)}</div>`;
+      const text = `<div class="feature-text"><h2${previewEditAttr("block", "heading", block?.id || "")}>${custom.heading}</h2>${textPartsMarkup(block)}</div>`;
       return `<section class="${blockClass(block, `feature-row ${reverse ? "reverse" : ""}`)}"${previewBlockAttr(block)}>${reverse ? `${text}${wrapPhotoLink(photo, block)}` : `${wrapPhotoLink(photo, block)}${text}`}</section>`;
     }
 
     function disasterContactFormMarkup(block) {
       const custom = customHeadingText(block);
       return `<section class="${blockClass(block, "disaster-contact-form")}"${previewBlockAttr(block)}>
-        <h2>${custom.heading}</h2>
-        <p>${custom.text || "災害時に町内の安否や困りごとを連絡するためのフォームです。"}</p>
+        <h2${previewEditAttr("block", "heading", block?.id || "")}>${custom.heading}</h2>
+        <p${previewEditAttr("block", "text", block?.id || "")}>${custom.text || "災害時に町内の安否や困りごとを連絡するためのフォームです。"}</p>
         <div class="form-grid">
           <input placeholder="お名前">
           <input placeholder="住所または班名">
@@ -3929,9 +4334,9 @@
     function earthquakeMailOptionMarkup(block) {
       const custom = customHeadingText(block);
       return `<section class="${blockClass(block, "earthquake-mail-option")}"${previewBlockAttr(block)}>
-        <h2>${custom.heading}</h2>
-        <p>${custom.text || "緊急地震速報や震度情報を受けて、登録者へ安否確認メールを送る機能を追加できます。"}</p>
-        <p><strong>追加サーバー機能:</strong> 地震情報の受信、登録者名簿、メール送信、災害リーダーへの通知。</p>
+        <h2${previewEditAttr("block", "heading", block?.id || "")}>${custom.heading}</h2>
+        <p${previewEditAttr("block", "text", block?.id || "")}>${custom.text || "緊急地震速報や震度情報を受けて、登録者へ安否確認メールを送る機能を追加できます。"}</p>
+        <p${previewEditAttr("block", "serverNote", block?.id || "")}>${escapeHtml(block?.serverNote || "追加サーバー機能: 地震情報の受信、登録者名簿、メール送信、災害リーダーへの通知。")}</p>
       </section>`;
     }
 
@@ -3941,38 +4346,42 @@
       if (blockType === "textOnly") return textOnlyMarkup(block);
       if (blockType === "headingText") return headingTextMarkup(block);
       if (blockType === "childPages") return childPagesMarkup(block);
-      if (blockType === "pdfLinks" || blockType === "buttonLinks") return linksBlockMarkup(block);
+      if (blockType === "pdfLinks" || blockType === "buttonLinks") return linksBlockMarkup(block, context);
       if (blockType === "pageLinks") return pageLinksBlockMarkup(block);
-      if (blockType === "photo") return wrapPhotoLink(`<section class="${blockClass(block)}"${previewBlockAttr(block)}>${photoMarkup(blockPhotoUrls(block, context.photoUrls), context.siteName, block, "block")}</section>`, block);
+      if (blockType === "photo") {
+        const heading = block.heading ? `<h2${previewEditAttr("block", "heading", block?.id || "")}>${escapeHtml(block.heading)}</h2>` : "";
+        return wrapPhotoLink(`<section class="${blockClass(block)}"${previewBlockAttr(block)}>${heading}${photoMarkup(blockPhotoUrls(block, context.photoUrls), context.siteName, block, "block")}</section>`, block);
+      }
+      if (blockType === "map") return mapBlockMarkup(block, context);
       if (blockType === "photoTextLeft") return photoTextMarkup(context.photoUrls, context.siteName, block, false);
       if (blockType === "textPhotoRight") return photoTextMarkup(context.photoUrls, context.siteName, block, true);
       if (blockType === "disasterForm") return disasterContactFormMarkup(block);
       if (blockType === "earthquakeMail") return earthquakeMailOptionMarkup(block);
       if (blockType === "blankHeading") return blankHeadingMarkup();
-      if (blockType === "recentInfo") return recentInfoMarkup(context);
+      if (blockType === "recentInfo") return recentInfoMarkup(context, block);
       if (blockType === "newsCards") return context.noticeCards;
       if (blockType === "newsTable") return context.noticeTable;
-      if (blockType === "schedule") return scheduleMarkup();
-      if (blockType === "contact") return contactMarkup();
+      if (blockType === "schedule") return scheduleMarkup(block);
+      if (blockType === "contact") return contactMarkup(block);
       return "";
     }
 
     function extraBlocksMarkup(context) {
       if (!state.extraBlocks.length) return "";
-      return state.extraBlocks.map((block) => extraBlockMarkup(block, context)).join("");
+      return state.extraBlocks.map((block, index) => extraBlockMarkup(block, { ...context, blockIndex: index, pageIndex: state.currentPageIndex })).join("");
     }
 
     function renderAddedBlocks() {
       els.addedBlocks.innerHTML = state.extraBlocks.length
         ? state.extraBlocks.map((block, index) => {
             const type = extraBlockTypes.find((item) => item.id === block.type);
-            const needsHeading = ["headingOnly", "headingText", "childPages", "photoTextLeft", "textPhotoRight", "pdfLinks", "buttonLinks", "pageLinks", "disasterForm", "earthquakeMail"].includes(block.type);
-            const needsText = ["textOnly", "headingText", "childPages", "photoTextLeft", "textPhotoRight", "pdfLinks", "buttonLinks", "pageLinks", "disasterForm", "earthquakeMail"].includes(block.type);
+            const needsHeading = ["headingOnly", "headingText", "childPages", "photo", "photoTextLeft", "textPhotoRight", "pdfLinks", "buttonLinks", "pageLinks", "map", "disasterForm", "earthquakeMail"].includes(block.type);
+            const needsText = ["textOnly", "headingText", "childPages", "photoTextLeft", "textPhotoRight", "pdfLinks", "buttonLinks", "pageLinks", "map", "disasterForm", "earthquakeMail"].includes(block.type);
             const needsLinks = ["pdfLinks", "buttonLinks"].includes(block.type);
             const needsPageLinks = block.type === "pageLinks";
             const needsTextLink = ["headingOnly", "textOnly", "headingText", "photoTextLeft", "textPhotoRight"].includes(block.type);
             const needsPhotoLink = ["photo", "photoTextLeft", "textPhotoRight"].includes(block.type);
-            const needsPhotoContent = ["photo", "photoTextLeft", "textPhotoRight"].includes(block.type);
+            const needsPhotoContent = ["photo", "map", "photoTextLeft", "textPhotoRight"].includes(block.type);
             const needsDisasterSetup = ["disasterForm", "earthquakeMail"].includes(block.type);
             const supportsTextParts = ["textOnly", "headingText", "photoTextLeft", "textPhotoRight"].includes(block.type);
             const isActive = block.id === state.activeBlockId;
@@ -3992,20 +4401,16 @@
                 <div class="block-fields">
                   <div class="block-edit-area">
                     <div class="block-area-title">内容</div>
-                    ${needsHeading ? `<input data-block-field="${index}:heading" value="${escapeHtml(block.heading)}" placeholder="見出し">` : ""}
+                    ${needsHeading || needsText ? `<div class="preview-edit-note">見出し・本文は右のプレビューをクリックして直接編集します。ボタンの文字だけはControlキーを押しながら選びます。</div>` : ""}
                     ${needsText && supportsTextParts ? `
-                      <label>本文の数
+                      <label>本文の分け方
                         <select data-block-field="${index}:textColumns">
                           <option value="1" ${textCount === 1 ? "selected" : ""}>1つ</option>
                           <option value="2" ${textCount === 2 ? "selected" : ""}>2つ</option>
                           <option value="3" ${textCount === 3 ? "selected" : ""}>3つ</option>
                         </select>
                       </label>
-                      ${Array.from({ length: textCount }, (_, textIndex) => `
-                        <textarea rows="1" data-block-field="${index}:textParts.${textIndex}" placeholder="本文 ${textIndex + 1}">${escapeHtml(textParts[textIndex] || "")}</textarea>
-                      `).join("")}
                     ` : ""}
-                    ${needsText && !supportsTextParts ? `<textarea rows="1" data-block-field="${index}:text" placeholder="本文">${escapeHtml(block.text)}</textarea>` : ""}
                     ${needsPhotoContent ? `
                       <label>この写真ブロックの枚数
                         <select data-block-field="${index}:photoCount">
@@ -4026,22 +4431,20 @@
                     ` : ""}
                     ${needsTextLink ? `
                       <div class="link-grid">
-                        <input data-block-field="${index}:textLinkText" value="${escapeHtml(block.textLinkText || "")}" placeholder="文字リンクの表示名">
-                        <input data-block-field="${index}:textLinkUrl" value="${escapeHtml(block.textLinkUrl || "")}" placeholder="文字リンクURL">
-                        <button class="small-btn" type="button" data-choose-link-file="${index}:textLink">ファイルを選ぶ</button>
+                        <button class="small-btn" type="button" data-choose-link-file="${index}:textLink">文字リンクのファイルを選ぶ</button>
+                        ${block.textLinkFileName ? `<div class="photo-choice-meta">選択中: ${escapeHtml(block.textLinkFileName)}</div>` : ""}
                       </div>
                     ` : ""}
                     ${needsPhotoLink ? `
                       <div class="link-grid">
-                        <input data-block-field="${index}:photoLinkUrl" value="${escapeHtml(block.photoLinkUrl || "")}" placeholder="写真を押した時のリンクURL">
-                        <button class="small-btn" type="button" data-choose-link-file="${index}:photoLink">ファイルを選ぶ</button>
+                        <button class="small-btn" type="button" data-choose-link-file="${index}:photoLink">写真を押した時のリンクファイルを選ぶ</button>
+                        ${block.photoLinkFileName ? `<div class="photo-choice-meta">選択中: ${escapeHtml(block.photoLinkFileName)}</div>` : ""}
                       </div>
                     ` : ""}
+                    ${block.type === "pdfLinks" ? `<div class="field-help">PDFはサムネイルで表示します。押すと拡大、ダブルクリックでPDF専用ページになります。</div>` : ""}
                     ${needsLinks ? (block.links || []).slice(0, 3).map((link, linkIndex) => `
                       <div class="link-grid">
-                        <input data-block-field="${index}:links.${linkIndex}.text" value="${escapeHtml(link.text)}" placeholder="リンク文字 ${linkIndex + 1}">
-                        <input data-block-field="${index}:links.${linkIndex}.url" value="${escapeHtml(link.url)}" placeholder="PDFまたはリンクURL ${linkIndex + 1}">
-                        <button class="small-btn" type="button" data-choose-link-file="${index}:links.${linkIndex}">ファイルを選ぶ</button>
+                        <button class="small-btn" type="button" data-choose-link-file="${index}:links.${linkIndex}">PDF・リンク${linkIndex + 1}のファイルを選ぶ</button>
                         ${link.fileName ? `<div class="photo-choice-meta">選択中: ${escapeHtml(link.fileName)}</div>` : ""}
                       </div>
                     `).join("") : ""}
@@ -4057,7 +4460,6 @@
                         const linkType = link.type === "url" ? "url" : "page";
                         return `
                           <div class="page-link-edit-row">
-                            <input data-block-field="${index}:pageLinks.${linkIndex}.text" value="${escapeHtml(link.text || "")}" placeholder="ボタン名 ${linkIndex + 1}">
                             <select data-block-field="${index}:pageLinks.${linkIndex}.type">
                               <option value="page" ${linkType === "page" ? "selected" : ""}>このサイトのページ</option>
                               <option value="url" ${linkType === "url" ? "selected" : ""}>外部サイト・PDF</option>
@@ -4068,8 +4470,7 @@
                                 ${state.pages.map((page) => `<option value="${escapeHtml(pageId(page))}" ${pageId(page) === link.pageId ? "selected" : ""}>${escapeHtml(page.title || "ページ")}</option>`).join("")}
                               </select>
                             ` : `
-                              <input data-block-field="${index}:pageLinks.${linkIndex}.url" value="${escapeHtml(link.url || "")}" placeholder="URLまたはPDF">
-                              <button class="small-btn" type="button" data-choose-link-file="${index}:pageLinks.${linkIndex}">ファイルを選ぶ</button>
+                              <button class="small-btn" type="button" data-choose-link-file="${index}:pageLinks.${linkIndex}">移動先ファイルを選ぶ</button>
                               ${link.fileName ? `<div class="photo-choice-meta">選択中: ${escapeHtml(link.fileName)}</div>` : ""}
                             `}
                           </div>
@@ -4129,7 +4530,7 @@
       root.querySelectorAll("textarea").forEach(autoResizeTextarea);
     }
 
-    function buildPreviewHtml() {
+    function buildPreviewHtml(options = {}) {
       const siteName = escapeHtml(els.siteName.value || "自治会");
       const catchText = escapeHtml(els.catchText.value);
       const hero = activeHeroContent(state.currentPageIndex);
@@ -4143,16 +4544,30 @@
       const noticeCards = noticesCardsMarkup(notices);
       const noticeTable = noticesTableMarkup(notices);
       const photoBlock = photoUrls.length ? photoMarkup(photoUrls, siteName, pagePhotoSettings(), "page") : "";
-      const context = { siteName, catchText, photoUrls, photoBlock, noticeCards, noticeTable, notices, templateId: template.id };
+      const context = {
+        siteName,
+        catchText,
+        photoUrls,
+        photoBlock,
+        noticeCards,
+        noticeTable,
+        notices,
+        templateId: template.id,
+        exported: Boolean(options.exported),
+        fileMap: options.fileMap || null,
+        pageIndex: state.currentPageIndex
+      };
       const bodyBlocks = extraBlocksMarkup(context);
+      const hierarchyNav = hierarchyNavMarkup();
       if (template.id === "blank") {
         return `
           ${pageNavMarkup()}
+          ${hierarchyNav}
           <header data-preview-area="header">
             <div class="header-inner">
-              <h1${previewEditAttr("page", "title")}>${heroTitle}</h1>
-              ${heroLead ? `<p class="lead"${previewEditAttr("page", "catchText")}>${heroLead}</p>` : ""}
-              ${heroPageLabel ? `<span class="page-title-label">${heroPageLabel}</span>` : ""}
+              <h1${previewEditAttr("page", hero.titleField || "title")}>${heroTitle}</h1>
+              ${heroLead ? `<p class="lead"${previewEditAttr("page", hero.leadField || "catchText")}>${heroLead}</p>` : ""}
+              ${heroPageLabel ? `<span class="page-title-label"${previewEditAttr("page", hero.pageLabelField || "siteName")}>${heroPageLabel}</span>` : ""}
             </div>
           </header>
           <main>
@@ -4163,11 +4578,12 @@
 
       return `
         ${pageNavMarkup()}
+        ${hierarchyNav}
         <header data-preview-area="header">
           <div class="header-inner">
-            <h1${previewEditAttr("page", "title")}>${heroTitle}</h1>
-            ${heroLead ? `<p class="lead"${previewEditAttr("page", "catchText")}>${heroLead}</p>` : ""}
-            ${heroPageLabel ? `<span class="page-title-label">${heroPageLabel}</span>` : ""}
+            <h1${previewEditAttr("page", hero.titleField || "title")}>${heroTitle}</h1>
+            ${heroLead ? `<p class="lead"${previewEditAttr("page", hero.leadField || "catchText")}>${heroLead}</p>` : ""}
+            ${heroPageLabel ? `<span class="page-title-label"${previewEditAttr("page", hero.pageLabelField || "siteName")}>${heroPageLabel}</span>` : ""}
           </div>
         </header>
         <main>
@@ -4176,7 +4592,7 @@
       `;
     }
 
-    function buildExportHtml() {
+    function buildExportHtml(options = {}) {
       const title = escapeHtml(`${activeDocumentSiteName(state.currentPageIndex)} - ${els.pageTitle.value || "ホーム"}`);
       const template = currentTemplate();
       const hasHeaderPhoto = activeHeaderPhotoEnabled(state.currentPageIndex);
@@ -4197,9 +4613,58 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body class="${template.className} ${navClass} ${navStyleClass} ${headingClass} ${headerPhotoClass}" style="--preview-photo: url('${photoUrl}'); --header-photo: url('${headerUrl}'); --header-photo-position: ${headerPosition}; --header-photo-size: ${headerSize};">
-${buildPreviewHtml()}
+${buildPreviewHtml(options)}
+${pdfViewerRuntimeHtml()}
 </body>
 </html>`;
+    }
+
+    function pdfViewerRuntimeHtml() {
+      return `<script>
+(function(){
+  function withFirstPage(source){
+    return source + (source.indexOf('#') >= 0 ? '&' : '#') + 'page=1&view=FitH';
+  }
+  function closeViewer(){
+    var viewer = document.getElementById('pdf-lightbox');
+    if (viewer) viewer.hidden = true;
+    var frame = document.getElementById('pdf-lightbox-frame');
+    if (frame) frame.src = 'about:blank';
+  }
+  function openViewer(link){
+    var viewer = document.getElementById('pdf-lightbox');
+    if (!viewer) {
+      viewer = document.createElement('div');
+      viewer.id = 'pdf-lightbox';
+      viewer.className = 'pdf-lightbox';
+      viewer.innerHTML = '<div class="pdf-lightbox-dialog" role="dialog" aria-modal="true"><div class="pdf-lightbox-toolbar"><strong id="pdf-lightbox-title"></strong><button class="pdf-lightbox-close" type="button">閉じる</button></div><iframe class="pdf-lightbox-frame" id="pdf-lightbox-frame" title="PDFプレビュー"></iframe></div>';
+      document.body.appendChild(viewer);
+      viewer.addEventListener('click', function(event){
+        if (event.target === viewer || event.target.closest('.pdf-lightbox-close')) closeViewer();
+      });
+    }
+    viewer.hidden = false;
+    document.getElementById('pdf-lightbox-title').textContent = link.getAttribute('data-pdf-title') || 'PDFプレビュー';
+    document.getElementById('pdf-lightbox-frame').src = withFirstPage(link.getAttribute('data-pdf-source') || '');
+  }
+  document.addEventListener('click', function(event){
+    var link = event.target.closest('[data-pdf-preview]');
+    if (!link) return;
+    event.preventDefault();
+    openViewer(link);
+  });
+  document.addEventListener('dblclick', function(event){
+    var link = event.target.closest('[data-pdf-preview]');
+    if (!link) return;
+    event.preventDefault();
+    var target = link.getAttribute('data-pdf-page-target');
+    if (target) window.location.href = target;
+  });
+  document.addEventListener('keydown', function(event){
+    if (event.key === 'Escape') closeViewer();
+  });
+})();
+<\/script>`;
     }
 
     function sakumaFarmCreditHtml() {
@@ -4524,6 +4989,15 @@ main > .block-half {
   display: block;
 }
 
+.map-block .hero-photo {
+  min-height: min(70vh, 640px);
+  background: #fff;
+}
+
+.map-block .hero-photo img {
+  object-fit: contain;
+}
+
 .disaster-contact-form {
   border: 2px solid #2f7d57;
   border-radius: 8px;
@@ -4737,6 +5211,185 @@ main > .block-half {
   justify-content: start;
   gap: 8px;
   margin-top: 10px;
+}
+
+.pdf-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.pdf-card {
+  display: grid;
+  gap: 8px;
+  overflow: hidden;
+  border: 1px solid #d8e0e7;
+  border-radius: 8px;
+  background: #fff;
+  color: #245f43;
+  text-decoration: none;
+  box-shadow: 0 4px 12px rgba(31,41,51,.08);
+}
+
+.pdf-thumb {
+  position: relative;
+  height: 190px;
+  overflow: hidden;
+  background: #eef2f7;
+  border-bottom: 1px solid #d8e0e7;
+}
+
+.pdf-thumb iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  pointer-events: none;
+  background: #fff;
+}
+
+.pdf-thumb::after {
+  content: "PDF";
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(31,41,51,.78);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 900;
+  pointer-events: none;
+}
+
+.pdf-thumb-hitarea {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 10px;
+  background: rgba(36,95,67,.72);
+  color: #fff;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 900;
+  opacity: 0;
+  transition: opacity .16s ease;
+  cursor: pointer;
+}
+
+.pdf-card:hover .pdf-thumb-hitarea,
+.pdf-card:focus-visible .pdf-thumb-hitarea {
+  opacity: 1;
+}
+
+.pdf-card-title {
+  display: block;
+  padding: 0 10px 10px;
+  line-height: 1.45;
+}
+
+.pdf-card:focus-visible {
+  outline: 3px solid rgba(47,125,87,.42);
+  outline-offset: 3px;
+}
+
+.pdf-lightbox[hidden] {
+  display: none;
+}
+
+.pdf-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(15,23,42,.68);
+}
+
+.pdf-lightbox-dialog {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  width: min(1100px, 100%);
+  height: min(90vh, 860px);
+  overflow: hidden;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 20px 60px rgba(15,23,42,.35);
+}
+
+.pdf-lightbox-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid #d8e0e7;
+  color: #334155;
+  font-weight: 900;
+}
+
+.pdf-lightbox-close {
+  min-height: 36px;
+  border: 1px solid #d8e0e7;
+  border-radius: 8px;
+  background: #fff;
+  color: #334155;
+  font-weight: 900;
+  padding: 4px 12px;
+}
+
+.pdf-lightbox-frame {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #eef2f7;
+}
+
+.pdf-only-page {
+  min-height: 100vh;
+  background: #eef2f7;
+}
+
+.pdf-only-shell {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  width: min(1100px, 100%);
+  height: 100vh;
+  margin: 0 auto;
+  background: #fff;
+}
+
+.pdf-only-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid #d8e0e7;
+  color: #334155;
+  font-weight: 900;
+}
+
+.pdf-back-link {
+  display: inline-block;
+  border: 2px solid #2f7d57;
+  border-radius: 8px;
+  background: #e8f3ed;
+  color: #245f43;
+  padding: 7px 12px;
+  text-decoration: none;
+  font-weight: 900;
+}
+
+.pdf-only-frame {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  border: 0;
+  background: #eef2f7;
 }
 
 .page-link-grid {
@@ -5547,6 +6200,12 @@ exports.deleteUserByAdmin = onCall(async (request) => {
     <div class="c-wrapper"><div class="note"><h2 class="pera1-editable" data-structure="e-heading">${custom.heading}</h2><div class="pera1-editable" data-structure="e-text">${custom.text}<br>${linksHtml}</div></div></div>
   </div>`;
         }
+        if (block.type === "map") {
+          const custom = customHeadingText(block);
+          return `<div class="pera1-section block" data-structure="b-img" data-block-name="散策マップ" id="${sectionId}">
+    <div class="c-wrapper"><h2 class="pera1-editable" data-structure="e-heading">${custom.heading}</h2><div class="sentence pera1-editable" data-structure="e-text">${custom.text}</div>${buildPeraichiPhotoRow(blockPhotoUrls(block, context.photoUrls || []).slice(0, 1), context.siteName)}</div>
+  </div>`;
+        }
         if (block.type === "photo") {
           return `<div class="pera1-section block" data-structure="b-img" data-block-name="画像" id="${sectionId}">
     <div class="c-wrapper u-align-center">${buildPeraichiPhotoRow(blockPhotoUrls(block, context.photoUrls || []), context.siteName)}</div>
@@ -5621,6 +6280,29 @@ exports.deleteUserByAdmin = onCall(async (request) => {
       refreshTextCounters(els.editorForm);
       els.status.textContent = "ソースを生成しました";
     }
+
+    function openPdfLightbox(link) {
+      if (!link || !els.pdfLightbox || !els.pdfLightboxFrame) return;
+      const source = link.dataset.pdfSource || "";
+      els.pdfLightboxTitle.textContent = link.dataset.pdfTitle || "PDFプレビュー";
+      els.pdfLightboxFrame.src = pdfSourceWithFirstPage(source);
+      els.pdfLightbox.hidden = false;
+      els.pdfLightboxClose.focus();
+    }
+
+    function closePdfLightbox() {
+      if (!els.pdfLightbox) return;
+      els.pdfLightbox.hidden = true;
+      els.pdfLightboxFrame.src = "about:blank";
+    }
+
+    els.pdfLightboxClose.addEventListener("click", closePdfLightbox);
+    els.pdfLightbox.addEventListener("click", (event) => {
+      if (event.target === els.pdfLightbox) closePdfLightbox();
+    });
+    window.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && !els.pdfLightbox.hidden) closePdfLightbox();
+    });
 
     async function copyText(text) {
       try {
@@ -5701,6 +6383,80 @@ exports.deleteUserByAdmin = onCall(async (request) => {
       ]);
 
       return new Blob([...chunks, ...central, end], { type: "application/zip" });
+    }
+
+    function mimeFromFileName(name) {
+      const extension = String(name || "").toLowerCase().split(".").pop();
+      return {
+        jpg: "image/jpeg",
+        jpeg: "image/jpeg",
+        png: "image/png",
+        gif: "image/gif",
+        webp: "image/webp",
+        svg: "image/svg+xml",
+        pdf: "application/pdf",
+        txt: "text/plain",
+        html: "text/html",
+        css: "text/css",
+        js: "text/javascript"
+      }[extension] || "application/octet-stream";
+    }
+
+    function bytesToDataUrl(bytes, name) {
+      let binary = "";
+      const chunkSize = 0x8000;
+      for (let offset = 0; offset < bytes.length; offset += chunkSize) {
+        binary += String.fromCharCode(...bytes.slice(offset, offset + chunkSize));
+      }
+      return `data:${mimeFromFileName(name)};base64,${btoa(binary)}`;
+    }
+
+    async function readStoredZip(file) {
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+      const decoder = new TextDecoder();
+      const entries = new Map();
+      let offset = 0;
+      while (offset + 30 <= bytes.length) {
+        const signature = view.getUint32(offset, true);
+        if (signature !== 0x04034b50) break;
+        const method = view.getUint16(offset + 8, true);
+        const size = view.getUint32(offset + 18, true);
+        const nameLength = view.getUint16(offset + 26, true);
+        const extraLength = view.getUint16(offset + 28, true);
+        const nameStart = offset + 30;
+        const dataStart = nameStart + nameLength + extraLength;
+        if (dataStart + size > bytes.length) throw new Error("ZIPの内容が壊れています");
+        const name = decoder.decode(bytes.slice(nameStart, nameStart + nameLength));
+        if (method !== 0) throw new Error("このZIPの圧縮方式には未対応です");
+        entries.set(name, bytes.slice(dataStart, dataStart + size));
+        offset = dataStart + size;
+      }
+      return entries;
+    }
+
+    function restoreManifestAssets(value, entries) {
+      if (typeof value === "string" && entries.has(value)) {
+        return bytesToDataUrl(entries.get(value), value);
+      }
+      if (Array.isArray(value)) return value.map((item) => restoreManifestAssets(item, entries));
+      if (value && typeof value === "object") {
+        return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, restoreManifestAssets(item, entries)]));
+      }
+      return value;
+    }
+
+    function buildProjectManifest(exportFiles) {
+      const project = projectData();
+      const serialized = replaceContentAssetUrls(
+        replaceContentAssetUrls(JSON.stringify(project), exportFiles.imageMap),
+        exportFiles.fileMap
+      );
+      return {
+        version: 2,
+        generatedAt: new Date().toISOString(),
+        project: JSON.parse(serialized)
+      };
     }
 
     function collectProjectImageAssets() {
@@ -5806,6 +6562,47 @@ exports.deleteUserByAdmin = onCall(async (request) => {
       return output;
     }
 
+    function buildPdfOnlyPageHtml(source, title, backHref) {
+      return `<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>${escapeHtml(title)}</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="pdf-only-page">
+  <main class="pdf-only-shell">
+    <div class="pdf-only-toolbar">
+      <strong>${escapeHtml(title)}</strong>
+      <a class="pdf-back-link" href="${escapeHtml(backHref)}">元のページに戻る</a>
+    </div>
+    <iframe class="pdf-only-frame" src="${escapeHtml(pdfSourceWithFirstPage(source))}" title="${escapeHtml(title)}"></iframe>
+  </main>
+</body>
+</html>`;
+    }
+
+    function buildPdfOnlyPageFiles(exportPages, fileMap) {
+      const files = [];
+      exportPages.forEach((page, pageIndex) => {
+        (page.extraBlocks || []).forEach((block, blockIndex) => {
+          if (block.type !== "pdfLinks") return;
+          (block.links || []).slice(0, 3).forEach((link, linkIndex) => {
+            const rawSource = String(link?.url || "").trim();
+            if (!rawSource || !isPdfLink(link)) return;
+            const source = fileMap.get(rawSource) || rawSource;
+            const title = `${page.title || "ページ"} - ${String(link.text || link.fileName || "PDF").trim()}`;
+            files.push({
+              name: pdfPageFileName(pageIndex, blockIndex, linkIndex),
+              content: buildPdfOnlyPageHtml(source, title, slugForPage(pageIndex))
+            });
+          });
+        });
+      });
+      return files;
+    }
+
     function buildPageHtmlFiles() {
       saveCurrentPage();
       const originalIndex = state.currentPageIndex;
@@ -5817,14 +6614,19 @@ exports.deleteUserByAdmin = onCall(async (request) => {
       const files = exportPages.map((page, index) => {
         state.currentPageIndex = index;
         applyPageData(page);
-        return { name: slugForPage(index), content: replaceContentAssetUrls(buildExportHtml(), fileAssets.map) };
+        return {
+          name: slugForPage(index),
+          content: replaceContentAssetUrls(buildExportHtml({ exported: true, fileMap: fileAssets.map }), fileAssets.map)
+        };
       });
+      const pdfPageFiles = buildPdfOnlyPageFiles(exportPages, fileAssets.map);
       state.pages = originalPages;
       state.currentPageIndex = originalIndex;
       applyPageData(state.pages[originalIndex]);
       renderPageTabs();
       return {
         pageFiles: files,
+        pdfPageFiles,
         imageFiles: imageAssets.files,
         fileFiles: fileAssets.files,
         imageMap: imageAssets.map,
@@ -5902,6 +6704,7 @@ exports.deleteUserByAdmin = onCall(async (request) => {
     function downloadZip(mode = "licensed") {
       render();
       const exportFiles = buildPageHtmlFiles();
+      const projectManifest = buildProjectManifest(exportFiles);
       const pageFiles = exportFiles.pageFiles.map((file) => ({
         ...file,
         content: contentForExportMode(file.content, mode)
@@ -5909,7 +6712,7 @@ exports.deleteUserByAdmin = onCall(async (request) => {
       const readme = `自治会ホームページ一式
 
 index.html と styles.css を同じフォルダに置くと表示できます。
-写真をPCフォルダーから選んだ場合は、images フォルダーに写真が入ります。
+写真はホームページ用に軽量化され、images フォルダーに入ります。
 HTML内には写真そのものを埋め込まず、images/photo-1.jpg のようなリンクにしています。
 PDFや資料ファイルをボタンから選んだ場合は、files フォルダーに入ります。
 HTML内には files/ファイル名.pdf のようなリンクにしています。
@@ -5917,6 +6720,10 @@ HTML内には files/ファイル名.pdf のようなリンクにしています�
 利用コードなしで保存した場合は、ページ下部に Created by Sakuma Farm のリンクが入ります。
 2ページ目以降がある場合は page-2.html、page-3.html のように入っています。
 各ページ上部または左側のリンクバーからページ移動できます。
+PDFリンク部品にPDFを入れた場合は、PDFの1ページ目サムネイルと拡大表示が付きます。
+PDFをダブルクリックしたときに開くPDF専用ページ（pdf-*.html）も自動で入ります。専用ページには元のページへ戻るボタンがあります。
+このZIPを「ZIPを読み込んで編集」から読み込むと、設定・写真・PDFを戻して編集を続けられます。
+編集用設定は jichikai-project.json に入っています。このアプリで作成したZIP専用の読み込み機能です。
 peraichi-like.html は、ペライチ風の単体HTMLです。
 auth-sample.html は、利用者用の登録・ログイン画面サンプルです。
 admin.html は、管理者専用の別画面サンプルです。
@@ -5939,6 +6746,10 @@ functions/index.js にCloud Functionsの雛形を入れています。
 `;
       const zip = makeZip([
         ...pageFiles,
+        ...exportFiles.pdfPageFiles.map((file) => ({
+          ...file,
+          content: contentForExportMode(file.content, mode)
+        })),
         ...exportFiles.imageFiles,
         ...exportFiles.fileFiles,
         { name: "styles.css", content: state.css },
@@ -5952,6 +6763,7 @@ functions/index.js にCloud Functionsの雛形を入れています。
         { name: "firestore.rules", content: buildFirestoreRules() },
         { name: "functions/package.json", content: buildFunctionsPackageJson() },
         { name: "functions/index.js", content: buildFunctionsIndexJs() },
+        { name: "jichikai-project.json", content: JSON.stringify(projectManifest, null, 2) },
         { name: "README.txt", content: readme }
       ]);
       const url = URL.createObjectURL(zip);
@@ -5985,6 +6797,14 @@ functions/index.js にCloud Functionsの雛形を入れています。
       els.status.textContent = state.editorMode === "easy" ? "かんたんモードにしました" : "詳細設定を表示しました";
     });
     els.easyShortcuts.addEventListener("click", (event) => {
+      const pageAction = event.target.closest("[data-easy-page-action]");
+      if (pageAction) {
+        const action = pageAction.dataset.easyPageAction;
+        if (action === "new") els.addPageBtn.click();
+        if (action === "child") els.addChildPageBtn.click();
+        if (action === "delete") els.deletePageBtn.click();
+        return;
+      }
       const button = event.target.closest("[data-easy-action]");
       if (!button) return;
       const action = button.dataset.easyAction;
@@ -6096,6 +6916,25 @@ functions/index.js にCloud Functionsの雛形を入れています。
         els.projectFileInput.value = "";
       }
     });
+    els.loadZipBtn.addEventListener("click", () => els.zipFileInput.click());
+    els.zipFileInput.addEventListener("change", async () => {
+      const file = els.zipFileInput.files?.[0];
+      if (!file) return;
+      try {
+        els.status.textContent = "ZIPを読み込んでいます";
+        const entries = await readStoredZip(file);
+        const manifestBytes = entries.get("jichikai-project.json");
+        if (!manifestBytes) throw new Error("編集用設定がありません");
+        const manifest = JSON.parse(new TextDecoder().decode(manifestBytes));
+        const project = restoreManifestAssets(manifest.project || manifest, entries);
+        loadProjectData(project);
+        els.status.textContent = "ZIPを読み込みました。編集を続けられます";
+      } catch (error) {
+        els.status.textContent = "このアプリで保存したZIPを選んでください";
+      } finally {
+        els.zipFileInput.value = "";
+      }
+    });
     els.chooseHeaderPhotoBtn.addEventListener("click", () => els.headerPhotoInput.click());
     els.headerPhotoInput.addEventListener("change", async () => {
       const file = els.headerPhotoInput.files?.[0];
@@ -6183,21 +7022,26 @@ functions/index.js にCloud Functionsの雛形を入れています。
     });
 
     document.getElementById("sitemapSetBtn").addEventListener("click", () => {
-      const siteName = els.siteName.value.trim() || "山口連区自治会";
+      const siteName = "山口連区自治会";
       const message = "サイトマップ案に近いページ構成を入れます。現在の作成内容は置き換わります。よろしいですか？";
       if (!confirm(message)) return;
-      loadProjectData(createSitemapJichikaiProject(siteName));
-      els.status.textContent = "サイトマップ案のページ構成を入れました。親ページや不要なページは左側で直せます。";
+      els.siteName.value = siteName;
+      const project = createSitemapJichikaiProject(siteName);
+      loadProjectData(project);
+      els.status.textContent = "山口自治会の見本を入れました。写真は必要な場所で後から選べます";
     });
 
-    els.pageTabs.addEventListener("click", (event) => {
+    function selectPageFromTree(event) {
       const button = event.target.closest("[data-page-index]");
       if (!button) return;
       saveCurrentPage();
       state.currentPageIndex = Number(button.dataset.pageIndex);
       applyPageData(state.pages[state.currentPageIndex]);
       render();
-    });
+    }
+
+    els.pageTabs.addEventListener("click", selectPageFromTree);
+    els.easyPageTabs?.addEventListener("click", selectPageFromTree);
 
     els.addPageBtn.addEventListener("click", () => {
       saveCurrentPage();
@@ -6349,12 +7193,40 @@ functions/index.js にCloud Functionsの雛形を入れています。
         if (field === "title") {
           els.pageTitle.value = text || "ホーム";
           state.pages[state.currentPageIndex].title = els.pageTitle.value;
+        } else if (field === "siteName") {
+          els.siteName.value = text;
+          state.pages[state.currentPageIndex].siteName = text;
         } else if (field === "catchText") {
           els.catchText.value = text;
           state.pages[state.currentPageIndex].catchText = text;
+        } else if (field === "scheduleText") {
+          els.scheduleText.value = text;
+          state.pages[state.currentPageIndex].scheduleText = text;
+        } else if (field === "contactText") {
+          els.contactText.value = text;
+          state.pages[state.currentPageIndex].contactText = text;
+        } else if (["noticeHeading", "recentInfoHeading", "scheduleHeading", "contactHeading"].includes(field)) {
+          const page = state.pages[state.currentPageIndex];
+          page.displayTexts = { ...(page.displayTexts || {}), [field]: text };
         }
         refreshTextCounters(els.editorForm);
         renderPageTabs();
+        return;
+      }
+      if (kind === "page-nav") {
+        const pageIndex = Number(editable.dataset.previewEditIndex);
+        const page = state.pages[pageIndex];
+        if (!page) return;
+        page.navLabel = text;
+        if (pageIndex === state.currentPageIndex) els.pageNavLabel.value = text;
+        renderPageTabs();
+        return;
+      }
+      if (kind === "notice") {
+        const noticeIndex = Number(editable.dataset.previewEditIndex);
+        const noticeField = editable.dataset.previewEditField;
+        const input = document.querySelector(`[data-notice-${noticeField}="${noticeIndex}"]`);
+        if (input) input.value = text;
         return;
       }
       if (kind !== "block") return;
@@ -6362,12 +7234,29 @@ functions/index.js にCloud Functionsの雛形を入れています。
       if (!block) return;
       if (field === "heading") {
         block.heading = text || "新しい見出し";
+      } else if (field === "text") {
+        block.text = text;
+        const parts = ensureTextParts(block);
+        parts[0] = text;
+        block.textParts = parts;
       } else if (field === "textPart") {
         const index = Number(editable.dataset.previewEditIndex) || 0;
         const parts = ensureTextParts(block);
         parts[index] = text;
         block.textParts = parts;
         block.text = parts.slice(0, textPartCount(block)).filter(Boolean).join("\n\n");
+      } else if (field === "textLinkText") {
+        block.textLinkText = text;
+      } else if (field === "linkText") {
+        const index = Number(editable.dataset.previewEditIndex) || 0;
+        block.links = block.links || [];
+        if (block.links[index]) block.links[index].text = text;
+      } else if (field === "pageLinkText") {
+        const index = Number(editable.dataset.previewEditIndex) || 0;
+        block.pageLinks = block.pageLinks || [];
+        if (block.pageLinks[index]) block.pageLinks[index].text = text;
+      } else if (field === "serverNote") {
+        block.serverNote = text;
       }
     }
 
@@ -6382,6 +7271,11 @@ functions/index.js にCloud Functionsの雛形を入れています。
         renderAddedBlocks();
         scrollActiveBlockIntoView();
       }
+      if (editable.dataset.previewEditKind === "notice") {
+        state.activeBlockId = "";
+        state.activeNoticeIndex = Number(editable.dataset.previewEditIndex) || 0;
+        updateNoticeSelection();
+      }
       els.status.textContent = "プレビュー上で文字を直接直せます";
     });
 
@@ -6389,19 +7283,63 @@ functions/index.js にCloud Functionsの雛形を入れています。
       const editable = event.target.closest("[data-preview-edit-kind]");
       if (!editable) return;
       applyPreviewEdit(editable);
+      saveCurrentPage();
     });
 
     els.preview.addEventListener("focusout", (event) => {
       const editable = event.target.closest("[data-preview-edit-kind]");
       if (!editable) return;
       applyPreviewEdit(editable);
+      saveCurrentPage();
       renderAddedBlocks();
       render(true);
       els.status.textContent = "プレビューの文字を反映しました";
     });
 
+    els.preview.addEventListener("dblclick", (event) => {
+      const pdfLink = event.target.closest("[data-pdf-preview]");
+      if (!pdfLink) return;
+      event.preventDefault();
+      openPdfLightbox(pdfLink);
+      els.status.textContent = "PDF専用表示です。ZIP保存後は独立したPDFページになります";
+    });
+
     els.preview.addEventListener("click", (event) => {
-      if (event.target.closest("[data-preview-edit-kind]")) return;
+      const editable = event.target.closest("[data-preview-edit-kind]");
+      const editableLink = editable?.closest("a");
+      if (editable && (event.ctrlKey || event.metaKey)) {
+        event.preventDefault();
+        event.stopPropagation();
+        editable.focus();
+        const selection = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(editable);
+        selection.removeAllRanges();
+        selection.addRange(range);
+        els.status.textContent = "文字を編集できます。入力後に外を押すと反映します";
+        return;
+      }
+      if (editable && !editableLink) return;
+      const pdfLink = event.target.closest("[data-pdf-preview]");
+      if (pdfLink) {
+        event.preventDefault();
+        openPdfLightbox(pdfLink);
+        return;
+      }
+
+      const link = event.target.closest(".site-nav a, .page-link-button, .hierarchy-nav a, .child-page-card, .archive-link");
+      if (link) {
+        const href = link.getAttribute("href") || "";
+        const nextIndex = state.pages.findIndex((page, index) => slugForPage(index) === href);
+        if (nextIndex < 0) return;
+        event.preventDefault();
+        saveCurrentPage();
+        state.currentPageIndex = nextIndex;
+        applyPageData(state.pages[state.currentPageIndex]);
+        render();
+        return;
+      }
+
       const previewHeader = event.target.closest("[data-preview-area='header']");
       if (previewHeader) {
         event.preventDefault();
@@ -6448,16 +7386,12 @@ functions/index.js にCloud Functionsの雛形を入れています。
         return;
       }
 
-      const link = event.target.closest(".site-nav a, .page-link-button, .hierarchy-nav a, .child-page-card");
-      if (!link) return;
-      const href = link.getAttribute("href") || "";
-      const nextIndex = state.pages.findIndex((page, index) => slugForPage(index) === href);
-      if (nextIndex < 0) return;
-      event.preventDefault();
-      saveCurrentPage();
-      state.currentPageIndex = nextIndex;
-      applyPageData(state.pages[state.currentPageIndex]);
-      render();
+    });
+
+    els.preview.addEventListener("contextmenu", (event) => {
+      if (!(event.ctrlKey || event.metaKey)) return;
+      const editable = event.target.closest("[data-preview-edit-kind]");
+      if (editable) event.preventDefault();
     });
 
     els.blockTabs.addEventListener("click", (event) => {
@@ -6471,7 +7405,7 @@ functions/index.js にCloud Functionsの雛形を入れています。
       const button = event.target.closest("[data-add-block-type]");
       if (!button) return;
       const type = button.dataset.addBlockType;
-      addBlock(type, { choosePhoto: ["photo", "photoTextLeft", "textPhotoRight"].includes(type) });
+      addBlock(type, { choosePhoto: ["photo", "map", "photoTextLeft", "textPhotoRight"].includes(type) });
     });
 
     function activateAddedBlockFromEvent(event) {
