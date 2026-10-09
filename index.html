@@ -206,6 +206,7 @@
       min-width: 420px;
       border-collapse: collapse;
       background: #fff;
+      table-layout: fixed;
     }
 
     .editable-content-table td {
@@ -877,7 +878,9 @@
     .site-preview [contenteditable="true"]:hover,
     .site-preview [contenteditable="true"]:focus {
       outline-color: rgba(47, 125, 87, .45);
-      background: rgba(232, 243, 237, .5);
+      background: #fff7e6 !important;
+      color: #1f2933 !important;
+      text-shadow: none !important;
     }
 
     .block-picker {
@@ -890,6 +893,13 @@
       color: #475569;
       font-size: 13px;
       font-weight: 900;
+    }
+
+    .range-value {
+      color: #64748b;
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
     }
 
     .block-pick {
@@ -1334,6 +1344,8 @@
       position: relative;
       overflow: auto;
       max-height: 680px;
+      font-family: var(--site-font-family, "Hiragino Sans", "Yu Gothic", Meiryo, sans-serif);
+      font-size: var(--site-font-size, 16px);
     }
 
     .site-preview header {
@@ -1345,6 +1357,7 @@
 
     .site-preview h2 {
       cursor: pointer;
+      font-size: calc(1.5em * var(--site-heading-scale, 1));
     }
 
     .site-preview .header-inner {
@@ -1397,6 +1410,14 @@
 
     .site-preview .site-nav a[contenteditable="true"] {
       cursor: pointer;
+    }
+
+    .site-preview .site-nav a,
+    .site-preview .page-link-button,
+    .site-preview .hierarchy-nav a,
+    .site-preview .child-page-card {
+      user-select: none;
+      -webkit-user-select: none;
     }
 
     .site-preview .site-nav a[contenteditable="true"]:hover,
@@ -1526,14 +1547,14 @@
 
     .site-preview h1 {
       margin: 0;
-      font-size: 40px;
+      font-size: calc(40px * var(--site-heading-scale, 1));
       line-height: 1.2;
       color: #173d2b;
     }
 
     .site-preview .lead {
       margin: 10px 0 0;
-      font-size: 18px;
+      font-size: calc(18px * var(--site-font-scale, 1));
       color: #334155;
     }
 
@@ -1541,7 +1562,7 @@
       display: inline-block;
       margin-top: 16px;
       color: #5b6b82;
-      font-size: 18px;
+      font-size: calc(18px * var(--site-font-scale, 1));
       font-weight: 900;
     }
 
@@ -1649,7 +1670,7 @@
       border-left: 6px solid var(--green);
       padding-left: 10px;
       line-height: 1.35;
-      font-size: clamp(20px, 2.8vw, 30px);
+      font-size: calc(clamp(20px, 2.8vw, 30px) * var(--site-heading-scale, 1));
     }
 
     .site-preview.heading-line h2 {
@@ -1739,6 +1760,28 @@
       transition: outline-color .18s ease, box-shadow .18s ease;
     }
 
+    /* Keep the editor selection readable even when the chosen design uses white text. */
+    .site-preview .is-editing-preview {
+      background-color: #fff7e6 !important;
+      color: #1f2933 !important;
+      text-shadow: none !important;
+    }
+
+    .site-preview .is-editing-preview :where(h1, h2, h3, p, a, td, th, strong, span) {
+      color: #1f2933 !important;
+      text-shadow: none !important;
+    }
+
+    .site-preview .is-editing-preview :where(h2, h3) {
+      background-color: #fff7e6 !important;
+      background-image: none !important;
+    }
+
+    .site-preview .is-editing-preview .hero-photo,
+    .site-preview .is-editing-preview img {
+      background-color: #eef2f7 !important;
+    }
+
     .site-preview .is-design-hint {
       outline: 4px solid rgba(200, 138, 45, .28);
       outline-offset: 5px;
@@ -1812,6 +1855,7 @@
 
     .photo-gallery .hero-photo {
       min-height: 210px;
+      height: clamp(180px, 34vw, 420px);
     }
 
     .photo-gallery .photo-item {
@@ -2606,6 +2650,27 @@
               <option value="black">黒</option>
               <option value="gray">落ち着いた灰色</option>
             </select>
+            <label for="fontFamilySelect">文字のフォント</label>
+            <select id="fontFamilySelect">
+              <option value="sans">ゴシック（読みやすい）</option>
+              <option value="serif">明朝</option>
+              <option value="rounded">丸ゴシック</option>
+              <option value="system">パソコン標準</option>
+            </select>
+            <label for="baseFontSizeSelect">本文の文字サイズ</label>
+            <select id="baseFontSizeSelect">
+              <option value="14">小さめ</option>
+              <option value="16">標準</option>
+              <option value="18">大きめ</option>
+              <option value="20">とても大きめ</option>
+            </select>
+            <label for="headingScaleSelect">見出しの文字サイズ</label>
+            <select id="headingScaleSelect">
+              <option value="0.85">小さめ</option>
+              <option value="1">標準</option>
+              <option value="1.2">大きめ</option>
+              <option value="1.4">とても大きめ</option>
+            </select>
             <label for="headingStyleSelect">見出しの形</label>
             <select id="headingStyleSelect">
               <option value="simple">シンプル</option>
@@ -2718,6 +2783,9 @@
       currentPageIndex: 0,
       isLoadingPage: false,
       themeId: "green",
+      fontFamily: "sans",
+      baseFontSize: 16,
+      headingScale: 1,
       headingStyle: "simple",
       navStyle: "pill",
       headerPhotoEnabled: false,
@@ -2831,6 +2899,9 @@
       navPosition: document.getElementById("navPosition"),
       navStyleSelect: document.getElementById("navStyleSelect"),
       themeSelect: document.getElementById("themeSelect"),
+      fontFamilySelect: document.getElementById("fontFamilySelect"),
+      baseFontSizeSelect: document.getElementById("baseFontSizeSelect"),
+      headingScaleSelect: document.getElementById("headingScaleSelect"),
       headingStyleSelect: document.getElementById("headingStyleSelect"),
       headingStyleSample: document.getElementById("headingStyleSample"),
       headerPhotoEnabled: document.getElementById("headerPhotoEnabled"),
@@ -3020,6 +3091,10 @@
         tableCols: 2,
         tableCells: Array(225).fill(""),
         width: "full",
+        tableWidth: 100,
+        tableRowHeight: 52,
+        tableColumnWidths: Array(15).fill(0),
+        tableRowHeights: Array(15).fill(0),
         textLinkText: "",
         textLinkUrl: "",
         photoLinkUrl: "",
@@ -3029,10 +3104,11 @@
         photoX: 50,
         photoY: 50,
         photoZoom: 100,
+        photoFit: "cover",
         photoSettings: [
-          { x: 50, y: 50, zoom: 100 },
-          { x: 50, y: 50, zoom: 100 },
-          { x: 50, y: 50, zoom: 100 }
+          { x: 50, y: 50, zoom: 100, fit: "cover" },
+          { x: 50, y: 50, zoom: 100, fit: "cover" },
+          { x: 50, y: 50, zoom: 100, fit: "cover" }
         ],
         pageLinkCount: 1,
         pageLinks: [
@@ -4150,6 +4226,44 @@
       return ["pill", "box", "underline", "solid", "softbar"].includes(state.navStyle) ? state.navStyle : "pill";
     }
 
+    const fontFamilyOptions = {
+      sans: '"Hiragino Sans", "Yu Gothic", "YuGothic", "Noto Sans JP", Meiryo, sans-serif',
+      serif: '"Hiragino Mincho ProN", "Yu Mincho", "YuMincho", "Noto Serif JP", serif',
+      rounded: '"Hiragino Maru Gothic ProN", "Yu Gothic", "YuGothic", "Noto Sans JP", sans-serif',
+      system: '-apple-system, BlinkMacSystemFont, sans-serif'
+    };
+
+    function currentFontFamily() {
+      return fontFamilyOptions[state.fontFamily] || fontFamilyOptions.sans;
+    }
+
+    function currentBaseFontSizeValue(value) {
+      const size = Number(value);
+      return [14, 16, 18, 20].includes(size) ? size : 16;
+    }
+
+    function currentBaseFontSize() {
+      return currentBaseFontSizeValue(state.baseFontSize);
+    }
+
+    function currentHeadingScaleValue(value) {
+      const scale = Number(value);
+      return [0.85, 1, 1.2, 1.4].includes(scale) ? scale : 1;
+    }
+
+    function currentHeadingScale() {
+      return currentHeadingScaleValue(state.headingScale);
+    }
+
+    function applyFontSettings() {
+      state.fontFamily = fontFamilyOptions[state.fontFamily] ? state.fontFamily : "sans";
+      state.baseFontSize = currentBaseFontSize();
+      state.headingScale = currentHeadingScale();
+      els.fontFamilySelect.value = state.fontFamily;
+      els.baseFontSizeSelect.value = String(state.baseFontSize);
+      els.headingScaleSelect.value = String(state.headingScale);
+    }
+
     function applyTheme(themeId = state.themeId) {
       state.themeId = themes[themeId] ? themeId : "green";
       const theme = currentTheme();
@@ -4548,6 +4662,9 @@
         version: 1,
         editorMode: state.editorMode,
         themeId: state.themeId,
+        fontFamily: state.fontFamily,
+        baseFontSize: currentBaseFontSize(),
+        headingScale: currentHeadingScale(),
         headingStyle: state.headingStyle,
         navStyle: state.navStyle,
         headerPhotoEnabled: els.headerPhotoEnabled.checked,
@@ -4648,6 +4765,9 @@
         return;
       }
       state.themeId = themes[data.themeId] ? data.themeId : "green";
+      state.fontFamily = fontFamilyOptions[data.fontFamily] ? data.fontFamily : "sans";
+      state.baseFontSize = currentBaseFontSizeValue(data.baseFontSize);
+      state.headingScale = currentHeadingScaleValue(data.headingScale);
       state.editorMode = data.editorMode === "detail" ? "detail" : "easy";
       state.headingStyle = ["simple", "line", "band", "card", "round", "marker", "sideband"].includes(data.headingStyle) ? data.headingStyle : "simple";
       state.navStyle = ["pill", "box", "underline", "solid", "softbar"].includes(data.navStyle) ? data.navStyle : "pill";
@@ -4666,6 +4786,7 @@
       state.pages = normalizePages(data.pages);
       state.currentPageIndex = Math.min(Math.max(Number(data.currentPageIndex) || 0, 0), state.pages.length - 1);
       applyTheme(state.themeId);
+      applyFontSettings();
       applyEditorMode(state.editorMode);
       applyHeadingStyle(state.headingStyle);
       applyNavStyle(state.navStyle);
@@ -4960,12 +5081,16 @@
       if (!block) return null;
       const legacy = {
         x: clampPhotoSetting(block.photoX, 50, 0, 100),
-        y: clampPhotoSetting(block.photoY, 50, 0, 100)
+        y: clampPhotoSetting(block.photoY, 50, 0, 100),
+        zoom: clampPhotoSetting(block.photoZoom, 100, 100, 300),
+        fit: block.photoFit === "contain" ? "contain" : "cover"
       };
       const setting = block.photoSettings?.[index] || {};
       return {
         x: clampPhotoSetting(setting.x, legacy.x, 0, 100),
-        y: clampPhotoSetting(setting.y, legacy.y, 0, 100)
+        y: clampPhotoSetting(setting.y, legacy.y, 0, 100),
+        zoom: clampPhotoSetting(setting.zoom, legacy.zoom, 100, 300),
+        fit: setting.fit === "contain" ? "contain" : legacy.fit
       };
     }
 
@@ -4984,6 +5109,38 @@
 
     function tableCols(block) {
       return tableDimension(block?.tableCols, 2);
+    }
+
+    function tableWidth(block) {
+      return Math.min(100, Math.max(40, Number(block?.tableWidth) || 100));
+    }
+
+    function tableRowHeight(block) {
+      return Math.min(180, Math.max(32, Number(block?.tableRowHeight) || 52));
+    }
+
+    function tableColumnWidths(block) {
+      const cols = tableCols(block);
+      const source = Array.isArray(block?.tableColumnWidths) ? block.tableColumnWidths : [];
+      const fallback = 100 / cols;
+      const values = Array.from({ length: cols }, (_, index) =>
+        Math.min(100, Math.max(10, Number(source[index]) || fallback))
+      );
+      const total = values.reduce((sum, value) => sum + value, 0) || 100;
+      return values.map((value) => value / total * 100);
+    }
+
+    function tableColumnWidthMax(block) {
+      return Math.max(10, 100 - (tableCols(block) - 1) * 10);
+    }
+
+    function tableRowHeights(block) {
+      const rows = tableRows(block);
+      const source = Array.isArray(block?.tableRowHeights) ? block.tableRowHeights : [];
+      const fallback = tableRowHeight(block);
+      return Array.from({ length: rows }, (_, index) =>
+        Math.min(180, Math.max(32, Number(source[index]) || fallback))
+      );
     }
 
     function ensureTableCells(block) {
@@ -5026,7 +5183,8 @@
       block.photoSettings = settings;
       block.photoX = settings[0].x;
       block.photoY = settings[0].y;
-      block.photoZoom = 100;
+      block.photoZoom = settings[0].zoom;
+      block.photoFit = settings[0].fit;
       return settings;
     }
 
@@ -5044,7 +5202,8 @@
       if (!setting) return "";
       const x = setting.x;
       const y = setting.y;
-      return ` style="object-position:${x}% ${y}%;"`;
+      const zoom = Math.max(1, setting.zoom / 100);
+      return ` style="object-fit:${setting.fit};object-position:${x}% ${y}%;transform:scale(${zoom});transform-origin:${x}% ${y}%;"`;
     }
 
     function pagePhotoSettings() {
@@ -5213,18 +5372,22 @@
       const custom = customHeadingText(block);
       const rows = tableRows(block);
       const cols = tableCols(block);
+      const width = tableWidth(block);
+      const columnWidths = tableColumnWidths(block);
+      const rowHeights = tableRowHeights(block);
       const cells = ensureTableCells(block);
       const tableRowsMarkup = Array.from({ length: rows }, (_, rowIndex) => `
-        <tr>${Array.from({ length: cols }, (_, colIndex) => {
+        <tr style="height:${rowHeights[rowIndex]}px;">${Array.from({ length: cols }, (_, colIndex) => {
           const cellIndex = rowIndex * cols + colIndex;
           const value = escapeHtml(cells[cellIndex] || "").replace(/\n/g, "<br>");
-          return `<td class="editable-table-cell"${previewEditAttr("block", "tableCell", block?.id || "", cellIndex)}>${value}</td>`;
+          return `<td class="editable-table-cell" style="height:${rowHeights[rowIndex]}px;"${previewEditAttr("block", "tableCell", block?.id || "", cellIndex)}>${value}</td>`;
         }).join("")}</tr>
       `).join("");
+      const colgroup = `<colgroup>${columnWidths.map((width) => `<col style="width:${width}%;">`).join("")}</colgroup>`;
       return `<section class="${blockClass(block, "text-block table-block")}"${previewBlockAttr(block)}>
         <h2${previewEditAttr("block", "heading", block?.id || "")}>${custom.heading}</h2>
         ${textPartsMarkup(block)}
-        <div class="editable-table-wrap"><table class="editable-content-table"><tbody>${tableRowsMarkup}</tbody></table></div>
+        <div class="editable-table-wrap"><table class="editable-content-table" style="width:${width}%;">${colgroup}<tbody>${tableRowsMarkup}</tbody></table></div>
       </section>`;
     }
 
@@ -5502,6 +5665,8 @@
             const photoCount = blockPhotoCount(block);
             const textCount = textPartCount(block);
             const textParts = ensureTextParts(block);
+            const columnWidths = tableColumnWidths(block);
+            const rowHeights = tableRowHeights(block);
             return `
               <div class="added-block-item ${isActive ? "active" : ""}" data-added-block-id="${escapeHtml(block.id)}">
                 <div class="added-block-title">
@@ -5536,6 +5701,23 @@
                           ${Array.from({ length: 15 }, (_, value) => value + 1).map((value) => `<option value="${value}" ${tableCols(block) === value ? "selected" : ""}>${value}列</option>`).join("")}
                         </select>
                       </label>
+                      <label>表の横幅 <span class="range-value">${tableWidth(block)}%</span>
+                        <input type="range" min="40" max="100" step="5" value="${tableWidth(block)}" data-block-field="${index}:tableWidth">
+                      </label>
+                      <div class="table-dimension-controls">
+                        <div class="field-help">列ごとの幅（縦方向は同じ幅）</div>
+                        ${columnWidths.map((value, columnIndex) => `
+                          <label>列${columnIndex + 1}の幅 <span class="range-value">${Math.round(value)}%</span>
+                            <input type="range" min="10" max="${tableColumnWidthMax(block)}" step="5" value="${Math.round(value)}" data-block-field="${index}:tableColumnWidths.${columnIndex}">
+                          </label>
+                        `).join("")}
+                        <div class="field-help">行ごとの高さ（横方向は同じ高さ）</div>
+                        ${rowHeights.map((value, rowIndex) => `
+                          <label>行${rowIndex + 1}の高さ <span class="range-value">${Math.round(value)}px</span>
+                            <input type="range" min="32" max="180" step="4" value="${Math.round(value)}" data-block-field="${index}:tableRowHeights.${rowIndex}">
+                          </label>
+                        `).join("")}
+                      </div>
                       <div class="field-help">表のセルをクリックして、プレビュー上で文字を入力できます。</div>
                     ` : ""}
                     ${needsPhotoContent ? `
@@ -5636,6 +5818,15 @@
                       return `
                         <div class="photo-adjust-card">
                           <div class="photo-choice-meta">写真${photoIndex + 1}の位置</div>
+                          <label>表示方法
+                            <select data-block-field="${index}:photoSettings.${photoIndex}.fit">
+                              <option value="cover" ${setting.fit === "cover" ? "selected" : ""}>切り取り表示</option>
+                              <option value="contain" ${setting.fit === "contain" ? "selected" : ""}>全体を表示</option>
+                            </select>
+                          </label>
+                          <label>写真の拡大 <span class="range-value">${setting.zoom}%</span>
+                            <input type="range" min="100" max="300" step="10" value="${setting.zoom}" data-block-field="${index}:photoSettings.${photoIndex}.zoom">
+                          </label>
                           <label>横位置
                             <select data-block-field="${index}:photoSettings.${photoIndex}.x">
                               <option value="0" ${snapPhotoPosition(setting.x) === 0 ? "selected" : ""}>左</option>
@@ -5759,7 +5950,7 @@
   <title>${title}</title>
   <link rel="stylesheet" href="styles.css">
 </head>
-<body class="${template.className} ${navClass} ${navStyleClass} ${headingClass} ${headerPhotoClass}" style="--preview-photo: url('${photoUrl}'); --header-photo: url('${headerUrl}'); --header-photo-position: ${headerPosition}; --header-photo-size: ${headerSize};">
+<body class="${template.className} ${navClass} ${navStyleClass} ${headingClass} ${headerPhotoClass}" style="--preview-photo: url('${photoUrl}'); --header-photo: url('${headerUrl}'); --header-photo-position: ${headerPosition}; --header-photo-size: ${headerSize}; --site-font-family: ${escapeHtml(currentFontFamily())}; --site-font-size: ${currentBaseFontSize()}px; --site-font-scale: ${currentBaseFontSize() / 16}; --site-heading-scale: ${currentHeadingScale()};">
 ${buildPreviewHtml(options)}
 ${pdfViewerRuntimeHtml()}
 </body>
@@ -5816,11 +6007,13 @@ ${pdfViewerRuntimeHtml()}
 
     function sakumaFarmCreditHtml() {
       return `<footer id="sakuma-farm-credit" style="margin:32px auto 0;padding:14px 16px;border-top:1px solid #d8e0e7;text-align:center;color:#64748b;font:14px/1.6 -apple-system,BlinkMacSystemFont,'Hiragino Sans','Yu Gothic',Meiryo,sans-serif;background:#f8fafc;">
-  Created by Sakuma Farm | <a href="https://daisuken0211-dotcom.github.io/jichikai-site-maker/" target="_blank" rel="noopener" style="color:#245f43;font-weight:700;text-decoration:underline;">自治会ホームページ作成ツール</a>
+  Created by Sakuma Farm<br>
+  <a href="mailto:sakumafarmit@gmail.com?subject=%E5%95%8F%E3%81%84%E5%90%88%E3%82%8F%E3%81%9B" style="color:#245f43;font-weight:700;text-decoration:underline;">作成アプリに関する問い合わせはこちら</a><br>
+  <a href="https://daisuken0211-dotcom.github.io/jichikai-site-maker/" target="_blank" rel="noopener" style="color:#245f43;font-weight:700;text-decoration:underline;">自治会ホームページ作成ツール</a>
 </footer>
 <script>
 (function(){
-  var credit = '<footer id="sakuma-farm-credit" style="margin:32px auto 0;padding:14px 16px;border-top:1px solid #d8e0e7;text-align:center;color:#64748b;font:14px/1.6 -apple-system,BlinkMacSystemFont,\\'Hiragino Sans\\',\\'Yu Gothic\\',Meiryo,sans-serif;background:#f8fafc;">Created by Sakuma Farm | <a href="https://daisuken0211-dotcom.github.io/jichikai-site-maker/" target="_blank" rel="noopener" style="color:#245f43;font-weight:700;text-decoration:underline;">自治会ホームページ作成ツール</a></footer>';
+  var credit = '<footer id="sakuma-farm-credit" style="margin:32px auto 0;padding:14px 16px;border-top:1px solid #d8e0e7;text-align:center;color:#64748b;font:14px/1.6 -apple-system,BlinkMacSystemFont,\\'Hiragino Sans\\',\\'Yu Gothic\\',Meiryo,sans-serif;background:#f8fafc;">Created by Sakuma Farm<br><a href="mailto:sakumafarmit@gmail.com?subject=%E5%95%8F%E3%81%84%E5%90%88%E3%82%8F%E3%81%9B" style="color:#245f43;font-weight:700;text-decoration:underline;">作成アプリに関する問い合わせはこちら</a><br><a href="https://daisuken0211-dotcom.github.io/jichikai-site-maker/" target="_blank" rel="noopener" style="color:#245f43;font-weight:700;text-decoration:underline;">自治会ホームページ作成ツール</a></footer>';
   function ensureCredit(){
     if (!document.getElementById('sakuma-farm-credit')) {
       document.body.insertAdjacentHTML('beforeend', credit);
@@ -5843,7 +6036,8 @@ ${pdfViewerRuntimeHtml()}
   margin: 0;
   color: #1f2933;
   background: #f7f5ef;
-  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", "YuGothic", "Noto Sans JP", Meiryo, sans-serif;
+  font-family: var(--site-font-family, -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", "YuGothic", "Noto Sans JP", Meiryo, sans-serif);
+  font-size: var(--site-font-size, 16px);
   line-height: 1.75;
 }
 
@@ -6011,7 +6205,7 @@ body.nav-left .site-nav a {
 
 h1 {
   margin: 0;
-  font-size: clamp(32px, 5vw, 56px);
+  font-size: calc(clamp(32px, 5vw, 56px) * var(--site-heading-scale, 1));
   color: #173d2b;
 }
 
@@ -6019,6 +6213,7 @@ h2 {
   margin: 0 0 14px;
   border-left: 8px solid #2f7d57;
   padding-left: 12px;
+  font-size: calc(1.5em * var(--site-heading-scale, 1));
 }
 
 body.heading-line h2 {
@@ -6082,14 +6277,14 @@ body.heading-sideband h2 {
 .lead {
   max-width: 760px;
   margin: 12px 0 0;
-  font-size: 20px;
+  font-size: calc(20px * var(--site-font-scale, 1));
 }
 
 .page-title-label {
   display: inline-block;
   margin-top: 16px;
   color: #5b6b82;
-  font-size: 18px;
+  font-size: calc(18px * var(--site-font-scale, 1));
   font-weight: 900;
 }
 
@@ -6203,6 +6398,7 @@ main > .block-half {
 
 .photo-gallery .hero-photo {
   min-height: 210px;
+  height: clamp(180px, 34vw, 420px);
 }
 
 .template-note {
@@ -6252,7 +6448,7 @@ main > .block-half {
   border-left: 6px solid #2f7d57;
   padding-left: 10px;
   line-height: 1.35;
-  font-size: clamp(20px, 2.8vw, 30px);
+  font-size: calc(clamp(20px, 2.8vw, 30px) * var(--site-heading-scale, 1));
 }
 
 .text-block p {
@@ -6266,12 +6462,13 @@ main > .block-half {
   overflow-x: auto;
 }
 
-.editable-content-table {
-  width: 100%;
-  min-width: 420px;
-  border-collapse: collapse;
-  background: #fff;
-}
+    .editable-content-table {
+      width: 100%;
+      min-width: 420px;
+      border-collapse: collapse;
+      background: #fff;
+      table-layout: fixed;
+    }
 
 .editable-content-table td {
   min-width: 72px;
@@ -7379,13 +7576,17 @@ exports.deleteUserByAdmin = onCall(async (request) => {
           const custom = customHeadingText(block);
           const rows = tableRows(block);
           const cols = tableCols(block);
+          const width = tableWidth(block);
+          const columnWidths = tableColumnWidths(block);
+          const rowHeights = tableRowHeights(block);
           const cells = ensureTableCells(block);
-          const tableHtml = Array.from({ length: rows }, (_, rowIndex) => `<tr>${Array.from({ length: cols }, (_, colIndex) => {
+          const tableHtml = Array.from({ length: rows }, (_, rowIndex) => `<tr style="height:${rowHeights[rowIndex]}px;">${Array.from({ length: cols }, (_, colIndex) => {
             const cellIndex = rowIndex * cols + colIndex;
-            return `<td>${escapeHtml(cells[cellIndex] || "").replace(/\n/g, "<br>")}</td>`;
+            return `<td style="height:${rowHeights[rowIndex]}px;">${escapeHtml(cells[cellIndex] || "").replace(/\n/g, "<br>")}</td>`;
           }).join("")}</tr>`).join("");
+          const colgroup = `<colgroup>${columnWidths.map((columnWidth) => `<col style="width:${columnWidth}%">`).join("")}</colgroup>`;
           return `<div class="pera1-section block" data-structure="b-table" data-block-name="表" id="${sectionId}">
-    <div class="c-wrapper"><h2 class="pera1-editable" data-structure="e-heading">${custom.heading}</h2><div class="sentence pera1-editable" data-structure="e-text">${custom.text}</div><div class="editable-table-wrap"><table class="editable-content-table"><tbody>${tableHtml}</tbody></table></div></div>
+    <div class="c-wrapper"><h2 class="pera1-editable" data-structure="e-heading">${custom.heading}</h2><div class="sentence pera1-editable" data-structure="e-text">${custom.text}</div><div class="editable-table-wrap"><table class="editable-content-table" style="width:${width}%;">${colgroup}<tbody>${tableHtml}</tbody></table></div></div>
   </div>`;
         }
         if (block.type === "pageLinks") {
@@ -7480,6 +7681,10 @@ exports.deleteUserByAdmin = onCall(async (request) => {
       els.preview.style.setProperty("--header-photo", `url('${headerPhoto}')`);
       els.preview.style.setProperty("--header-photo-position", headerPosition);
       els.preview.style.setProperty("--header-photo-size", headerSize);
+      els.preview.style.setProperty("--site-font-family", currentFontFamily());
+      els.preview.style.setProperty("--site-font-size", `${currentBaseFontSize()}px`);
+      els.preview.style.setProperty("--site-font-scale", currentBaseFontSize() / 16);
+      els.preview.style.setProperty("--site-heading-scale", currentHeadingScale());
       state.isPreviewRendering = true;
       els.preview.innerHTML = buildPreviewHtml();
       hydratePdfThumbnails(els.preview);
@@ -8072,6 +8277,21 @@ styles.css、page-*.html、images フォルダー、files フォルダーも同�
       applyTheme(els.themeSelect.value);
       render();
     });
+    els.fontFamilySelect.addEventListener("change", () => {
+      state.fontFamily = fontFamilyOptions[els.fontFamilySelect.value] ? els.fontFamilySelect.value : "sans";
+      applyFontSettings();
+      render();
+    });
+    els.baseFontSizeSelect.addEventListener("change", () => {
+      state.baseFontSize = currentBaseFontSizeValue(els.baseFontSizeSelect.value);
+      applyFontSettings();
+      render();
+    });
+    els.headingScaleSelect.addEventListener("change", () => {
+      state.headingScale = currentHeadingScaleValue(els.headingScaleSelect.value);
+      applyFontSettings();
+      render();
+    });
     els.headingStyleSelect.addEventListener("change", () => {
       applyHeadingStyle(els.headingStyleSelect.value);
       render();
@@ -8449,6 +8669,19 @@ styles.css、page-*.html、images フォルダー、files フォルダーも同�
       if (item) item.scrollIntoView({ block: "center", behavior: "smooth" });
     }
 
+    function syncPreviewSelection() {
+      els.preview.querySelectorAll("[data-preview-block-id]").forEach((item) => {
+        item.classList.toggle("is-editing-preview", item.dataset.previewBlockId === state.activeBlockId);
+      });
+      els.preview.querySelectorAll("[data-preview-target='notice']").forEach((item) => {
+        const index = item.dataset.previewNoticeIndex;
+        item.classList.toggle("is-editing-preview", state.activeNoticeIndex >= 0 && (index == null || Number(index) === state.activeNoticeIndex));
+      });
+      els.addedBlocks.querySelectorAll("[data-added-block-id]").forEach((item) => {
+        item.classList.toggle("active", item.dataset.addedBlockId === state.activeBlockId);
+      });
+    }
+
     function updateNoticeSelection() {
       optionalEls.noticeBoxes.forEach((box, index) => {
         box.classList.toggle("active", index === state.activeNoticeIndex);
@@ -8489,7 +8722,9 @@ styles.css、page-*.html、images フォルダー、files フォルダーも同�
       if (block) {
         state.activeBlockId = block.id;
         ensurePhotoSettings(block);
+        applyEditorTab("blocks");
       }
+      syncPreviewSelection();
       const blockSetting = block ? photoSetting(block, photoIndex) : null;
       photoDragState = block
         ? {
@@ -8529,7 +8764,8 @@ styles.css、page-*.html、images フォルダー、files フォルダーも同�
         photoDragState.block.photoSettings = settings;
         photoDragState.block.photoX = settings[0].x;
         photoDragState.block.photoY = settings[0].y;
-        photoDragState.block.photoZoom = 100;
+        photoDragState.block.photoZoom = settings[0].zoom;
+        photoDragState.block.photoFit = settings[0].fit;
       }
       render(true);
     });
@@ -8644,13 +8880,13 @@ styles.css、page-*.html、images フォルダー、files フォルダーも同�
         state.activeBlockId = blockId;
         state.activeNoticeIndex = -1;
         applyEditorTab("blocks");
-        renderAddedBlocks();
-        scrollActiveBlockIntoView();
+        syncPreviewSelection();
       }
       if (editable.dataset.previewEditKind === "notice") {
         state.activeBlockId = "";
         state.activeNoticeIndex = Number(editable.dataset.previewEditIndex) || 0;
         updateNoticeSelection();
+        syncPreviewSelection();
       }
       els.status.textContent = "プレビュー上で文字を直接直せます";
     });
@@ -8744,8 +8980,7 @@ styles.css、page-*.html、images フォルダー、files フォルダーも同�
         if (previewBlock) state.activeBlockId = previewBlock.dataset.previewBlockId;
         state.activeNoticeIndex = -1;
         applyEditorTab("design");
-        renderAddedBlocks();
-        render(true);
+        syncPreviewSelection();
         els.status.textContent = "見出しの色や形を左で変えられます";
         return;
       }
@@ -8765,9 +9000,8 @@ styles.css、page-*.html、images フォルダー、files フォルダーも同�
         state.activeBlockId = blockId;
         state.activeNoticeIndex = -1;
         applyEditorTab("blocks");
-        renderAddedBlocks();
-        render(true);
         updateNoticeSelection();
+        syncPreviewSelection();
         scrollActiveBlockIntoView();
         els.status.textContent = "プレビューで選んだ部品を左で編集できます";
         return;
@@ -8960,6 +9194,33 @@ styles.css、page-*.html、images フォルダー、files フォルダーも同�
         block[path] = tableDimension(input.value, 2);
         ensureTableCells(block);
         renderAddedBlocks();
+      } else if (path === "tableWidth") {
+        block.tableWidth = Math.min(100, Math.max(40, Number(input.value) || 100));
+        input.closest("label")?.querySelector(".range-value")?.replaceChildren(document.createTextNode(`${block.tableWidth}%`));
+      } else if (path === "tableRowHeight") {
+        block.tableRowHeight = Math.min(180, Math.max(32, Number(input.value) || 52));
+        input.closest("label")?.querySelector(".range-value")?.replaceChildren(document.createTextNode(`${block.tableRowHeight}px`));
+      } else if (path.startsWith("tableColumnWidths.")) {
+        const columnIndex = Math.min(14, Math.max(0, Number(path.split(".")[1]) || 0));
+        const widths = tableColumnWidths(block);
+        const desired = Math.min(tableColumnWidthMax(block), Math.max(10, Number(input.value) || 10));
+        const otherIndexes = widths.map((_, index) => index).filter((index) => index !== columnIndex);
+        widths[columnIndex] = desired;
+        if (otherIndexes.length) {
+          const remaining = Math.max(otherIndexes.length * 10, 100 - desired);
+          const each = remaining / otherIndexes.length;
+          otherIndexes.forEach((index) => {
+            widths[index] = each;
+          });
+        }
+        block.tableColumnWidths = widths;
+        renderAddedBlocks();
+      } else if (path.startsWith("tableRowHeights.")) {
+        const rowIndex = Math.min(14, Math.max(0, Number(path.split(".")[1]) || 0));
+        const heights = Array.isArray(block.tableRowHeights) ? block.tableRowHeights : Array(15).fill(0);
+        heights[rowIndex] = Math.min(180, Math.max(32, Number(input.value) || 52));
+        block.tableRowHeights = heights;
+        input.closest("label")?.querySelector(".range-value")?.replaceChildren(document.createTextNode(`${Math.round(heights[rowIndex])}px`));
       } else if (path.startsWith("textParts.")) {
         const [, textIndexText] = path.split(".");
         const textIndex = Math.min(2, Math.max(0, Number(textIndexText) || 0));
@@ -8998,7 +9259,16 @@ styles.css、page-*.html、images フォルダー、files フォルダーも同�
           block.photoSettings = settings;
           block.photoX = settings[0].x;
           block.photoY = settings[0].y;
-          block.photoZoom = 100;
+          block.photoZoom = settings[0].zoom;
+        } else if (settings[photoIndex] && key === "zoom") {
+          settings[photoIndex].zoom = clampPhotoSetting(input.value, settings[photoIndex].zoom, 100, 300);
+          block.photoSettings = settings;
+          block.photoZoom = settings[0].zoom;
+          input.closest("label")?.querySelector(".range-value")?.replaceChildren(document.createTextNode(`${settings[photoIndex].zoom}%`));
+        } else if (settings[photoIndex] && key === "fit") {
+          settings[photoIndex].fit = input.value === "contain" ? "contain" : "cover";
+          block.photoSettings = settings;
+          block.photoFit = settings[0].fit;
         }
       } else if (path.startsWith("links.")) {
         const [, linkIndexText, key] = path.split(".");
@@ -9063,6 +9333,7 @@ styles.css、page-*.html、images フォルダー、files フォルダーも同�
 
     initializeTemplates();
     initializeThemes();
+    applyFontSettings();
     applyEditorMode(state.editorMode);
     applyEditorTab(state.activeEditorTab);
     applyHeadingStyle(state.headingStyle);
