@@ -1002,6 +1002,15 @@
       font-weight: 900;
     }
 
+    .block-typography-settings {
+      display: grid;
+      gap: 7px;
+      padding: 9px;
+      border: 1px solid #b9d8c6;
+      border-radius: 8px;
+      background: #f7fbf8;
+    }
+
     .link-grid {
       display: grid;
       grid-template-columns: 1fr;
@@ -1360,6 +1369,15 @@
       font-size: calc(1.5em * var(--site-heading-scale, 1));
     }
 
+    .site-preview [data-block-typography] {
+      font-family: var(--block-font-family, var(--site-font-family, "Hiragino Sans", "Yu Gothic", Meiryo, sans-serif));
+      font-size: var(--block-font-size, var(--site-font-size, 16px));
+    }
+
+    .site-preview [data-block-typography] h2 {
+      font-size: calc(1.5em * var(--block-heading-scale, var(--site-heading-scale, 1)));
+    }
+
     .site-preview .header-inner {
       width: min(100% - 60px, 100%);
       margin: 0 auto;
@@ -1670,7 +1688,7 @@
       border-left: 6px solid var(--green);
       padding-left: 10px;
       line-height: 1.35;
-      font-size: calc(clamp(20px, 2.8vw, 30px) * var(--site-heading-scale, 1));
+      font-size: calc(clamp(20px, 2.8vw, 30px) * var(--block-heading-scale, var(--site-heading-scale, 1)));
     }
 
     .site-preview.heading-line h2 {
@@ -3097,6 +3115,9 @@
         tableRowHeights: Array(15).fill(0),
         textLinkText: "",
         textLinkUrl: "",
+        fontFamily: "inherit",
+        baseFontSize: 0,
+        headingScale: 0,
         photoLinkUrl: "",
         photoUrls: ["", "", ""],
         photoCaptions: ["", "", ""],
@@ -5256,7 +5277,38 @@
     }
 
     function previewBlockAttr(block) {
-      return state.isPreviewRendering && block?.id ? ` data-preview-block-id="${escapeHtml(block.id)}"` : "";
+      const previewAttr = state.isPreviewRendering && block?.id ? ` data-preview-block-id="${escapeHtml(block.id)}"` : "";
+      return `${previewAttr}${blockTypographyAttr(block)}`;
+    }
+
+    function blockFontFamilyKey(block) {
+      return fontFamilyOptions[block?.fontFamily] ? block.fontFamily : "inherit";
+    }
+
+    function blockBaseFontSize(block) {
+      const size = Number(block?.baseFontSize);
+      return [14, 16, 18, 20].includes(size) ? size : 0;
+    }
+
+    function blockHeadingScale(block) {
+      const scale = Number(block?.headingScale);
+      return [0.85, 1, 1.2, 1.4].includes(scale) ? scale : 0;
+    }
+
+    function blockTypographyAttr(block) {
+      if (!block) return "";
+      const styles = [];
+      const fontKey = blockFontFamilyKey(block);
+      const baseSize = blockBaseFontSize(block);
+      const headingScale = blockHeadingScale(block);
+      if (fontKey !== "inherit") styles.push(`--block-font-family:${escapeHtml(fontFamilyOptions[fontKey])}`);
+      if (baseSize) {
+        styles.push(`--block-font-size:${baseSize}px`);
+        styles.push(`--block-font-scale:${baseSize / 16}`);
+      }
+      if (headingScale) styles.push(`--block-heading-scale:${headingScale}`);
+      const styleAttr = styles.length ? ` style="${styles.join(";")}"` : "";
+      return ` data-block-typography="1"${styleAttr}`;
     }
 
     function previewNoticeAttr(index = "") {
@@ -5681,6 +5733,39 @@
                   <div class="block-edit-area">
                     <div class="block-area-title">内容</div>
                     ${needsHeading || needsText ? `<div class="preview-edit-note">見出し・本文は右のプレビューをクリックして直接編集します。ボタンの文字だけはShiftキーを押しながら選びます。</div>` : ""}
+                    ${needsHeading || needsText ? `
+                      <div class="block-typography-settings">
+                        <div class="block-area-title">この部品の文字</div>
+                        <div class="field-help">この部品だけ文字を変えるときに設定します。全体設定に戻すこともできます。</div>
+                        <label>フォント
+                          <select data-block-field="${index}:fontFamily">
+                            <option value="inherit" ${blockFontFamilyKey(block) === "inherit" ? "selected" : ""}>全体設定に合わせる</option>
+                            <option value="sans" ${blockFontFamilyKey(block) === "sans" ? "selected" : ""}>ゴシック（読みやすい）</option>
+                            <option value="serif" ${blockFontFamilyKey(block) === "serif" ? "selected" : ""}>明朝</option>
+                            <option value="rounded" ${blockFontFamilyKey(block) === "rounded" ? "selected" : ""}>丸ゴシック</option>
+                            <option value="system" ${blockFontFamilyKey(block) === "system" ? "selected" : ""}>パソコン標準</option>
+                          </select>
+                        </label>
+                        <label>本文の文字サイズ
+                          <select data-block-field="${index}:baseFontSize">
+                            <option value="0" ${blockBaseFontSize(block) === 0 ? "selected" : ""}>全体設定に合わせる</option>
+                            <option value="14" ${blockBaseFontSize(block) === 14 ? "selected" : ""}>小さめ</option>
+                            <option value="16" ${blockBaseFontSize(block) === 16 ? "selected" : ""}>標準</option>
+                            <option value="18" ${blockBaseFontSize(block) === 18 ? "selected" : ""}>大きめ</option>
+                            <option value="20" ${blockBaseFontSize(block) === 20 ? "selected" : ""}>とても大きめ</option>
+                          </select>
+                        </label>
+                        <label>見出しの文字サイズ
+                          <select data-block-field="${index}:headingScale">
+                            <option value="0" ${blockHeadingScale(block) === 0 ? "selected" : ""}>全体設定に合わせる</option>
+                            <option value="0.85" ${blockHeadingScale(block) === 0.85 ? "selected" : ""}>小さめ</option>
+                            <option value="1" ${blockHeadingScale(block) === 1 ? "selected" : ""}>標準</option>
+                            <option value="1.2" ${blockHeadingScale(block) === 1.2 ? "selected" : ""}>大きめ</option>
+                            <option value="1.4" ${blockHeadingScale(block) === 1.4 ? "selected" : ""}>とても大きめ</option>
+                          </select>
+                        </label>
+                      </div>
+                    ` : ""}
                     ${needsText && supportsTextParts ? `
                       <label>本文の分け方
                         <select data-block-field="${index}:textColumns">
@@ -6216,6 +6301,15 @@ h2 {
   font-size: calc(1.5em * var(--site-heading-scale, 1));
 }
 
+[data-block-typography] {
+  font-family: var(--block-font-family, var(--site-font-family, -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", "YuGothic", "Noto Sans JP", Meiryo, sans-serif));
+  font-size: var(--block-font-size, var(--site-font-size, 16px));
+}
+
+[data-block-typography] h2 {
+  font-size: calc(1.5em * var(--block-heading-scale, var(--site-heading-scale, 1)));
+}
+
 body.heading-line h2 {
   border-left: 0;
   border-bottom: 1px solid #d8e0e7;
@@ -6448,7 +6542,7 @@ main > .block-half {
   border-left: 6px solid #2f7d57;
   padding-left: 10px;
   line-height: 1.35;
-  font-size: calc(clamp(20px, 2.8vw, 30px) * var(--site-heading-scale, 1));
+  font-size: calc(clamp(20px, 2.8vw, 30px) * var(--block-heading-scale, var(--site-heading-scale, 1)));
 }
 
 .text-block p {
@@ -9182,7 +9276,13 @@ styles.css、page-*.html、images フォルダー、files フォルダーも同�
       if (!block) return;
       state.activeBlockId = block.id;
       state.activeNoticeIndex = -1;
-      if (["heading", "text", "width", "textLinkText", "textLinkUrl", "photoLinkUrl", "photoX", "photoY", "photoZoom"].includes(path)) {
+      if (path === "fontFamily") {
+        block.fontFamily = fontFamilyOptions[input.value] ? input.value : "inherit";
+      } else if (path === "baseFontSize") {
+        block.baseFontSize = [14, 16, 18, 20].includes(Number(input.value)) ? Number(input.value) : 0;
+      } else if (path === "headingScale") {
+        block.headingScale = [0.85, 1, 1.2, 1.4].includes(Number(input.value)) ? Number(input.value) : 0;
+      } else if (["heading", "text", "width", "textLinkText", "textLinkUrl", "photoLinkUrl", "photoX", "photoY", "photoZoom"].includes(path)) {
         block[path] = input.value;
         if (path === "textLinkUrl" && !isDataUrl(input.value)) block.textLinkFileName = "";
         if (path === "photoLinkUrl" && !isDataUrl(input.value)) block.photoLinkFileName = "";
