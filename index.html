@@ -365,6 +365,54 @@
       font-size: 14px;
     }
 
+    .photo-batch-picker {
+      display: grid;
+      gap: 6px;
+      padding: 8px;
+      border: 1px solid #b9d8c6;
+      border-radius: 8px;
+      background: #f7fbf8;
+    }
+
+    .photo-picked-list {
+      display: grid;
+      gap: 6px;
+      max-height: 360px;
+      overflow: auto;
+    }
+
+    .photo-picked-row {
+      display: grid;
+      grid-template-columns: 48px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 7px;
+      padding: 5px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fff;
+    }
+
+    .photo-picked-row img {
+      width: 48px;
+      height: 38px;
+      object-fit: cover;
+      border-radius: 5px;
+      background: #eef2f7;
+    }
+
+    .photo-picked-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      justify-content: flex-end;
+    }
+
+    .photo-picked-actions .small-btn {
+      min-height: 28px;
+      padding: 3px 7px;
+      font-size: 12px;
+    }
+
     .page-tabs {
       display: grid;
       gap: 6px;
@@ -1859,7 +1907,7 @@
 
     .photo-gallery {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(var(--photo-columns, 3), minmax(0, 1fr));
       gap: 12px;
     }
 
@@ -2540,6 +2588,7 @@
             <input id="zipFileInput" type="file" accept=".zip,application/zip" hidden>
             <input id="linkFileInput" type="file" accept="application/pdf,.pdf,image/*,.doc,.docx,.xls,.xlsx,.ppt,.pptx" hidden>
             <input id="blockPhotoInput" type="file" accept="image/*" hidden>
+            <input id="blockPhotoBatchInput" type="file" accept="image/*" multiple hidden>
           </div>
         </div>
 
@@ -2591,7 +2640,7 @@
             <label>写真フォルダー</label>
             <div class="status">PCの写真は自動でホームページ用に軽くします</div>
             <div class="status">選んだ写真・PDFはサーバーへ送信しません。この画面内で処理してZIPに入れます。</div>
-            <div class="status">写真は「写真ブロック」を追加して入れます。写真ブロックごとに1枚・2枚・3枚を選べます。</div>
+            <div class="status">写真は「写真ブロック」を追加してまとめて入れます。1〜3列、1〜20行で並べられます。</div>
             <div class="photo-actions">
               <button class="btn secondary" id="choosePhotoFolderBtn" type="button">PCの写真フォルダーを選ぶ</button>
               <button class="small-btn" id="clearPhotoLibraryBtn" type="button">一覧クリア</button>
@@ -2815,7 +2864,8 @@
       isPreviewRendering: false,
       localPhotos: [],
       pendingLinkFileTarget: null,
-      pendingBlockPhotoTarget: null
+      pendingBlockPhotoTarget: null,
+      pendingBlockPhotoBatchTarget: null
     };
 
     const accessCodeConfig = {
@@ -2942,6 +2992,7 @@
       zipFileInput: document.getElementById("zipFileInput"),
       linkFileInput: document.getElementById("linkFileInput"),
       blockPhotoInput: document.getElementById("blockPhotoInput"),
+      blockPhotoBatchInput: document.getElementById("blockPhotoBatchInput"),
       siteName: document.getElementById("siteName"),
       catchText: document.getElementById("catchText"),
       photoUrl1: document.getElementById("photoUrl1"),
@@ -3122,6 +3173,8 @@
         photoUrls: ["", "", ""],
         photoCaptions: ["", "", ""],
         photoCount: 1,
+        photoColumns: 0,
+        photoRows: 0,
         photoX: 50,
         photoY: 50,
         photoZoom: 100,
@@ -3146,7 +3199,7 @@
           { text: "", url: "", fileName: "" }
         ],
         linkDescriptions: ["", "", ""],
-        showHeading: true,
+        showHeading: !["photo", "map", "photoTextLeft", "textPhotoRight"].includes(type),
         showText: true,
         pdfThumbSize: "small"
       };
@@ -3169,11 +3222,11 @@
       renderPhotoLibrary();
       setTimeout(scrollActiveBlockIntoView, 0);
       if (options.choosePhoto && ["photo", "map", "photoTextLeft", "textPhotoRight"].includes(block.type)) {
-        state.pendingBlockPhotoTarget = { blockIndex: insertIndex, slotIndex: 0 };
-        els.status.textContent = "写真ブロックを追加しました。続けて写真を選んでください";
+        state.pendingBlockPhotoBatchTarget = { blockIndex: insertIndex, autoSize: true };
+        els.status.textContent = "写真ブロックを追加しました。写真をまとめて選べます";
         setTimeout(() => {
-          els.blockPhotoInput.value = "";
-          els.blockPhotoInput.click();
+          els.blockPhotoBatchInput.value = "";
+          els.blockPhotoBatchInput.click();
         }, 0);
         return block;
       }
@@ -3185,7 +3238,8 @@
       const block = {
         ...defaultBlock(type),
         ...values,
-        links: values.links || defaultBlock(type).links
+        links: values.links || defaultBlock(type).links,
+        showHeading: Object.prototype.hasOwnProperty.call(values, "showHeading") ? values.showHeading : Boolean(values.heading)
       };
       if (values.text && !Array.isArray(values.textParts)) {
         block.textParts = [values.text, "", ""];
@@ -4586,6 +4640,52 @@
       render();
     }
 
+    async function applyPhotoFilesToBlock(fileList, target, options = {}) {
+      const files = Array.from(fileList || [])
+        .filter((file) => file.type.startsWith("image/"))
+        .slice(0, 60);
+      if (!files.length || !target) return;
+      const block = state.extraBlocks[target.blockIndex];
+      if (!block) return;
+      const selectedExisting = (block.photoUrls || []).filter((url) => String(url || "").trim()).length;
+      const shouldAutoSize = Boolean(options.autoSize) || (!selectedExisting && !Number(block.photoColumns) && !Number(block.photoRows));
+      if (shouldAutoSize) {
+        block.photoColumns = Math.min(3, Math.max(1, files.length));
+        block.photoRows = Math.min(20, Math.max(1, Math.ceil(files.length / block.photoColumns)));
+      }
+      const capacity = blockPhotoCapacity(block);
+      const selectedFiles = files.slice(0, capacity);
+      if (files.length > selectedFiles.length) {
+        els.status.textContent = `この写真ブロックには${capacity}枚まで入ります。先頭${capacity}枚を入れます`;
+      } else {
+        els.status.textContent = "写真を表示しています";
+      }
+      const instantUrls = await Promise.all(selectedFiles.map((file) => readFileAsDataUrl(file)));
+      block.photoUrls = instantUrls.concat(Array(60 - instantUrls.length).fill(""));
+      block.photoCaptions = Array(60).fill("");
+      block.photoCount = selectedFiles.length || 1;
+      block.showHeading = block.showHeading === true;
+      state.activeBlockId = block.id;
+      renderPhotoLibrary();
+      renderAddedBlocks();
+      render(true);
+      scrollActiveBlockIntoView();
+      els.status.textContent = `${selectedFiles.length}枚の写真を表示しました。裏でHP用に軽くしています`;
+
+      const compressed = await Promise.all(selectedFiles.map(async (file, index) => {
+        try {
+          return { ...(await compressImageForHomepage(file)), fallback: instantUrls[index] };
+        } catch (error) {
+          return { dataUrl: instantUrls[index], compressedSize: file.size, fallback: instantUrls[index] };
+        }
+      }));
+      block.photoUrls = compressed.map((photo) => photo.dataUrl || photo.fallback).concat(Array(60 - compressed.length).fill(""));
+      renderPhotoLibrary();
+      renderAddedBlocks();
+      render(true);
+      els.status.textContent = `${selectedFiles.length}枚の写真を入れました。必要なら列数・行数や順番を変更できます`;
+    }
+
     function setHeaderPhoto(dataUrl) {
       els.headerPhotoUrl.value = dataUrl;
       els.headerPhotoEnabled.checked = true;
@@ -5209,8 +5309,26 @@
       return settings;
     }
 
-    function blockPhotoCount(block) {
+    function blockPhotoColumns(block) {
+      const configured = Number(block?.photoColumns);
+      if ([1, 2, 3].includes(configured)) return configured;
       return Math.min(3, Math.max(1, Number(block?.photoCount) || 1));
+    }
+
+    function blockPhotoRows(block) {
+      const configured = Number(block?.photoRows);
+      if (configured >= 1 && configured <= 20) return configured;
+      return 1;
+    }
+
+    function blockPhotoCapacity(block) {
+      return blockPhotoColumns(block) * blockPhotoRows(block);
+    }
+
+    function blockPhotoCount(block) {
+      const capacity = blockPhotoCapacity(block);
+      const selected = (block?.photoUrls || []).filter((url) => String(url || "").trim()).length;
+      return Math.min(capacity, Math.max(1, selected || Number(block?.photoCount) || 1));
     }
 
     function currentActivePhotoBlock() {
@@ -5248,8 +5366,9 @@
       }
       const adjustableClass = adjust ? " is-adjustable-photo" : "";
       const adjustAttr = (index) => target === "page" ? photoAdjustAttr("page", index) : photoAdjustAttr(adjust, index);
+      const columns = Math.min(3, Math.max(1, Number(adjust?.photoColumns) || Math.min(3, Math.max(1, photos.length))));
       return `
-        <div class="photo-gallery count-${photos.length}">
+        <div class="photo-gallery count-${photos.length}" style="--photo-columns:${columns}">
           ${photos.map((url, index) => {
             const caption = adjust?.showText === false ? "" : String(adjust?.photoCaptions?.[index] || "").trim();
             const captionMarkup = caption
@@ -5806,23 +5925,47 @@
                       <div class="field-help">表のセルをクリックして、プレビュー上で文字を入力できます。</div>
                     ` : ""}
                     ${needsPhotoContent ? `
-                      <label>この写真ブロックの枚数
-                        <select data-block-field="${index}:photoCount">
-                          <option value="1" ${photoCount === 1 ? "selected" : ""}>1枚</option>
-                          <option value="2" ${photoCount === 2 ? "selected" : ""}>2枚</option>
-                          <option value="3" ${photoCount === 3 ? "selected" : ""}>3枚</option>
-                        </select>
-                      </label>
-                    ` : ""}
-                    ${needsPhotoContent ? Array.from({ length: photoCount }, (_, photoIndex) => `
-                      <div class="photo-slot-row">
-                        <button type="button" data-choose-block-photo="${index}:${photoIndex}">写真${photoIndex + 1}を選ぶ（すぐ表示）</button>
-                        ${block.photoUrls?.[photoIndex] ? `<span class="photo-choice-meta">写真${photoIndex + 1}が入っています</span>` : `<span class="photo-choice-meta">未選択</span>`}
+                      <div class="photo-batch-picker">
+                        <div class="block-area-title">写真をまとめて入れる</div>
+                        <div class="field-help">写真を1〜60枚まとめて選べます。2枚なら2枚、3枚なら3枚を一度に表示します。</div>
+                        <div class="photo-slot-row three">
+                          <button class="btn secondary" type="button" data-choose-block-photos="${index}">写真をまとめて選ぶ</button>
+                          <button class="btn secondary" type="button" data-add-one-block-photo="${index}">写真を1枚追加</button>
+                          <button class="btn secondary" type="button" data-reverse-block-photos="${index}">順番を逆にする</button>
+                        </div>
+                        <label>横の列数
+                          <select data-block-field="${index}:photoColumns">
+                            ${[1, 2, 3].map((value) => `<option value="${value}" ${blockPhotoColumns(block) === value ? "selected" : ""}>${value}列</option>`).join("")}
+                          </select>
+                        </label>
+                        <label>縦の行数
+                          <select data-block-field="${index}:photoRows">
+                            ${Array.from({ length: 20 }, (_, value) => value + 1).map((value) => `<option value="${value}" ${blockPhotoRows(block) === value ? "selected" : ""}>${value}行</option>`).join("")}
+                          </select>
+                        </label>
+                        <div class="field-help">${blockPhotoCapacity(block)}枚まで入ります。順番は下の「上へ」「下へ」で変更できます。</div>
                       </div>
-                      <label class="photo-caption-field">写真${photoIndex + 1}のコメント（なしでも可）
-                        <textarea rows="2" data-block-field="${index}:photoCaptions.${photoIndex}" placeholder="コメントを入れない場合は空欄">${escapeHtml(block.photoCaptions?.[photoIndex] || "")}</textarea>
-                      </label>
-                    `).join("") : ""}
+                    ` : ""}
+                    ${needsPhotoContent ? `
+                      <div class="photo-picked-list">
+                        ${(block.photoUrls || []).map((url, photoIndex) => ({ url: String(url || "").trim(), photoIndex })).filter((photo) => photo.url).map(({ url, photoIndex }) => `
+                          <div class="photo-picked-row">
+                            <img src="${escapeHtml(url)}" alt="写真${photoIndex + 1}">
+                            <div>
+                              <div class="photo-choice-meta">写真${photoIndex + 1}</div>
+                              <label class="photo-caption-field">コメント（なしでも可）
+                                <textarea rows="2" data-block-field="${index}:photoCaptions.${photoIndex}" placeholder="コメントを入れない場合は空欄">${escapeHtml(block.photoCaptions?.[photoIndex] || "")}</textarea>
+                              </label>
+                            </div>
+                            <div class="photo-picked-actions">
+                              <button class="small-btn" type="button" data-move-block-photo="${index}:${photoIndex}:up">上へ</button>
+                              <button class="small-btn" type="button" data-move-block-photo="${index}:${photoIndex}:down">下へ</button>
+                              <button class="small-btn" type="button" data-choose-block-photo="${index}:${photoIndex}">差し替え</button>
+                            </div>
+                          </div>
+                        `).join("") || `<div class="status">まだ写真がありません。「写真をまとめて選ぶ」から選択してください。</div>`}
+                      </div>
+                    ` : ""}
                     ${needsDisasterSetup ? `
                       <div class="status">メール送信には、Cloudflare Workers / Firebase Functions などの小さなサーバー設定が別途必要です。静的HTMLだけでは送信しません。</div>
                     ` : ""}
@@ -9149,6 +9292,49 @@ styles.css、page-*.html、images フォルダー、files フォルダーも同�
         els.linkFileInput.click();
         return;
       }
+      const batchPhotoButton = event.target.closest("[data-choose-block-photos]");
+      if (batchPhotoButton) {
+        event.preventDefault();
+        event.stopPropagation();
+        state.pendingBlockPhotoBatchTarget = { blockIndex: Number(batchPhotoButton.dataset.chooseBlockPhotos), autoSize: false };
+        els.blockPhotoBatchInput.value = "";
+        els.blockPhotoBatchInput.click();
+        return;
+      }
+      const addOnePhotoButton = event.target.closest("[data-add-one-block-photo]");
+      if (addOnePhotoButton) {
+        event.preventDefault();
+        event.stopPropagation();
+        state.pendingBlockPhotoTarget = { blockIndex: Number(addOnePhotoButton.dataset.addOneBlockPhoto), append: true };
+        els.blockPhotoInput.value = "";
+        els.blockPhotoInput.click();
+        return;
+      }
+      const reversePhotoButton = event.target.closest("[data-reverse-block-photos]");
+      if (reversePhotoButton) {
+        event.preventDefault();
+        event.stopPropagation();
+        const index = Number(reversePhotoButton.dataset.reverseBlockPhotos);
+        const block = state.extraBlocks[index];
+        if (!block) return;
+        const urls = Array.isArray(block.photoUrls) ? block.photoUrls : [];
+        const captions = Array.isArray(block.photoCaptions) ? block.photoCaptions : [];
+        const selectedIndexes = urls.map((url, photoIndex) => String(url || "").trim() ? photoIndex : -1).filter((photoIndex) => photoIndex >= 0);
+        if (selectedIndexes.length < 2) {
+          els.status.textContent = "写真が2枚以上あると順番を逆にできます";
+          return;
+        }
+        const reversedUrls = selectedIndexes.map((photoIndex) => urls[photoIndex]).reverse();
+        const reversedCaptions = selectedIndexes.map((photoIndex) => captions[photoIndex] || "").reverse();
+        block.photoUrls = reversedUrls.concat(Array(60 - reversedUrls.length).fill(""));
+        block.photoCaptions = reversedCaptions.concat(Array(60 - reversedCaptions.length).fill(""));
+        state.activeBlockId = block.id;
+        renderPhotoLibrary();
+        renderAddedBlocks();
+        render(true);
+        els.status.textContent = "写真の上下の順番を逆にしました";
+        return;
+      }
       const photoButton = event.target.closest("[data-choose-block-photo]");
       if (photoButton) {
         event.preventDefault();
@@ -9157,6 +9343,30 @@ styles.css、page-*.html、images フォルダー、files フォルダーも同�
         state.pendingBlockPhotoTarget = { blockIndex: Number(indexText), slotIndex: Number(slotText) || 0 };
         els.blockPhotoInput.value = "";
         els.blockPhotoInput.click();
+        return;
+      }
+      const photoMoveButton = event.target.closest("[data-move-block-photo]");
+      if (photoMoveButton) {
+        event.preventDefault();
+        event.stopPropagation();
+        const [indexText, photoIndexText, direction] = photoMoveButton.dataset.moveBlockPhoto.split(":");
+        const block = state.extraBlocks[Number(indexText)];
+        if (!block) return;
+        const photoIndex = Number(photoIndexText);
+        const urls = Array.isArray(block.photoUrls) ? block.photoUrls : [];
+        const captions = Array.isArray(block.photoCaptions) ? block.photoCaptions : [];
+        const selectedIndexes = urls.map((url, index) => String(url || "").trim() ? index : -1).filter((index) => index >= 0);
+        const position = selectedIndexes.indexOf(photoIndex);
+        const nextPosition = direction === "up" ? position - 1 : position + 1;
+        if (position < 0 || nextPosition < 0 || nextPosition >= selectedIndexes.length) return;
+        const otherIndex = selectedIndexes[nextPosition];
+        [urls[photoIndex], urls[otherIndex]] = [urls[otherIndex], urls[photoIndex]];
+        [captions[photoIndex], captions[otherIndex]] = [captions[otherIndex], captions[photoIndex]];
+        block.photoUrls = urls;
+        block.photoCaptions = captions;
+        state.activeBlockId = block.id;
+        renderAddedBlocks();
+        render(true);
         return;
       }
       const moveButton = event.target.closest("[data-move-block]");
@@ -9194,9 +9404,19 @@ styles.css、page-*.html、images フォルダー、files フォルダーも同�
       if (!file || !target) return;
       const block = state.extraBlocks[target.blockIndex];
       if (!block) return;
-      const slotIndex = target.slotIndex || 0;
-      if (slotIndex >= blockPhotoCount(block)) return;
-      block.photoUrls = block.photoUrls || ["", "", ""];
+      const selectedIndexes = (block.photoUrls || [])
+        .map((url, index) => String(url || "").trim() ? index : -1)
+        .filter((index) => index >= 0);
+      const slotIndex = target.append ? selectedIndexes.length : (target.slotIndex || 0);
+      if (target.append && slotIndex >= blockPhotoCapacity(block)) {
+        els.status.textContent = `この写真ブロックは${blockPhotoCapacity(block)}枚までです。列数または行数を増やしてください`;
+        return;
+      }
+      if (!target.append && slotIndex >= blockPhotoCount(block)) return;
+      block.photoUrls = Array.isArray(block.photoUrls) ? block.photoUrls : [];
+      block.photoUrls = block.photoUrls.concat(Array(60 - block.photoUrls.length).fill("")).slice(0, 60);
+      block.photoCaptions = Array.isArray(block.photoCaptions) ? block.photoCaptions : [];
+      block.photoCaptions = block.photoCaptions.concat(Array(60 - block.photoCaptions.length).fill("")).slice(0, 60);
       ensurePhotoSettings(block);
       state.activeBlockId = block.id;
       try {
@@ -9213,11 +9433,27 @@ styles.css、page-*.html、images フォルダー、files フォルダーも同�
         renderPhotoLibrary();
         renderAddedBlocks();
         render(true);
-        els.status.textContent = `写真を入れました（${formatBytes(file.size)} → ${formatBytes(compressed.compressedSize)}）`;
+        els.status.textContent = target.append
+          ? `写真を1枚追加しました（${formatBytes(file.size)} → ${formatBytes(compressed.compressedSize)}）`
+          : `写真を入れました（${formatBytes(file.size)} → ${formatBytes(compressed.compressedSize)}）`;
       } catch (error) {
         els.status.textContent = block.photoUrls[slotIndex] ? "写真は表示しました。軽量化はできませんでした" : "写真を読み込めませんでした";
       } finally {
         els.blockPhotoInput.value = "";
+      }
+    });
+
+    els.blockPhotoBatchInput.addEventListener("change", async () => {
+      const files = els.blockPhotoBatchInput.files;
+      const target = state.pendingBlockPhotoBatchTarget;
+      state.pendingBlockPhotoBatchTarget = null;
+      if (!files?.length || !target) return;
+      try {
+        await applyPhotoFilesToBlock(files, target, { autoSize: target.autoSize });
+      } catch (error) {
+        els.status.textContent = "写真を読み込めませんでした";
+      } finally {
+        els.blockPhotoBatchInput.value = "";
       }
     });
 
@@ -9328,6 +9564,17 @@ styles.css、page-*.html、images フォルダー、files フォルダーも同�
         parts[textIndex] = input.value;
         block.textParts = parts;
         block.text = parts.slice(0, textPartCount(block)).filter(Boolean).join("\n\n");
+      } else if (path === "photoColumns") {
+        block.photoColumns = [1, 2, 3].includes(Number(input.value)) ? Number(input.value) : 1;
+        block.photoRows = Math.min(20, Math.max(1, blockPhotoRows(block)));
+        block.photoCount = Math.min(blockPhotoCapacity(block), Math.max(1, (block.photoUrls || []).filter(Boolean).length || block.photoCount || 1));
+        renderAddedBlocks();
+        render(true);
+      } else if (path === "photoRows") {
+        block.photoRows = Math.min(20, Math.max(1, Number(input.value) || 1));
+        block.photoCount = Math.min(blockPhotoCapacity(block), Math.max(1, (block.photoUrls || []).filter(Boolean).length || block.photoCount || 1));
+        renderAddedBlocks();
+        render(true);
       } else if (path === "photoCount") {
         block.photoCount = blockPhotoCount({ photoCount: input.value });
         renderPhotoLibrary();
