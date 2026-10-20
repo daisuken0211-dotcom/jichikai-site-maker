@@ -1565,11 +1565,12 @@
     .site-preview .site-nav .nav-dropdown {
       position: absolute;
       top: calc(100% + 8px);
-      left: 0;
+      right: 0;
       z-index: 8;
       display: grid;
-      min-width: 220px;
-      max-width: min(320px, calc(100vw - 32px));
+      width: min(320px, calc(100vw - 32px));
+      min-width: 0;
+      max-width: calc(100vw - 32px);
       padding: 8px;
       border: 1px solid #d8e0e7;
       border-radius: 10px;
@@ -1613,6 +1614,8 @@
     .site-preview.nav-left .site-nav .nav-dropdown {
       top: 0;
       left: calc(100% + 8px);
+      right: auto;
+      width: min(320px, calc(100vw - 32px));
     }
 
     .site-preview .site-nav a[contenteditable="true"] {
@@ -2391,7 +2394,8 @@
 
     .site-preview .hierarchy-nav {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 280px));
+      justify-content: start;
       align-items: stretch;
       gap: 8px;
       width: min(100% - 60px, 1080px);
@@ -2424,6 +2428,18 @@
       text-align: left;
       white-space: normal;
       overflow-wrap: anywhere;
+    }
+
+    .site-preview.child-button-size-tiny .hierarchy-nav {
+      grid-template-columns: repeat(auto-fit, minmax(min(140px, 100%), 190px));
+    }
+
+    .site-preview.child-button-size-compact .hierarchy-nav {
+      grid-template-columns: repeat(auto-fit, minmax(min(160px, 100%), 230px));
+    }
+
+    .site-preview.child-button-size-large .hierarchy-nav {
+      grid-template-columns: repeat(auto-fit, minmax(min(210px, 100%), 340px));
     }
 
     .site-preview .hierarchy-nav a.active {
@@ -6785,11 +6801,12 @@ nav {
 .site-nav .nav-dropdown {
   position: absolute;
   top: calc(100% + 8px);
-  left: 0;
+  right: 0;
   z-index: 8;
   display: grid;
-  min-width: 220px;
-  max-width: min(320px, calc(100vw - 32px));
+  width: min(320px, calc(100vw - 32px));
+  min-width: 0;
+  max-width: calc(100vw - 32px);
   padding: 8px;
   border: 1px solid #d8e0e7;
   border-radius: 10px;
@@ -6833,6 +6850,8 @@ body.child-nav-display-dropdown .hierarchy-nav {
 body.nav-left .site-nav .nav-dropdown {
   top: 0;
   left: calc(100% + 8px);
+  right: auto;
+  width: min(320px, calc(100vw - 32px));
 }
 
 .site-nav a.active {
@@ -7733,7 +7752,8 @@ body.child-button-style-outline .child-page-card {
 
 .hierarchy-nav {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 280px));
+  justify-content: start;
   align-items: stretch;
   gap: 8px;
   width: min(100% - 60px, 1080px);
@@ -7766,6 +7786,18 @@ body.child-button-style-outline .child-page-card {
   text-align: left;
   white-space: normal;
   overflow-wrap: anywhere;
+}
+
+body.child-button-size-tiny .hierarchy-nav {
+  grid-template-columns: repeat(auto-fit, minmax(min(140px, 100%), 190px));
+}
+
+body.child-button-size-compact .hierarchy-nav {
+  grid-template-columns: repeat(auto-fit, minmax(min(160px, 100%), 230px));
+}
+
+body.child-button-size-large .hierarchy-nav {
+  grid-template-columns: repeat(auto-fit, minmax(min(210px, 100%), 340px));
 }
 
 .hierarchy-nav a.active {
