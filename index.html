@@ -2393,8 +2393,8 @@
     }
 
     .site-preview .hierarchy-nav {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(min(140px, 100%), fit-content(300px)));
+      display: flex;
+      flex-wrap: wrap;
       justify-content: start;
       align-items: stretch;
       gap: 8px;
@@ -2410,10 +2410,14 @@
 
     .site-preview .hierarchy-nav a {
       display: flex;
+      flex: 0 1 auto;
       align-items: center;
       justify-content: flex-start;
       min-width: 0;
       max-width: 100%;
+      width: fit-content;
+      min-width: 140px;
+      max-width: min(300px, 100%);
       box-sizing: border-box;
       min-height: 52px;
       border: 2px solid #c7dfd2;
@@ -2431,15 +2435,30 @@
     }
 
     .site-preview.child-button-size-tiny .hierarchy-nav {
-      grid-template-columns: repeat(auto-fit, minmax(min(110px, 100%), fit-content(200px)));
+      display: flex;
     }
 
     .site-preview.child-button-size-compact .hierarchy-nav {
-      grid-template-columns: repeat(auto-fit, minmax(min(125px, 100%), fit-content(240px)));
+      display: flex;
     }
 
     .site-preview.child-button-size-large .hierarchy-nav {
-      grid-template-columns: repeat(auto-fit, minmax(min(160px, 100%), fit-content(360px)));
+      display: flex;
+    }
+
+    .site-preview.child-button-size-tiny .hierarchy-nav a:not(.parent-link) {
+      min-width: 110px;
+      max-width: min(200px, 100%);
+    }
+
+    .site-preview.child-button-size-compact .hierarchy-nav a:not(.parent-link) {
+      min-width: 125px;
+      max-width: min(240px, 100%);
+    }
+
+    .site-preview.child-button-size-large .hierarchy-nav a:not(.parent-link) {
+      min-width: 160px;
+      max-width: min(360px, 100%);
     }
 
     .site-preview .hierarchy-nav a.active {
@@ -2448,9 +2467,10 @@
     }
 
     .site-preview .hierarchy-nav a.parent-link {
-      grid-column: 1 / -1;
+      flex: 0 0 auto;
       justify-self: start;
       width: fit-content;
+      min-width: 0;
       min-height: 36px;
       padding: 5px 10px;
       border-radius: 8px;
@@ -7757,8 +7777,8 @@ body.child-button-style-outline .child-page-card {
 }
 
 .hierarchy-nav {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(140px, 100%), fit-content(300px)));
+  display: flex;
+  flex-wrap: wrap;
   justify-content: start;
   align-items: stretch;
   gap: 8px;
@@ -7774,10 +7794,14 @@ body.child-button-style-outline .child-page-card {
 
 .hierarchy-nav a {
   display: flex;
+  flex: 0 1 auto;
   align-items: center;
   justify-content: flex-start;
   min-width: 0;
   max-width: 100%;
+  width: fit-content;
+  min-width: 140px;
+  max-width: min(300px, 100%);
   box-sizing: border-box;
   min-height: 52px;
   border: 2px solid #c7dfd2;
@@ -7795,15 +7819,30 @@ body.child-button-style-outline .child-page-card {
 }
 
 body.child-button-size-tiny .hierarchy-nav {
-  grid-template-columns: repeat(auto-fit, minmax(min(110px, 100%), fit-content(200px)));
+  display: flex;
 }
 
 body.child-button-size-compact .hierarchy-nav {
-  grid-template-columns: repeat(auto-fit, minmax(min(125px, 100%), fit-content(240px)));
+  display: flex;
 }
 
 body.child-button-size-large .hierarchy-nav {
-  grid-template-columns: repeat(auto-fit, minmax(min(160px, 100%), fit-content(360px)));
+  display: flex;
+}
+
+body.child-button-size-tiny .hierarchy-nav a:not(.parent-link) {
+  min-width: 110px;
+  max-width: min(200px, 100%);
+}
+
+body.child-button-size-compact .hierarchy-nav a:not(.parent-link) {
+  min-width: 125px;
+  max-width: min(240px, 100%);
+}
+
+body.child-button-size-large .hierarchy-nav a:not(.parent-link) {
+  min-width: 160px;
+  max-width: min(360px, 100%);
 }
 
 .hierarchy-nav a.active {
@@ -7812,9 +7851,10 @@ body.child-button-size-large .hierarchy-nav {
 }
 
 .hierarchy-nav a.parent-link {
-  grid-column: 1 / -1;
+  flex: 0 0 auto;
   justify-self: start;
   width: fit-content;
+  min-width: 0;
   min-height: 36px;
   padding: 5px 10px;
   border-radius: 8px;
