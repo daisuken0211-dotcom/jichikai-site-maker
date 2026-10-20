@@ -1454,7 +1454,7 @@
       z-index: 2;
       display: flex;
       gap: 8px;
-      align-items: center;
+      align-items: stretch;
       align-content: center;
       justify-content: flex-start;
       row-gap: 9px;
@@ -1468,7 +1468,7 @@
     .site-preview .site-nav a {
       display: inline-flex;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
       max-width: min(19rem, 100%);
       min-height: 42px;
       border: 1px solid #c7dfd2;
@@ -1480,7 +1480,7 @@
       font-weight: 900;
       font-size: 13px;
       line-height: 1.25;
-      text-align: center;
+      text-align: left;
       white-space: normal;
       overflow-wrap: anywhere;
     }
@@ -6454,7 +6454,7 @@ nav {
 .site-nav a {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   max-width: min(19rem, 100%);
   min-height: 42px;
   border-radius: 999px;
@@ -6464,7 +6464,7 @@ nav {
   text-decoration: none;
   font-weight: 800;
   line-height: 1.25;
-  text-align: center;
+  text-align: left;
   white-space: normal;
   overflow-wrap: anywhere;
 }
@@ -6557,6 +6557,7 @@ body.nav-top .site-nav {
   right: 0;
   display: flex;
   gap: 8px;
+  align-items: stretch;
   align-content: center;
   justify-content: flex-start;
   flex-wrap: wrap;
@@ -6568,11 +6569,11 @@ body.nav-top .site-nav {
 body.nav-top .site-nav a {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   max-width: min(19rem, 100%);
   min-height: 42px;
   line-height: 1.25;
-  text-align: center;
+  text-align: left;
   white-space: normal;
   overflow-wrap: anywhere;
 }
