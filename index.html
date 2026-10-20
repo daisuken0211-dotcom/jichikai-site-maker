@@ -3986,31 +3986,38 @@
       const currentTreeIndex = tree.findIndex((item) => item.index === pageIndex);
       const currentItem = tree[currentTreeIndex];
       if (!currentItem) return;
-      const siblings = tree.filter((item) => (item.page.parentPageId || "") === (currentItem.page.parentPageId || ""));
+      const parentId = currentItem.page.parentPageId || "";
+      const siblings = tree.filter((item) => (item.page.parentPageId || "") === parentId);
       const siblingIndex = siblings.findIndex((item) => item.index === pageIndex);
       const targetSibling = siblings[siblingIndex + (direction === "up" ? -1 : 1)];
       if (!targetSibling) {
         els.status.textContent = direction === "up" ? "同じ階層の一番上です" : "同じ階層の一番下です";
         return;
       }
-      const targetTreeIndex = tree.findIndex((item) => item.index === targetSibling.index);
-      const currentRange = pageTreeSubtreeRange(tree, currentTreeIndex);
-      const targetRange = pageTreeSubtreeRange(tree, targetTreeIndex);
-      if (!currentRange || !targetRange) return;
-      const firstRange = currentRange.start < targetRange.start ? currentRange : targetRange;
-      const secondRange = currentRange.start < targetRange.start ? targetRange : currentRange;
-      const firstBlock = tree.slice(firstRange.start, firstRange.end + 1);
-      const secondBlock = tree.slice(secondRange.start, secondRange.end + 1);
-      const currentFirst = currentRange.start < targetRange.start ? currentTreeIndex < targetTreeIndex : currentTreeIndex > targetTreeIndex;
-      const orderedBlocks = direction === "up"
-        ? (currentFirst ? [firstBlock, secondBlock] : [secondBlock, firstBlock])
-        : (currentFirst ? [secondBlock, firstBlock] : [firstBlock, secondBlock]);
-      const rebuiltTree = [
-        ...tree.slice(0, firstRange.start),
-        ...orderedBlocks[0],
-        ...orderedBlocks[1],
-        ...tree.slice(secondRange.end + 1)
+      const orderedSiblingIds = siblings.map((item) => pageId(item.page));
+      const targetSiblingId = pageId(targetSibling.page);
+      const currentSiblingId = pageId(currentItem.page);
+      const targetSiblingIndex = orderedSiblingIds.indexOf(targetSiblingId);
+      const currentSiblingIndex = orderedSiblingIds.indexOf(currentSiblingId);
+      if (targetSiblingIndex < 0 || currentSiblingIndex < 0) return;
+      [orderedSiblingIds[currentSiblingIndex], orderedSiblingIds[targetSiblingIndex]] = [
+        orderedSiblingIds[targetSiblingIndex],
+        orderedSiblingIds[currentSiblingIndex]
       ];
+
+      // Rebuild the preorder tree from sibling lists so a page keeps all of
+      // its child pages when it changes places.
+      const siblingOrderOverrides = new Map([[parentId, orderedSiblingIds]]);
+      const appendTree = (parentPageId) => {
+        const childIds = siblingOrderOverrides.get(parentPageId)
+          || pageChildren(parentPageId).map((item) => pageId(item.page));
+        return childIds.flatMap((childId) => {
+          const item = tree.find((entry) => pageId(entry.page) === childId);
+          if (!item) return [];
+          return [item, ...appendTree(childId)];
+        });
+      };
+      const rebuiltTree = appendTree("");
       const selectedPageId = pageId(currentItem.page);
       state.pages = normalizePages(rebuiltTree.map((item) => item.page));
       state.currentPageIndex = state.pages.findIndex((page) => pageId(page) === selectedPageId);
