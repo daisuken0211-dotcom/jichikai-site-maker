@@ -2457,9 +2457,24 @@
       max-width: min(240px, 100%);
     }
 
+    .site-preview.child-button-size-standard .hierarchy-nav a:not(.parent-link) {
+      max-width: min(220px, 100%);
+    }
+
     .site-preview.child-button-size-large .hierarchy-nav a:not(.parent-link) {
       min-width: 160px;
       max-width: min(360px, 100%);
+    }
+
+    .site-preview .hierarchy-nav .hierarchy-nav-label {
+      display: -webkit-box;
+      min-width: 0;
+      max-width: 100%;
+      overflow: hidden;
+      overflow-wrap: anywhere;
+      text-align: left !important;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
     }
 
     .site-preview .hierarchy-nav a.active {
@@ -2476,6 +2491,7 @@
       padding: 5px 10px;
       border-radius: 8px;
       font-size: 12px;
+      max-width: min(300px, 100%);
       border-style: solid;
       background: #fff;
       color: #475569;
@@ -5484,7 +5500,7 @@
         const title = escapeHtml(item.title);
         const href = escapeHtml(slugForPage(item.index));
         const className = [item.active ? "active" : "", item.kind === "parent" ? "parent-link" : ""].filter(Boolean).join(" ");
-        return `<a class="${className}" href="${href}">${title}</a>`;
+        return `<a class="${className}" href="${href}"><span class="hierarchy-nav-label">${title}</span></a>`;
       }).join("");
       return `<div class="hierarchy-nav" aria-label="関連ページへの移動">${links}</div>`;
     }
@@ -7842,9 +7858,24 @@ body.child-button-size-compact .hierarchy-nav a:not(.parent-link) {
   max-width: min(240px, 100%);
 }
 
+body.child-button-size-standard .hierarchy-nav a:not(.parent-link) {
+  max-width: min(220px, 100%);
+}
+
 body.child-button-size-large .hierarchy-nav a:not(.parent-link) {
   min-width: 160px;
   max-width: min(360px, 100%);
+}
+
+.hierarchy-nav .hierarchy-nav-label {
+  display: -webkit-box;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  text-align: left !important;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .hierarchy-nav a.active {
@@ -7861,6 +7892,7 @@ body.child-button-size-large .hierarchy-nav a:not(.parent-link) {
   padding: 5px 10px;
   border-radius: 8px;
   font-size: 12px;
+  max-width: min(300px, 100%);
   border-style: solid;
   background: #fff;
   color: #475569;
