@@ -2293,23 +2293,30 @@
 
     .site-preview.child-button-size-compact .hierarchy-nav a,
     .site-preview.child-button-size-compact .child-page-card {
-      min-height: 46px;
-      padding: 9px 12px;
-      font-size: 13px;
+      min-height: 42px;
+      padding: 7px 10px;
+      font-size: 12px;
+    }
+
+    .site-preview.child-button-size-tiny .hierarchy-nav a,
+    .site-preview.child-button-size-tiny .child-page-card {
+      min-height: 36px;
+      padding: 5px 9px;
+      font-size: 11px;
     }
 
     .site-preview.child-button-size-standard .hierarchy-nav a,
     .site-preview.child-button-size-standard .child-page-card {
-      min-height: 64px;
-      padding: 14px 16px;
-      font-size: 15px;
+      min-height: 52px;
+      padding: 10px 14px;
+      font-size: 14px;
     }
 
     .site-preview.child-button-size-large .hierarchy-nav a,
     .site-preview.child-button-size-large .child-page-card {
-      min-height: 84px;
-      padding: 18px 22px;
-      font-size: 18px;
+      min-height: 72px;
+      padding: 14px 18px;
+      font-size: 16px;
     }
 
     .site-preview.child-button-style-pill .hierarchy-nav a,
@@ -2932,8 +2939,9 @@
               </select>
             </div>
             <div class="field">
-              <label for="childButtonSizeSelect">第2階層ボタンの大きさ</label>
+              <label for="childButtonSizeSelect">ページ内の第2階層ボタンの大きさ</label>
               <select id="childButtonSizeSelect">
+                <option value="tiny">とても小さめ</option>
                 <option value="compact">小さめ</option>
                 <option value="standard">標準</option>
                 <option value="large">大きめ</option>
@@ -4508,7 +4516,7 @@
     }
 
     function currentChildButtonSize() {
-      return ["compact", "standard", "large"].includes(state.childButtonSize) ? state.childButtonSize : "standard";
+      return ["tiny", "compact", "standard", "large"].includes(state.childButtonSize) ? state.childButtonSize : "standard";
     }
 
     function currentChildButtonStyle() {
@@ -5122,7 +5130,7 @@
       state.editorMode = data.editorMode === "detail" ? "detail" : "easy";
       state.headingStyle = ["simple", "line", "band", "card", "round", "marker", "sideband"].includes(data.headingStyle) ? data.headingStyle : "simple";
       state.navStyle = ["pill", "box", "underline", "solid", "softbar"].includes(data.navStyle) ? data.navStyle : "pill";
-      state.childButtonSize = ["compact", "standard", "large"].includes(data.childButtonSize) ? data.childButtonSize : "standard";
+      state.childButtonSize = ["tiny", "compact", "standard", "large"].includes(data.childButtonSize) ? data.childButtonSize : "standard";
       state.childButtonStyle = ["card", "pill", "solid", "outline"].includes(data.childButtonStyle) ? data.childButtonStyle : "card";
       state.childNavDisplay = ["page", "dropdown"].includes(data.childNavDisplay) ? data.childNavDisplay : "page";
       state.headerPhotoEnabled = Boolean(data.headerPhotoEnabled);
@@ -7576,23 +7584,30 @@ main > .block-half {
 
 body.child-button-size-compact .hierarchy-nav a,
 body.child-button-size-compact .child-page-card {
-  min-height: 46px;
-  padding: 9px 12px;
-  font-size: 13px;
+  min-height: 42px;
+  padding: 7px 10px;
+  font-size: 12px;
+}
+
+body.child-button-size-tiny .hierarchy-nav a,
+body.child-button-size-tiny .child-page-card {
+  min-height: 36px;
+  padding: 5px 9px;
+  font-size: 11px;
 }
 
 body.child-button-size-standard .hierarchy-nav a,
 body.child-button-size-standard .child-page-card {
-  min-height: 64px;
-  padding: 14px 16px;
-  font-size: 15px;
+  min-height: 52px;
+  padding: 10px 14px;
+  font-size: 14px;
 }
 
 body.child-button-size-large .hierarchy-nav a,
 body.child-button-size-large .child-page-card {
-  min-height: 84px;
-  padding: 18px 22px;
-  font-size: 18px;
+  min-height: 72px;
+  padding: 14px 18px;
+  font-size: 16px;
 }
 
 body.child-button-style-pill .hierarchy-nav a,
