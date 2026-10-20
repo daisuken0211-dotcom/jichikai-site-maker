@@ -1467,11 +1467,13 @@
 
     .site-preview .site-nav a {
       display: inline-flex;
+      flex: 0 1 auto;
       align-items: center;
       justify-content: flex-start;
       min-width: 0;
-      max-width: min(19rem, 100%);
+      max-width: 100%;
       min-height: 42px;
+      box-sizing: border-box;
       border: 1px solid #c7dfd2;
       border-radius: 999px;
       color: var(--green-dark);
@@ -2247,18 +2249,28 @@
     }
 
     .site-preview .hierarchy-nav {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+      align-items: stretch;
       gap: 8px;
-      width: min(100% - 60px, 920px);
+      width: min(100% - 60px, 1080px);
+      max-width: 100%;
+      box-sizing: border-box;
       margin: 10px auto 0;
-      padding: 0;
-      border: 0;
-      background: transparent;
+      padding: 10px;
+      border: 1px solid #d8e8de;
+      border-radius: 14px;
+      background: #f7fbf8;
     }
 
     .site-preview .hierarchy-nav a {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      min-width: 0;
+      max-width: 100%;
+      box-sizing: border-box;
+      min-height: 52px;
       border: 2px solid #c7dfd2;
       border-radius: 999px;
       background: var(--soft-green);
@@ -2268,6 +2280,9 @@
       font-size: 13px;
       font-weight: 900;
       line-height: 1.2;
+      text-align: left;
+      white-space: normal;
+      overflow-wrap: anywhere;
     }
 
     .site-preview .hierarchy-nav a.active {
@@ -2276,9 +2291,11 @@
     }
 
     .site-preview .hierarchy-nav a.parent-link {
-      border-style: dashed;
+      grid-column: 1 / -1;
+      border-style: solid;
       background: #fff;
       color: #475569;
+      justify-content: flex-start;
     }
 
     .placeholder-link {
@@ -2817,7 +2834,7 @@
               </select>
             </div>
             <div class="field">
-              <label for="navStyleSelect">リンクバーの見た目</label>
+              <label for="navStyleSelect">第1階層リンクバーの形</label>
               <select id="navStyleSelect">
                 <option value="pill">丸ボタン</option>
                 <option value="box">四角カード</option>
@@ -2827,7 +2844,7 @@
               </select>
             </div>
             <div class="field">
-              <label for="childButtonSizeSelect">下のページボタンの大きさ</label>
+              <label for="childButtonSizeSelect">第2階層ボタンの大きさ</label>
               <select id="childButtonSizeSelect">
                 <option value="compact">小さめ</option>
                 <option value="standard">標準</option>
@@ -2835,7 +2852,7 @@
               </select>
             </div>
             <div class="field">
-              <label for="childButtonStyleSelect">下のページボタンの形</label>
+              <label for="childButtonStyleSelect">第2階層ボタンの形</label>
               <select id="childButtonStyleSelect">
                 <option value="card">カード型</option>
                 <option value="pill">丸ボタン</option>
@@ -2843,7 +2860,7 @@
                 <option value="outline">見やすい枠線</option>
               </select>
             </div>
-            <div class="easy-note">「下のページ」へ移動するボタンに反映されます。プレビューですぐ確認できます。</div>
+            <div class="easy-note">上のリンクバーは第1階層、ページ内の移動ボタンは第2階層です。それぞれ別の形を選べます。長い文字も自動で折り返します。</div>
           </div>
         </div>
 
@@ -6454,11 +6471,13 @@ nav {
 
 .site-nav a {
   display: inline-flex;
+  flex: 0 1 auto;
   align-items: center;
   justify-content: flex-start;
   min-width: 0;
-  max-width: min(19rem, 100%);
+  max-width: 100%;
   min-height: 42px;
+  box-sizing: border-box;
   border-radius: 999px;
   color: #245f43;
   background: #e8f3ed;
@@ -7354,18 +7373,28 @@ body.child-button-style-outline .child-page-card {
 }
 
 .hierarchy-nav {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+  align-items: stretch;
   gap: 8px;
-  width: min(100% - 60px, 920px);
+  width: min(100% - 60px, 1080px);
+  max-width: 100%;
+  box-sizing: border-box;
   margin: 10px auto 0;
-  padding: 0;
-  border: 0;
-  background: transparent;
+  padding: 10px;
+  border: 1px solid #d8e8de;
+  border-radius: 14px;
+  background: #f7fbf8;
 }
 
 .hierarchy-nav a {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  min-height: 52px;
   border: 2px solid #c7dfd2;
   border-radius: 999px;
   background: #e8f3ed;
@@ -7375,6 +7404,9 @@ body.child-button-style-outline .child-page-card {
   font-size: 13px;
   font-weight: 900;
   line-height: 1.2;
+  text-align: left;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .hierarchy-nav a.active {
@@ -7383,9 +7415,11 @@ body.child-button-style-outline .child-page-card {
 }
 
 .hierarchy-nav a.parent-link {
-  border-style: dashed;
+  grid-column: 1 / -1;
+  border-style: solid;
   background: #fff;
   color: #475569;
+  justify-content: flex-start;
 }
 
 .placeholder-link {
