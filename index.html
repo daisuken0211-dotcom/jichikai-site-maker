@@ -2468,6 +2468,8 @@
 
     .site-preview .hierarchy-nav .hierarchy-nav-label {
       display: -webkit-box;
+      width: 100%;
+      flex: 1 1 auto;
       min-width: 0;
       max-width: 100%;
       overflow: hidden;
@@ -2475,6 +2477,15 @@
       text-align: left !important;
       -webkit-box-orient: vertical;
       -webkit-line-clamp: 2;
+    }
+
+    .site-preview.child-button-lines-two .hierarchy-nav a:not(.parent-link) {
+      width: min(220px, 100%);
+      min-height: 2.6em;
+    }
+
+    .site-preview.child-button-lines-two .hierarchy-nav a:not(.parent-link) .hierarchy-nav-label {
+      min-height: 2.4em;
     }
 
     .site-preview .hierarchy-nav a.active {
@@ -2793,6 +2804,12 @@
                   <option value="outline">見やすい枠線</option>
                 </select>
               </label>
+              <label>文字の行数
+                <select id="easyChildButtonLinesSelect">
+                  <option value="auto">自動（長い文字だけ2行）</option>
+                  <option value="two">2行で表示</option>
+                </select>
+              </label>
               <label>表示する場所
                 <select id="easyChildNavDisplaySelect">
                   <option value="page">ページ内に表示</option>
@@ -3090,6 +3107,13 @@
               </select>
             </div>
             <div class="field">
+              <label for="childButtonLinesSelect">第2階層ボタンの文字</label>
+              <select id="childButtonLinesSelect">
+                <option value="auto">自動（長い文字だけ2行）</option>
+                <option value="two">2行で表示</option>
+              </select>
+            </div>
+            <div class="field">
               <label for="childNavDisplaySelect">第2階層の出し方</label>
               <select id="childNavDisplaySelect">
                 <option value="page">ページ内に表示</option>
@@ -3185,6 +3209,7 @@
       navStyle: "pill",
       childButtonSize: "standard",
       childButtonStyle: "card",
+      childButtonLines: "auto",
       childNavDisplay: "page",
       headerPhotoEnabled: false,
       headerPhotoScope: "top",
@@ -3305,9 +3330,11 @@
       headingStyleSample: document.getElementById("headingStyleSample"),
       childButtonSizeSelect: document.getElementById("childButtonSizeSelect"),
       childButtonStyleSelect: document.getElementById("childButtonStyleSelect"),
+      childButtonLinesSelect: document.getElementById("childButtonLinesSelect"),
       childNavDisplaySelect: document.getElementById("childNavDisplaySelect"),
       easyChildButtonSizeSelect: document.getElementById("easyChildButtonSizeSelect"),
       easyChildButtonStyleSelect: document.getElementById("easyChildButtonStyleSelect"),
+      easyChildButtonLinesSelect: document.getElementById("easyChildButtonLinesSelect"),
       easyChildNavDisplaySelect: document.getElementById("easyChildNavDisplaySelect"),
       headerPhotoEnabled: document.getElementById("headerPhotoEnabled"),
       headerPhotoScope: document.getElementById("headerPhotoScope"),
@@ -4662,6 +4689,10 @@
       return ["card", "pill", "solid", "outline"].includes(state.childButtonStyle) ? state.childButtonStyle : "card";
     }
 
+    function currentChildButtonLines() {
+      return ["auto", "two"].includes(state.childButtonLines) ? state.childButtonLines : "auto";
+    }
+
     function currentChildNavDisplay() {
       return ["page", "dropdown"].includes(state.childNavDisplay) ? state.childNavDisplay : "page";
     }
@@ -4742,12 +4773,15 @@
     function applyChildButtonSettings() {
       state.childButtonSize = currentChildButtonSize();
       state.childButtonStyle = currentChildButtonStyle();
+      state.childButtonLines = currentChildButtonLines();
       state.childNavDisplay = currentChildNavDisplay();
       els.childButtonSizeSelect.value = state.childButtonSize;
       els.childButtonStyleSelect.value = state.childButtonStyle;
+      els.childButtonLinesSelect.value = state.childButtonLines;
       els.childNavDisplaySelect.value = state.childNavDisplay;
       els.easyChildButtonSizeSelect.value = state.childButtonSize;
       els.easyChildButtonStyleSelect.value = state.childButtonStyle;
+      els.easyChildButtonLinesSelect.value = state.childButtonLines;
       els.easyChildNavDisplaySelect.value = state.childNavDisplay;
     }
 
@@ -5167,6 +5201,7 @@
         navStyle: state.navStyle,
         childButtonSize: currentChildButtonSize(),
         childButtonStyle: currentChildButtonStyle(),
+        childButtonLines: currentChildButtonLines(),
         childNavDisplay: currentChildNavDisplay(),
         headerPhotoEnabled: els.headerPhotoEnabled.checked,
         headerPhotoScope: headerPhotoScope(),
@@ -5274,6 +5309,7 @@
       state.navStyle = ["pill", "box", "underline", "solid", "softbar"].includes(data.navStyle) ? data.navStyle : "pill";
       state.childButtonSize = ["tiny", "compact", "standard", "large"].includes(data.childButtonSize) ? data.childButtonSize : "standard";
       state.childButtonStyle = ["card", "pill", "solid", "outline"].includes(data.childButtonStyle) ? data.childButtonStyle : "card";
+      state.childButtonLines = ["auto", "two"].includes(data.childButtonLines) ? data.childButtonLines : "auto";
       state.childNavDisplay = ["page", "dropdown"].includes(data.childNavDisplay) ? data.childNavDisplay : "page";
       state.headerPhotoEnabled = Boolean(data.headerPhotoEnabled);
       els.headerPhotoEnabled.checked = state.headerPhotoEnabled;
@@ -6570,7 +6606,7 @@
       const navClass = els.navPosition.value === "left" ? "nav-left" : "nav-top";
       const navStyleClass = `nav-style-${currentNavStyle()}`;
       const headingClass = `heading-${currentHeadingStyle()}`;
-      const childButtonClass = `child-button-size-${currentChildButtonSize()} child-button-style-${currentChildButtonStyle()} child-nav-display-${currentChildNavDisplay()}`;
+      const childButtonClass = `child-button-size-${currentChildButtonSize()} child-button-style-${currentChildButtonStyle()} child-button-lines-${currentChildButtonLines()} child-nav-display-${currentChildNavDisplay()}`;
       const headerPhotoClass = hasHeaderPhoto ? "has-header-photo" : "";
       return `<!doctype html>
 <html lang="ja">
@@ -7869,6 +7905,8 @@ body.child-button-size-large .hierarchy-nav a:not(.parent-link) {
 
 .hierarchy-nav .hierarchy-nav-label {
   display: -webkit-box;
+  width: 100%;
+  flex: 1 1 auto;
   min-width: 0;
   max-width: 100%;
   overflow: hidden;
@@ -7876,6 +7914,15 @@ body.child-button-size-large .hierarchy-nav a:not(.parent-link) {
   text-align: left !important;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+}
+
+body.child-button-lines-two .hierarchy-nav a:not(.parent-link) {
+  width: min(220px, 100%);
+  min-height: 2.6em;
+}
+
+body.child-button-lines-two .hierarchy-nav a:not(.parent-link) .hierarchy-nav-label {
+  min-height: 2.4em;
 }
 
 .hierarchy-nav a.active {
@@ -8715,7 +8762,7 @@ exports.deleteUserByAdmin = onCall(async (request) => {
       state.html = buildExportHtml();
       state.css = buildExportCss();
       state.blockHtml = buildPeraichiLikeHtml();
-      els.preview.className = `site-preview ${template.className} ${els.navPosition.value === "left" ? "nav-left" : "nav-top"} nav-style-${currentNavStyle()} heading-${currentHeadingStyle()} child-button-size-${currentChildButtonSize()} child-button-style-${currentChildButtonStyle()} child-nav-display-${currentChildNavDisplay()} ${headerPhotoClass}`;
+      els.preview.className = `site-preview ${template.className} ${els.navPosition.value === "left" ? "nav-left" : "nav-top"} nav-style-${currentNavStyle()} heading-${currentHeadingStyle()} child-button-size-${currentChildButtonSize()} child-button-style-${currentChildButtonStyle()} child-button-lines-${currentChildButtonLines()} child-nav-display-${currentChildNavDisplay()} ${headerPhotoClass}`;
       els.preview.style.setProperty("--preview-photo", `url('${previewPhoto}')`);
       els.preview.style.setProperty("--header-photo", `url('${headerPhoto}')`);
       els.preview.style.setProperty("--header-photo-position", headerPosition);
@@ -9300,6 +9347,11 @@ styles.css、page-*.html、images フォルダー、files フォルダーも同�
       applyChildButtonSettings();
       render();
     });
+    els.easyChildButtonLinesSelect.addEventListener("change", () => {
+      state.childButtonLines = els.easyChildButtonLinesSelect.value;
+      applyChildButtonSettings();
+      render();
+    });
     els.easyChildNavDisplaySelect.addEventListener("change", () => {
       state.childNavDisplay = els.easyChildNavDisplaySelect.value;
       applyChildButtonSettings();
@@ -9361,6 +9413,11 @@ styles.css、page-*.html、images フォルダー、files フォルダーも同�
     });
     els.childButtonStyleSelect.addEventListener("change", () => {
       state.childButtonStyle = els.childButtonStyleSelect.value;
+      applyChildButtonSettings();
+      render();
+    });
+    els.childButtonLinesSelect.addEventListener("change", () => {
+      state.childButtonLines = els.childButtonLinesSelect.value;
       applyChildButtonSettings();
       render();
     });
