@@ -1265,6 +1265,41 @@
       line-height: 1.45;
     }
 
+    .easy-hierarchy-settings {
+      display: grid;
+      gap: 8px;
+      padding: 10px;
+      border: 1px solid rgba(36, 95, 67, .22);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, .72);
+    }
+
+    .easy-hierarchy-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .easy-hierarchy-grid label {
+      display: grid;
+      gap: 5px;
+      color: #334155;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .easy-hierarchy-grid select {
+      min-width: 0;
+      padding: 8px 9px;
+      font-size: 13px;
+    }
+
+    @media (max-width: 620px) {
+      .easy-hierarchy-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
     .heading-style-sample {
       display: grid;
       gap: 8px;
@@ -1512,6 +1547,10 @@
       justify-content: center;
       min-width: 18px;
       min-height: 18px;
+      border: 0;
+      border-radius: 999px;
+      color: inherit;
+      background: transparent;
       padding: 0 2px;
       cursor: pointer;
       font-size: 10px;
@@ -1519,7 +1558,7 @@
       transition: transform .18s ease;
     }
 
-    .site-preview .site-nav .nav-menu.is-open > a .nav-caret {
+    .site-preview .site-nav .nav-menu.is-open > .nav-caret {
       transform: rotate(180deg);
     }
 
@@ -2669,6 +2708,34 @@
             <button class="easy-action" type="button" data-easy-action="design">色・帯を変更</button>
             <button class="easy-action" type="button" data-easy-action="word">Word下書き</button>
           </div>
+          <div class="easy-hierarchy-settings">
+            <div class="easy-title">第2階層ボタン</div>
+            <div class="easy-hierarchy-grid">
+              <label>ページ内の大きさ
+                <select id="easyChildButtonSizeSelect">
+                  <option value="tiny">とても小さめ</option>
+                  <option value="compact">小さめ</option>
+                  <option value="standard">標準</option>
+                  <option value="large">大きめ</option>
+                </select>
+              </label>
+              <label>ボタンの形
+                <select id="easyChildButtonStyleSelect">
+                  <option value="card">カード型</option>
+                  <option value="pill">丸ボタン</option>
+                  <option value="solid">色付きボタン</option>
+                  <option value="outline">見やすい枠線</option>
+                </select>
+              </label>
+              <label>表示する場所
+                <select id="easyChildNavDisplaySelect">
+                  <option value="page">ページ内に表示</option>
+                  <option value="dropdown">上のボタンから開く</option>
+                </select>
+              </label>
+            </div>
+            <div class="easy-note">簡単モードと詳細モードは同じ設定です。ページ内に表示する場合は、ボタンの大きさを小さくできます。</div>
+          </div>
           <div class="easy-page-manager">
             <div class="easy-title">ページを作る</div>
             <div class="page-tabs easy-page-tabs" id="easyPageTabs"></div>
@@ -2677,7 +2744,7 @@
               <button class="easy-page-action danger" type="button" data-easy-page-action="delete">このページを削除</button>
             </div>
           </div>
-          <div class="easy-note">文字はプレビューを押して直接編集します。ボタンの文字を編集するときだけCtrlキー（MacはCommandキー）を押しながら選びます。Shiftキーでも編集できます。帯を押すと帯写真、見出しを押すと色や見出しの形を変えられます。写真やPDFは部品を追加してファイルを選びます。</div>
+          <div class="easy-note">文字はプレビューを押して直接編集します。ボタンの文字を編集するときだけShiftキーを押しながら選びます。帯を押すと帯写真、見出しを押すと色や見出しの形を変えられます。写真やPDFは部品を追加してファイルを選びます。</div>
         </div>
 
         <div class="editor-mode-tabs" id="editorModeTabs">
@@ -3173,6 +3240,9 @@
       childButtonSizeSelect: document.getElementById("childButtonSizeSelect"),
       childButtonStyleSelect: document.getElementById("childButtonStyleSelect"),
       childNavDisplaySelect: document.getElementById("childNavDisplaySelect"),
+      easyChildButtonSizeSelect: document.getElementById("easyChildButtonSizeSelect"),
+      easyChildButtonStyleSelect: document.getElementById("easyChildButtonStyleSelect"),
+      easyChildNavDisplaySelect: document.getElementById("easyChildNavDisplaySelect"),
       headerPhotoEnabled: document.getElementById("headerPhotoEnabled"),
       headerPhotoScope: document.getElementById("headerPhotoScope"),
       headerPhotoPosition: document.getElementById("headerPhotoPosition"),
@@ -4037,8 +4107,11 @@
     function normalizePages(pages) {
       const normalized = cloneData(pages || []);
       const hasNavigationSettings = normalized.some((page) => Object.prototype.hasOwnProperty.call(page, "showInMainNav"));
+      const usedPageIds = new Set();
       normalized.forEach((page, index) => {
         if (!page.pageId) page.pageId = createPageId();
+        while (usedPageIds.has(page.pageId)) page.pageId = createPageId();
+        usedPageIds.add(page.pageId);
         page.slug = slugForPage(index);
         page.showInMainNav = hasNavigationSettings ? page.showInMainNav !== false : index === 0;
         page.navLabel = typeof page.navLabel === "string" ? page.navLabel : "";
@@ -4607,6 +4680,9 @@
       els.childButtonSizeSelect.value = state.childButtonSize;
       els.childButtonStyleSelect.value = state.childButtonStyle;
       els.childNavDisplaySelect.value = state.childNavDisplay;
+      els.easyChildButtonSizeSelect.value = state.childButtonSize;
+      els.easyChildButtonStyleSelect.value = state.childButtonStyle;
+      els.easyChildNavDisplaySelect.value = state.childNavDisplay;
     }
 
     function headerPhotoEnabled() {
@@ -5260,6 +5336,7 @@
           ? state.pages
             .map((page, index) => ({ page, index }))
             .filter((child) => child.page.parentPageId === pageId(rootPage))
+            .filter((child, childIndex, childItems) => childItems.findIndex((candidate) => pageId(candidate.page) === pageId(child.page)) === childIndex)
           : [];
         if (!children.length) {
           return `<a class="${className}" href="${href}"${previewEditAttr("page-nav", "label", "", item.index)}>${title}</a>`;
@@ -5270,7 +5347,7 @@
           const childClass = index === activeIndex ? "active" : "";
           return `<a class="nav-dropdown-link ${childClass}" href="${childHref}">${childTitle}</a>`;
         }).join("");
-        return `<div class="nav-menu"><a class="${className}" href="${href}" aria-haspopup="true" aria-expanded="false"${previewEditAttr("page-nav", "label", "", item.index)}><span class="nav-label">${title}</span><span class="nav-caret" data-nav-dropdown-toggle="true" aria-label="下のページを表示">△</span></a><div class="nav-dropdown" hidden>${childLinks}</div></div>`;
+        return `<div class="nav-menu"><a class="${className}" href="${href}" aria-haspopup="true" aria-expanded="false"${previewEditAttr("page-nav", "label", "", item.index)}><span class="nav-label">${title}</span></a><button class="nav-caret" type="button" data-nav-dropdown-toggle="true" aria-label="下のページを表示">△</button><div class="nav-dropdown" hidden>${childLinks}</div></div>`;
       }).join("");
       return `<nav class="site-nav ${els.navPosition.value === "left" ? "site-nav-left" : "site-nav-top"}">${links}</nav>`;
     }
@@ -5291,7 +5368,8 @@
       const activePage = state.pages[activeIndex];
       const rootItems = state.pages
         .map((page, index) => ({ page, index }))
-        .filter((item) => !item.page.parentPageId);
+        .filter((item) => !item.page.parentPageId)
+        .filter((item, itemIndex, items) => items.findIndex((candidate) => pageId(candidate.page) === pageId(item.page)) === itemIndex);
       if (!rootItems.length) return [];
 
       return rootItems.map((item) => {
@@ -6108,7 +6186,7 @@
                 <div class="block-fields">
                   <div class="block-edit-area">
                     <div class="block-area-title">内容</div>
-                    ${needsHeading || needsText ? `<div class="preview-edit-note">見出し・本文は右のプレビューをクリックして直接編集します。ボタンの文字だけはCtrlキー（MacはCommandキー）を押しながら選びます。</div>` : ""}
+                    ${needsHeading || needsText ? `<div class="preview-edit-note">見出し・本文は右のプレビューをクリックして直接編集します。ボタンの文字だけはShiftキーを押しながら選びます。</div>` : ""}
                     ${needsHeading || needsText ? `
                       <div class="block-typography-settings">
                         <div class="block-area-title">この部品の文字</div>
@@ -6448,10 +6526,10 @@ ${pdfViewerRuntimeHtml()}
       return `<script>
 (function(){
   function closeMenus(except){
-    document.querySelectorAll('.nav-menu.is-open').forEach(function(menu){
+    document.querySelectorAll('.nav-menu').forEach(function(menu){
       if (menu === except) return;
       menu.classList.remove('is-open');
-      var dropdown = menu.querySelector('.nav-dropdown');
+      var dropdown = menu.querySelector(':scope > .nav-dropdown');
       var link = menu.querySelector(':scope > a');
       if (dropdown) dropdown.hidden = true;
       if (link) link.setAttribute('aria-expanded', 'false');
@@ -6463,14 +6541,15 @@ ${pdfViewerRuntimeHtml()}
       event.preventDefault();
       event.stopPropagation();
       var menu = toggle.closest('.nav-menu');
-      var dropdown = menu && menu.querySelector('.nav-dropdown');
+      var dropdown = menu && menu.querySelector(':scope > .nav-dropdown');
       if (!menu || !dropdown) return;
-      var shouldOpen = dropdown.hidden;
-      closeMenus(menu);
-      dropdown.hidden = !shouldOpen;
-      menu.classList.toggle('is-open', shouldOpen);
+      var wasOpen = menu.classList.contains('is-open') && !dropdown.hidden;
+      closeMenus();
+      if (wasOpen) return;
+      dropdown.hidden = false;
+      menu.classList.add('is-open');
       var link = menu.querySelector(':scope > a');
-      if (link) link.setAttribute('aria-expanded', String(shouldOpen));
+      if (link) link.setAttribute('aria-expanded', 'true');
       return;
     }
     if (!event.target.closest('.nav-menu')) closeMenus();
@@ -6681,6 +6760,10 @@ nav {
   justify-content: center;
   min-width: 18px;
   min-height: 18px;
+  border: 0;
+  border-radius: 999px;
+  color: inherit;
+  background: transparent;
   padding: 0 2px;
   cursor: pointer;
   font-size: 10px;
@@ -6688,7 +6771,7 @@ nav {
   transition: transform .18s ease;
 }
 
-.site-nav .nav-menu.is-open > a .nav-caret {
+.site-nav .nav-menu.is-open > .nav-caret {
   transform: rotate(180deg);
 }
 
@@ -9075,6 +9158,21 @@ styles.css、page-*.html、images フォルダー、files フォルダーも同�
         els.status.textContent = "まずはWordの文章をコピーして本文に貼り付ける形が安全です";
       }
     });
+    els.easyChildButtonSizeSelect.addEventListener("change", () => {
+      state.childButtonSize = els.easyChildButtonSizeSelect.value;
+      applyChildButtonSettings();
+      render();
+    });
+    els.easyChildButtonStyleSelect.addEventListener("change", () => {
+      state.childButtonStyle = els.easyChildButtonStyleSelect.value;
+      applyChildButtonSettings();
+      render();
+    });
+    els.easyChildNavDisplaySelect.addEventListener("change", () => {
+      state.childNavDisplay = els.easyChildNavDisplaySelect.value;
+      applyChildButtonSettings();
+      render();
+    });
     els.editorModeTabs.addEventListener("click", (event) => {
       const button = event.target.closest("[data-editor-tab]");
       if (!button) return;
@@ -9541,7 +9639,7 @@ styles.css、page-*.html、images フォルダー、files フォルダーも同�
     let photoDragState = null;
 
     function isPreviewTextEditGesture(event) {
-      return Boolean(event.shiftKey || event.ctrlKey || event.metaKey);
+      return Boolean(event.shiftKey);
     }
 
     els.preview.addEventListener("pointerdown", (event) => {
@@ -9767,19 +9865,25 @@ styles.css、page-*.html、images フォルダー、files フォルダーも同�
         const menu = dropdownToggle.closest(".nav-menu");
         const dropdown = menu?.querySelector(".nav-dropdown");
         if (!menu || !dropdown) return;
-        const shouldOpen = dropdown.hidden;
-        els.preview.querySelectorAll(".nav-menu.is-open").forEach((openMenu) => {
+        const wasOpen = menu.classList.contains("is-open") && !dropdown.hidden;
+        els.preview.querySelectorAll(".nav-menu").forEach((openMenu) => {
           if (openMenu === menu) return;
           openMenu.classList.remove("is-open");
-          const openDropdown = openMenu.querySelector(".nav-dropdown");
+          const openDropdown = openMenu.querySelector(":scope > .nav-dropdown");
           const openLink = openMenu.querySelector(":scope > a");
           if (openDropdown) openDropdown.hidden = true;
           if (openLink) openLink.setAttribute("aria-expanded", "false");
         });
-        dropdown.hidden = !shouldOpen;
-        menu.classList.toggle("is-open", shouldOpen);
+        if (wasOpen) {
+          dropdown.hidden = true;
+          menu.classList.remove("is-open");
+          menu.querySelector(":scope > a")?.setAttribute("aria-expanded", "false");
+          return;
+        }
+        dropdown.hidden = false;
+        menu.classList.add("is-open");
         const menuLink = menu.querySelector(":scope > a");
-        if (menuLink) menuLink.setAttribute("aria-expanded", String(shouldOpen));
+        if (menuLink) menuLink.setAttribute("aria-expanded", "true");
         return;
       }
       const editable = event.target.closest("[data-preview-edit-kind]");
