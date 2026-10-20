@@ -2394,7 +2394,7 @@
 
     .site-preview .hierarchy-nav {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 280px));
+      grid-template-columns: repeat(auto-fit, minmax(min(140px, 100%), fit-content(300px)));
       justify-content: start;
       align-items: stretch;
       gap: 8px;
@@ -2431,15 +2431,15 @@
     }
 
     .site-preview.child-button-size-tiny .hierarchy-nav {
-      grid-template-columns: repeat(auto-fit, minmax(min(140px, 100%), 190px));
+      grid-template-columns: repeat(auto-fit, minmax(min(110px, 100%), fit-content(200px)));
     }
 
     .site-preview.child-button-size-compact .hierarchy-nav {
-      grid-template-columns: repeat(auto-fit, minmax(min(160px, 100%), 230px));
+      grid-template-columns: repeat(auto-fit, minmax(min(125px, 100%), fit-content(240px)));
     }
 
     .site-preview.child-button-size-large .hierarchy-nav {
-      grid-template-columns: repeat(auto-fit, minmax(min(210px, 100%), 340px));
+      grid-template-columns: repeat(auto-fit, minmax(min(160px, 100%), fit-content(360px)));
     }
 
     .site-preview .hierarchy-nav a.active {
@@ -2449,6 +2449,12 @@
 
     .site-preview .hierarchy-nav a.parent-link {
       grid-column: 1 / -1;
+      justify-self: start;
+      width: fit-content;
+      min-height: 36px;
+      padding: 5px 10px;
+      border-radius: 8px;
+      font-size: 12px;
       border-style: solid;
       background: #fff;
       color: #475569;
@@ -7752,7 +7758,7 @@ body.child-button-style-outline .child-page-card {
 
 .hierarchy-nav {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 280px));
+  grid-template-columns: repeat(auto-fit, minmax(min(140px, 100%), fit-content(300px)));
   justify-content: start;
   align-items: stretch;
   gap: 8px;
@@ -7789,15 +7795,15 @@ body.child-button-style-outline .child-page-card {
 }
 
 body.child-button-size-tiny .hierarchy-nav {
-  grid-template-columns: repeat(auto-fit, minmax(min(140px, 100%), 190px));
+  grid-template-columns: repeat(auto-fit, minmax(min(110px, 100%), fit-content(200px)));
 }
 
 body.child-button-size-compact .hierarchy-nav {
-  grid-template-columns: repeat(auto-fit, minmax(min(160px, 100%), 230px));
+  grid-template-columns: repeat(auto-fit, minmax(min(125px, 100%), fit-content(240px)));
 }
 
 body.child-button-size-large .hierarchy-nav {
-  grid-template-columns: repeat(auto-fit, minmax(min(210px, 100%), 340px));
+  grid-template-columns: repeat(auto-fit, minmax(min(160px, 100%), fit-content(360px)));
 }
 
 .hierarchy-nav a.active {
@@ -7807,6 +7813,12 @@ body.child-button-size-large .hierarchy-nav {
 
 .hierarchy-nav a.parent-link {
   grid-column: 1 / -1;
+  justify-self: start;
+  width: fit-content;
+  min-height: 36px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 12px;
   border-style: solid;
   background: #fff;
   color: #475569;
