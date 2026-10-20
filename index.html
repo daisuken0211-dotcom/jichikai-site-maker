@@ -283,9 +283,9 @@
     .photo-choice img {
       width: 100%;
       aspect-ratio: 4 / 3;
-      object-fit: cover;
+      object-fit: contain;
       border-radius: 6px;
-      background: #eef2f7;
+      background: #f1f5f3;
     }
 
     .photo-choice-name {
@@ -395,9 +395,9 @@
     .photo-picked-row img {
       width: 48px;
       height: 38px;
-      object-fit: cover;
+      object-fit: contain;
       border-radius: 5px;
-      background: #eef2f7;
+      background: #f1f5f3;
     }
 
     .photo-picked-actions {
@@ -2189,6 +2189,51 @@
       margin-top: 4px;
     }
 
+    .site-preview.child-button-size-compact .hierarchy-nav a,
+    .site-preview.child-button-size-compact .child-page-card {
+      min-height: 46px;
+      padding: 9px 12px;
+      font-size: 13px;
+    }
+
+    .site-preview.child-button-size-standard .hierarchy-nav a,
+    .site-preview.child-button-size-standard .child-page-card {
+      min-height: 64px;
+      padding: 14px 16px;
+      font-size: 15px;
+    }
+
+    .site-preview.child-button-size-large .hierarchy-nav a,
+    .site-preview.child-button-size-large .child-page-card {
+      min-height: 84px;
+      padding: 18px 22px;
+      font-size: 18px;
+    }
+
+    .site-preview.child-button-style-pill .hierarchy-nav a,
+    .site-preview.child-button-style-pill .child-page-card {
+      border-radius: 999px;
+    }
+
+    .site-preview.child-button-style-solid .hierarchy-nav a,
+    .site-preview.child-button-style-solid .child-page-card {
+      border-color: var(--green);
+      background: var(--green);
+      color: #fff;
+    }
+
+    .site-preview.child-button-style-solid .hierarchy-nav a.parent-link,
+    .site-preview.child-button-style-solid .child-page-card span {
+      color: #eefbf3;
+    }
+
+    .site-preview.child-button-style-outline .hierarchy-nav a,
+    .site-preview.child-button-style-outline .child-page-card {
+      border-width: 3px;
+      background: #fff;
+      color: var(--green-dark);
+    }
+
     .site-preview .hierarchy-nav {
       display: flex;
       flex-wrap: wrap;
@@ -2508,7 +2553,7 @@
               <button class="easy-page-action danger" type="button" data-easy-page-action="delete">このページを削除</button>
             </div>
           </div>
-          <div class="easy-note">文字はプレビューを押して直接編集します。ボタンの文字を編集するときだけShiftキーを押しながら選びます。帯を押すと帯写真、見出しを押すと色や見出しの形を変えられます。写真やPDFは部品を追加してファイルを選びます。</div>
+          <div class="easy-note">文字はプレビューを押して直接編集します。ボタンの文字を編集するときだけCtrlキー（MacはCommandキー）を押しながら選びます。Shiftキーでも編集できます。帯を押すと帯写真、見出しを押すと色や見出しの形を変えられます。写真やPDFは部品を追加してファイルを選びます。</div>
         </div>
 
         <div class="editor-mode-tabs" id="editorModeTabs">
@@ -2769,6 +2814,24 @@
                 <option value="softbar">やさしい帯</option>
               </select>
             </div>
+            <div class="field">
+              <label for="childButtonSizeSelect">下のページボタンの大きさ</label>
+              <select id="childButtonSizeSelect">
+                <option value="compact">小さめ</option>
+                <option value="standard">標準</option>
+                <option value="large">大きめ</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="childButtonStyleSelect">下のページボタンの形</label>
+              <select id="childButtonStyleSelect">
+                <option value="card">カード型</option>
+                <option value="pill">丸ボタン</option>
+                <option value="solid">色付きボタン</option>
+                <option value="outline">見やすい枠線</option>
+              </select>
+            </div>
+            <div class="easy-note">「下のページ」へ移動するボタンに反映されます。プレビューですぐ確認できます。</div>
           </div>
         </div>
 
@@ -2855,6 +2918,8 @@
       headingScale: 1,
       headingStyle: "simple",
       navStyle: "pill",
+      childButtonSize: "standard",
+      childButtonStyle: "card",
       headerPhotoEnabled: false,
       headerPhotoScope: "top",
       headerPhotoPosition: "50% 50%",
@@ -2972,6 +3037,8 @@
       headingScaleSelect: document.getElementById("headingScaleSelect"),
       headingStyleSelect: document.getElementById("headingStyleSelect"),
       headingStyleSample: document.getElementById("headingStyleSample"),
+      childButtonSizeSelect: document.getElementById("childButtonSizeSelect"),
+      childButtonStyleSelect: document.getElementById("childButtonStyleSelect"),
       headerPhotoEnabled: document.getElementById("headerPhotoEnabled"),
       headerPhotoScope: document.getElementById("headerPhotoScope"),
       headerPhotoPosition: document.getElementById("headerPhotoPosition"),
@@ -3178,11 +3245,11 @@
         photoX: 50,
         photoY: 50,
         photoZoom: 100,
-        photoFit: "cover",
+        photoFit: "contain",
         photoSettings: [
-          { x: 50, y: 50, zoom: 100, fit: "cover" },
-          { x: 50, y: 50, zoom: 100, fit: "cover" },
-          { x: 50, y: 50, zoom: 100, fit: "cover" }
+          { x: 50, y: 50, zoom: 100, fit: "contain" },
+          { x: 50, y: 50, zoom: 100, fit: "contain" },
+          { x: 50, y: 50, zoom: 100, fit: "contain" }
         ],
         pageLinkCount: 1,
         pageLinks: [
@@ -4139,6 +4206,10 @@
       const page = item.page;
       const id = pageId(page);
       const children = pageChildren(id);
+      const siblings = pageChildren(page.parentPageId || "");
+      const siblingIndex = siblings.findIndex((sibling) => pageId(sibling.page) === id);
+      const canMoveUp = siblingIndex > 0;
+      const canMoveDown = siblingIndex >= 0 && siblingIndex < siblings.length - 1;
       const canAdd = level < pageStructureMaxDepth && children.length < pageStructureMaxChildren;
       const title = page.navLabel || page.title || `ページ${item.index + 1}`;
       return `
@@ -4148,6 +4219,8 @@
             <span class="page-structure-card-meta">第${level}階層${parentTitle ? `・親: ${escapeHtml(parentTitle)}` : "・上のリンクバー"}</span>
           </button>
           <div class="page-structure-card-actions">
+            <button class="structure-action" type="button" data-structure-action="up" data-page-index="${item.index}" ${canMoveUp ? "" : "disabled"}>上へ</button>
+            <button class="structure-action" type="button" data-structure-action="down" data-page-index="${item.index}" ${canMoveDown ? "" : "disabled"}>下へ</button>
             <button class="structure-add-child" type="button" data-structure-add-child="${item.index}" ${canAdd ? "" : "disabled"}>この下に追加${canAdd ? "" : "（5個まで）"}</button>
             <button class="structure-delete" type="button" data-structure-delete="${item.index}" ${state.pages.length > 1 ? "" : "disabled"}>このページを削除</button>
           </div>
@@ -4188,7 +4261,7 @@
           <div class="page-structure-row">
             <div class="page-structure-cell">
               ${pageStructureCardMarkup(root, 1)}
-              <div class="field-help">このカードは第1階層です。カード同士をドラッグすると同じ高さの順番を変えられます。</div>
+              <div class="field-help">このカードは第1階層です。カード下の「上へ・下へ」またはカード同士のドラッグで、同じ階層の順番を変えられます。「この下に追加」は子ページを作る操作です。</div>
             </div>
             <div class="page-structure-cell">${childMarkup}</div>
             <div class="page-structure-cell">${grandchildMarkup}</div>
@@ -4301,6 +4374,14 @@
       return ["pill", "box", "underline", "solid", "softbar"].includes(state.navStyle) ? state.navStyle : "pill";
     }
 
+    function currentChildButtonSize() {
+      return ["compact", "standard", "large"].includes(state.childButtonSize) ? state.childButtonSize : "standard";
+    }
+
+    function currentChildButtonStyle() {
+      return ["card", "pill", "solid", "outline"].includes(state.childButtonStyle) ? state.childButtonStyle : "card";
+    }
+
     const fontFamilyOptions = {
       sans: '"Hiragino Sans", "Yu Gothic", "YuGothic", "Noto Sans JP", Meiryo, sans-serif',
       serif: '"Hiragino Mincho ProN", "Yu Mincho", "YuMincho", "Noto Serif JP", serif',
@@ -4372,6 +4453,13 @@
     function applyNavStyle(style = state.navStyle) {
       state.navStyle = ["pill", "box", "underline", "solid", "softbar"].includes(style) ? style : "pill";
       els.navStyleSelect.value = state.navStyle;
+    }
+
+    function applyChildButtonSettings() {
+      state.childButtonSize = currentChildButtonSize();
+      state.childButtonStyle = currentChildButtonStyle();
+      els.childButtonSizeSelect.value = state.childButtonSize;
+      els.childButtonStyleSelect.value = state.childButtonStyle;
     }
 
     function headerPhotoEnabled() {
@@ -4788,6 +4876,8 @@
         headingScale: currentHeadingScale(),
         headingStyle: state.headingStyle,
         navStyle: state.navStyle,
+        childButtonSize: currentChildButtonSize(),
+        childButtonStyle: currentChildButtonStyle(),
         headerPhotoEnabled: els.headerPhotoEnabled.checked,
         headerPhotoScope: headerPhotoScope(),
         headerPhotoPosition: headerPhotoPosition(),
@@ -4892,6 +4982,8 @@
       state.editorMode = data.editorMode === "detail" ? "detail" : "easy";
       state.headingStyle = ["simple", "line", "band", "card", "round", "marker", "sideband"].includes(data.headingStyle) ? data.headingStyle : "simple";
       state.navStyle = ["pill", "box", "underline", "solid", "softbar"].includes(data.navStyle) ? data.navStyle : "pill";
+      state.childButtonSize = ["compact", "standard", "large"].includes(data.childButtonSize) ? data.childButtonSize : "standard";
+      state.childButtonStyle = ["card", "pill", "solid", "outline"].includes(data.childButtonStyle) ? data.childButtonStyle : "card";
       state.headerPhotoEnabled = Boolean(data.headerPhotoEnabled);
       els.headerPhotoEnabled.checked = state.headerPhotoEnabled;
       state.headerPhotoScope = data.headerPhotoScope === "all" ? "all" : "top";
@@ -4911,6 +5003,7 @@
       applyEditorMode(state.editorMode);
       applyHeadingStyle(state.headingStyle);
       applyNavStyle(state.navStyle);
+      applyChildButtonSettings();
       applyPageData(state.pages[state.currentPageIndex]);
       render();
       els.status.textContent = "設定を読み込みました";
@@ -5374,7 +5467,7 @@
             const captionMarkup = caption
               ? `<figcaption class="photo-caption"${previewEditAttr("block", "photoCaption", adjust?.id || "", index)}>${escapeHtml(caption).replace(/\n/g, "<br>")}</figcaption>`
               : "";
-            return `<figure class="photo-item"><div class="hero-photo${adjustableClass}"${adjustAttr(index)}><img src="${escapeHtml(url)}" alt="${siteName}の写真 ${index + 1}"${photoStyleAttrs(adjust, index)}></div>${captionMarkup}</figure>`;
+            return `<figure class="photo-item"><div class="hero-photo${adjustableClass}"${adjustAttr(index)}><img class="photo-view-image" data-photo-view="1" src="${escapeHtml(url)}" alt="${siteName}の写真 ${index + 1}"${photoStyleAttrs(adjust, index)}></div>${captionMarkup}</figure>`;
           }).join("")}
         </div>
       `;
@@ -5440,8 +5533,8 @@
       if (!state.isPreviewRendering) return "";
       const idAttr = id ? ` data-preview-edit-id="${escapeHtml(id)}"` : "";
       const indexAttr = index === "" ? "" : ` data-preview-edit-index="${index}"`;
-      // Navigation labels stay real buttons during normal clicks. Shift-click enables
-      // editing for that label temporarily, so browser focus cannot steal button clicks.
+      // Navigation labels stay real buttons during normal clicks. A modifier-click
+      // enables editing for that label temporarily, so normal navigation still works.
       const editableAttr = kind === "page-nav" ? "" : ` contenteditable="true"`;
       return `${editableAttr} spellcheck="false" data-preview-edit-kind="${kind}" data-preview-edit-field="${field}"${idAttr}${indexAttr}`;
     }
@@ -5851,7 +5944,7 @@
                 <div class="block-fields">
                   <div class="block-edit-area">
                     <div class="block-area-title">内容</div>
-                    ${needsHeading || needsText ? `<div class="preview-edit-note">見出し・本文は右のプレビューをクリックして直接編集します。ボタンの文字だけはShiftキーを押しながら選びます。</div>` : ""}
+                    ${needsHeading || needsText ? `<div class="preview-edit-note">見出し・本文は右のプレビューをクリックして直接編集します。ボタンの文字だけはCtrlキー（MacはCommandキー）を押しながら選びます。</div>` : ""}
                     ${needsHeading || needsText ? `
                       <div class="block-typography-settings">
                         <div class="block-area-title">この部品の文字</div>
@@ -6169,6 +6262,7 @@
       const navClass = els.navPosition.value === "left" ? "nav-left" : "nav-top";
       const navStyleClass = `nav-style-${currentNavStyle()}`;
       const headingClass = `heading-${currentHeadingStyle()}`;
+      const childButtonClass = `child-button-size-${currentChildButtonSize()} child-button-style-${currentChildButtonStyle()}`;
       const headerPhotoClass = hasHeaderPhoto ? "has-header-photo" : "";
       return `<!doctype html>
 <html lang="ja">
@@ -6178,16 +6272,40 @@
   <title>${title}</title>
   <link rel="stylesheet" href="styles.css">
 </head>
-<body class="${template.className} ${navClass} ${navStyleClass} ${headingClass} ${headerPhotoClass}" style="--preview-photo: url('${photoUrl}'); --header-photo: url('${headerUrl}'); --header-photo-position: ${headerPosition}; --header-photo-size: ${headerSize}; --site-font-family: ${escapeHtml(currentFontFamily())}; --site-font-size: ${currentBaseFontSize()}px; --site-font-scale: ${currentBaseFontSize() / 16}; --site-heading-scale: ${currentHeadingScale()};">
+<body class="${template.className} ${navClass} ${navStyleClass} ${headingClass} ${childButtonClass} ${headerPhotoClass}" style="--preview-photo: url('${photoUrl}'); --header-photo: url('${headerUrl}'); --header-photo-position: ${headerPosition}; --header-photo-size: ${headerSize}; --site-font-family: ${escapeHtml(currentFontFamily())}; --site-font-size: ${currentBaseFontSize()}px; --site-font-scale: ${currentBaseFontSize() / 16}; --site-heading-scale: ${currentHeadingScale()};">
 ${buildPreviewHtml(options)}
 ${pdfViewerRuntimeHtml()}
 </body>
 </html>`;
     }
 
-    function pdfViewerRuntimeHtml() {
+function pdfViewerRuntimeHtml() {
       return `<script>
 (function(){
+  function closePhotoViewer(){
+    var viewer = document.getElementById('photo-lightbox');
+    if (viewer) viewer.hidden = true;
+    var image = document.getElementById('photo-lightbox-image');
+    if (image) image.removeAttribute('src');
+  }
+  function openPhotoViewer(image){
+    var viewer = document.getElementById('photo-lightbox');
+    if (!viewer) {
+      viewer = document.createElement('div');
+      viewer.id = 'photo-lightbox';
+      viewer.className = 'photo-lightbox';
+      viewer.innerHTML = '<div class="photo-lightbox-dialog" role="dialog" aria-modal="true"><div class="photo-lightbox-toolbar"><strong id="photo-lightbox-title"></strong><button class="photo-lightbox-close" type="button">閉じる</button></div><div class="photo-lightbox-stage"><img id="photo-lightbox-image" alt=""></div></div>';
+      document.body.appendChild(viewer);
+      viewer.addEventListener('click', function(event){
+        if (event.target === viewer || event.target.closest('.photo-lightbox-close')) closePhotoViewer();
+      });
+    }
+    var largeImage = document.getElementById('photo-lightbox-image');
+    largeImage.src = image.currentSrc || image.src;
+    largeImage.alt = image.alt || '写真';
+    document.getElementById('photo-lightbox-title').textContent = image.alt || '写真を拡大表示';
+    viewer.hidden = false;
+  }
   function withFirstPage(source){
     return source + (source.indexOf('#') >= 0 ? '&' : '#') + 'page=1&view=FitH';
   }
@@ -6214,6 +6332,12 @@ ${pdfViewerRuntimeHtml()}
     document.getElementById('pdf-lightbox-frame').src = withFirstPage(link.getAttribute('data-pdf-source') || '');
   }
   document.addEventListener('click', function(event){
+    var photo = event.target.closest('[data-photo-view]');
+    if (photo) {
+      event.preventDefault();
+      openPhotoViewer(photo);
+      return;
+    }
     var link = event.target.closest('[data-pdf-preview]');
     if (!link) return;
     event.preventDefault();
@@ -6227,21 +6351,25 @@ ${pdfViewerRuntimeHtml()}
     if (source) window.open(withFirstPage(source), '_blank', 'noopener');
   });
   document.addEventListener('keydown', function(event){
-    if (event.key === 'Escape') closeViewer();
+    if (event.key === 'Escape') {
+      closePhotoViewer();
+      closeViewer();
+    }
   });
 })();
 <\/script>`;
     }
 
-    function sakumaFarmCreditHtml() {
+function sakumaFarmCreditHtml() {
       return `<footer id="sakuma-farm-credit" style="margin:32px auto 0;padding:14px 16px;border-top:1px solid #d8e0e7;text-align:center;color:#64748b;font:14px/1.6 -apple-system,BlinkMacSystemFont,'Hiragino Sans','Yu Gothic',Meiryo,sans-serif;background:#f8fafc;">
   Created by Sakuma Farm<br>
+  <span style="display:inline-block;margin-top:6px;color:#64748b;font-size:12px;">このホームページは試用表示中です。正式利用には利用料のお支払いと利用コードの入力をお願いします。</span><br>
   <a href="mailto:sakumafarmit@gmail.com?subject=%E5%95%8F%E3%81%84%E5%90%88%E3%82%8F%E3%81%9B" style="color:#245f43;font-weight:700;text-decoration:underline;">作成アプリに関する問い合わせはこちら</a><br>
   <a href="https://daisuken0211-dotcom.github.io/jichikai-site-maker/" target="_blank" rel="noopener" style="color:#245f43;font-weight:700;text-decoration:underline;">自治会ホームページ作成ツール</a>
 </footer>
 <script>
 (function(){
-  var credit = '<footer id="sakuma-farm-credit" style="margin:32px auto 0;padding:14px 16px;border-top:1px solid #d8e0e7;text-align:center;color:#64748b;font:14px/1.6 -apple-system,BlinkMacSystemFont,\\'Hiragino Sans\\',\\'Yu Gothic\\',Meiryo,sans-serif;background:#f8fafc;">Created by Sakuma Farm<br><a href="mailto:sakumafarmit@gmail.com?subject=%E5%95%8F%E3%81%84%E5%90%88%E3%82%8F%E3%81%9B" style="color:#245f43;font-weight:700;text-decoration:underline;">作成アプリに関する問い合わせはこちら</a><br><a href="https://daisuken0211-dotcom.github.io/jichikai-site-maker/" target="_blank" rel="noopener" style="color:#245f43;font-weight:700;text-decoration:underline;">自治会ホームページ作成ツール</a></footer>';
+  var credit = '<footer id="sakuma-farm-credit" style="margin:32px auto 0;padding:14px 16px;border-top:1px solid #d8e0e7;text-align:center;color:#64748b;font:14px/1.6 -apple-system,BlinkMacSystemFont,\\'Hiragino Sans\\',\\'Yu Gothic\\',Meiryo,sans-serif;background:#f8fafc;">Created by Sakuma Farm<br><span style="display:inline-block;margin-top:6px;color:#64748b;font-size:12px;">このホームページは試用表示中です。正式利用には利用料のお支払いと利用コードの入力をお願いします。</span><br><a href="mailto:sakumafarmit@gmail.com?subject=%E5%95%8F%E3%81%84%E5%90%88%E3%82%8F%E3%81%9B" style="color:#245f43;font-weight:700;text-decoration:underline;">作成アプリに関する問い合わせはこちら</a><br><a href="https://daisuken0211-dotcom.github.io/jichikai-site-maker/" target="_blank" rel="noopener" style="color:#245f43;font-weight:700;text-decoration:underline;">自治会ホームページ作成ツール</a></footer>';
   function ensureCredit(){
     if (!document.getElementById('sakuma-farm-credit')) {
       document.body.insertAdjacentHTML('beforeend', credit);
@@ -6621,7 +6749,7 @@ main > .block-half {
 
 .photo-gallery {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(var(--photo-columns, 3), minmax(0, 1fr));
   gap: 12px;
 }
 
@@ -6636,6 +6764,74 @@ main > .block-half {
 .photo-gallery .hero-photo {
   min-height: 210px;
   height: clamp(180px, 34vw, 420px);
+  background: #f1f5f3;
+}
+
+.photo-gallery .photo-view-image {
+  cursor: zoom-in;
+}
+
+.photo-lightbox[hidden] {
+  display: none;
+}
+
+.photo-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 110;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(15,23,42,.78);
+}
+
+.photo-lightbox-dialog {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  width: min(1100px, 100%);
+  height: min(90vh, 860px);
+  overflow: hidden;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 20px 60px rgba(15,23,42,.35);
+}
+
+.photo-lightbox-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid #d8e0e7;
+  color: #334155;
+  font-weight: 900;
+}
+
+.photo-lightbox-close {
+  min-height: 36px;
+  border: 1px solid #d8e0e7;
+  border-radius: 8px;
+  background: #fff;
+  color: #334155;
+  font-weight: 900;
+  padding: 4px 12px;
+}
+
+.photo-lightbox-stage {
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  padding: 16px;
+  background: #eef2f7;
+}
+
+.photo-lightbox-stage img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
 }
 
 .template-note {
@@ -7066,6 +7262,51 @@ main > .block-half {
   font-size: 13px;
   line-height: 1.45;
   margin-top: 4px;
+}
+
+body.child-button-size-compact .hierarchy-nav a,
+body.child-button-size-compact .child-page-card {
+  min-height: 46px;
+  padding: 9px 12px;
+  font-size: 13px;
+}
+
+body.child-button-size-standard .hierarchy-nav a,
+body.child-button-size-standard .child-page-card {
+  min-height: 64px;
+  padding: 14px 16px;
+  font-size: 15px;
+}
+
+body.child-button-size-large .hierarchy-nav a,
+body.child-button-size-large .child-page-card {
+  min-height: 84px;
+  padding: 18px 22px;
+  font-size: 18px;
+}
+
+body.child-button-style-pill .hierarchy-nav a,
+body.child-button-style-pill .child-page-card {
+  border-radius: 999px;
+}
+
+body.child-button-style-solid .hierarchy-nav a,
+body.child-button-style-solid .child-page-card {
+  border-color: #2f7d57;
+  background: #2f7d57;
+  color: #fff;
+}
+
+body.child-button-style-solid .hierarchy-nav a.parent-link,
+body.child-button-style-solid .child-page-card span {
+  color: #eefbf3;
+}
+
+body.child-button-style-outline .hierarchy-nav a,
+body.child-button-style-outline .child-page-card {
+  border-width: 3px;
+  background: #fff;
+  color: #245f43;
 }
 
 .hierarchy-nav {
@@ -7913,7 +8154,7 @@ exports.deleteUserByAdmin = onCall(async (request) => {
       state.html = buildExportHtml();
       state.css = buildExportCss();
       state.blockHtml = buildPeraichiLikeHtml();
-      els.preview.className = `site-preview ${template.className} ${els.navPosition.value === "left" ? "nav-left" : "nav-top"} nav-style-${currentNavStyle()} heading-${currentHeadingStyle()} ${headerPhotoClass}`;
+      els.preview.className = `site-preview ${template.className} ${els.navPosition.value === "left" ? "nav-left" : "nav-top"} nav-style-${currentNavStyle()} heading-${currentHeadingStyle()} child-button-size-${currentChildButtonSize()} child-button-style-${currentChildButtonStyle()} ${headerPhotoClass}`;
       els.preview.style.setProperty("--preview-photo", `url('${previewPhoto}')`);
       els.preview.style.setProperty("--header-photo", `url('${headerPhoto}')`);
       els.preview.style.setProperty("--header-photo-position", headerPosition);
@@ -8537,6 +8778,16 @@ styles.css、page-*.html、images フォルダー、files フォルダーも同�
       applyNavStyle(els.navStyleSelect.value);
       render();
     });
+    els.childButtonSizeSelect.addEventListener("change", () => {
+      state.childButtonSize = els.childButtonSizeSelect.value;
+      applyChildButtonSettings();
+      render();
+    });
+    els.childButtonStyleSelect.addEventListener("change", () => {
+      state.childButtonStyle = els.childButtonStyleSelect.value;
+      applyChildButtonSettings();
+      render();
+    });
     [els.headerPhotoX, els.headerPhotoY, els.headerPhotoZoom].forEach((input) => {
       input.addEventListener("input", () => {
         els.headerPhotoPosition.value = "custom";
@@ -8938,10 +9189,14 @@ styles.css、page-*.html、images フォルダー、files フォルダーも同�
 
     let photoDragState = null;
 
+    function isPreviewTextEditGesture(event) {
+      return Boolean(event.shiftKey || event.ctrlKey || event.metaKey);
+    }
+
     els.preview.addEventListener("pointerdown", (event) => {
       const editable = event.target.closest("[data-preview-edit-kind]");
       const editableLink = editable?.closest("a");
-      if (!editable || !editableLink || event.shiftKey || editable.getAttribute("contenteditable") !== "true") return;
+      if (!editable || !editableLink || isPreviewTextEditGesture(event) || editable.getAttribute("contenteditable") !== "true") return;
       // Keep ordinary button clicks from focusing the contenteditable link.
       // Shift-click is intentionally left untouched so it can select the label.
       event.preventDefault();
@@ -9156,7 +9411,7 @@ styles.css、page-*.html、images フォルダー、files フォルダーも同�
     els.preview.addEventListener("click", (event) => {
       const editable = event.target.closest("[data-preview-edit-kind]");
       const editableLink = editable?.closest("a");
-      if (editable && event.shiftKey && editableLink) {
+      if (editable && isPreviewTextEditGesture(event) && editableLink) {
         event.preventDefault();
         event.stopPropagation();
         editable.setAttribute("contenteditable", "true");
@@ -9247,7 +9502,7 @@ styles.css、page-*.html、images フォルダー、files フォルダーも同�
     });
 
     els.preview.addEventListener("contextmenu", (event) => {
-      if (!event.shiftKey) return;
+      if (!isPreviewTextEditGesture(event)) return;
       const editable = event.target.closest("[data-preview-edit-kind]");
       if (editable) event.preventDefault();
     });
@@ -9685,6 +9940,7 @@ styles.css、page-*.html、images フォルダー、files フォルダーも同�
     applyEditorTab(state.activeEditorTab);
     applyHeadingStyle(state.headingStyle);
     applyNavStyle(state.navStyle);
+    applyChildButtonSettings();
     initializePages();
     if (window.location.hash === "#page-structure-editor") {
       try {
