@@ -1488,6 +1488,94 @@
       overflow-wrap: anywhere;
     }
 
+    .site-preview .site-nav .nav-menu {
+      position: relative;
+      display: block;
+      flex: 0 1 auto;
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    .site-preview .site-nav .nav-menu > a {
+      gap: 8px;
+    }
+
+    .site-preview .site-nav .nav-label {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .site-preview .site-nav .nav-caret {
+      display: inline-flex;
+      flex: 0 0 auto;
+      align-items: center;
+      justify-content: center;
+      min-width: 18px;
+      min-height: 18px;
+      padding: 0 2px;
+      cursor: pointer;
+      font-size: 10px;
+      line-height: 1;
+      transition: transform .18s ease;
+    }
+
+    .site-preview .site-nav .nav-menu.is-open > a .nav-caret {
+      transform: rotate(180deg);
+    }
+
+    .site-preview .site-nav .nav-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      z-index: 8;
+      display: grid;
+      min-width: 220px;
+      max-width: min(320px, calc(100vw - 32px));
+      padding: 8px;
+      border: 1px solid #d8e0e7;
+      border-radius: 10px;
+      background: #fff;
+      box-shadow: 0 10px 24px rgba(31, 41, 51, .16);
+    }
+
+    .site-preview .site-nav .nav-dropdown[hidden],
+    .site-preview .site-nav .nav-dropdown a[hidden] {
+      display: none;
+    }
+
+    .site-preview .site-nav .nav-dropdown a.nav-dropdown-link {
+      display: block;
+      width: 100%;
+      min-height: 42px;
+      max-width: none;
+      border: 0;
+      border-radius: 7px;
+      background: transparent;
+      color: var(--green-dark);
+      padding: 9px 12px;
+      font-size: 13px;
+      line-height: 1.35;
+      text-align: left;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+
+    .site-preview .site-nav .nav-dropdown a.nav-dropdown-link:hover,
+    .site-preview .site-nav .nav-dropdown a.nav-dropdown-link:focus-visible,
+    .site-preview .site-nav .nav-dropdown a.nav-dropdown-link.active {
+      background: var(--soft-green);
+      color: var(--green-dark);
+    }
+
+    .site-preview.child-nav-display-dropdown .hierarchy-nav {
+      display: none;
+    }
+
+    .site-preview.nav-left .site-nav .nav-dropdown {
+      top: 0;
+      left: calc(100% + 8px);
+    }
+
     .site-preview .site-nav a[contenteditable="true"] {
       cursor: pointer;
     }
@@ -2860,7 +2948,14 @@
                 <option value="outline">見やすい枠線</option>
               </select>
             </div>
-            <div class="easy-note">上のリンクバーは第1階層、ページ内の移動ボタンは第2階層です。それぞれ別の形を選べます。長い文字も自動で折り返します。</div>
+            <div class="field">
+              <label for="childNavDisplaySelect">第2階層の出し方</label>
+              <select id="childNavDisplaySelect">
+                <option value="page">ページ内に表示</option>
+                <option value="dropdown">上のボタンから開く</option>
+              </select>
+            </div>
+            <div class="easy-note">上のリンクバーは第1階層、ページ内の移動ボタンは第2階層です。第2階層を「上のボタンから開く」にすると、△を押したときだけ子ページが下に表示されます。</div>
           </div>
         </div>
 
@@ -2949,6 +3044,7 @@
       navStyle: "pill",
       childButtonSize: "standard",
       childButtonStyle: "card",
+      childNavDisplay: "page",
       headerPhotoEnabled: false,
       headerPhotoScope: "top",
       headerPhotoPosition: "50% 50%",
@@ -3068,6 +3164,7 @@
       headingStyleSample: document.getElementById("headingStyleSample"),
       childButtonSizeSelect: document.getElementById("childButtonSizeSelect"),
       childButtonStyleSelect: document.getElementById("childButtonStyleSelect"),
+      childNavDisplaySelect: document.getElementById("childNavDisplaySelect"),
       headerPhotoEnabled: document.getElementById("headerPhotoEnabled"),
       headerPhotoScope: document.getElementById("headerPhotoScope"),
       headerPhotoPosition: document.getElementById("headerPhotoPosition"),
@@ -4418,6 +4515,10 @@
       return ["card", "pill", "solid", "outline"].includes(state.childButtonStyle) ? state.childButtonStyle : "card";
     }
 
+    function currentChildNavDisplay() {
+      return ["page", "dropdown"].includes(state.childNavDisplay) ? state.childNavDisplay : "page";
+    }
+
     const fontFamilyOptions = {
       sans: '"Hiragino Sans", "Yu Gothic", "YuGothic", "Noto Sans JP", Meiryo, sans-serif',
       serif: '"Hiragino Mincho ProN", "Yu Mincho", "YuMincho", "Noto Serif JP", serif',
@@ -4494,8 +4595,10 @@
     function applyChildButtonSettings() {
       state.childButtonSize = currentChildButtonSize();
       state.childButtonStyle = currentChildButtonStyle();
+      state.childNavDisplay = currentChildNavDisplay();
       els.childButtonSizeSelect.value = state.childButtonSize;
       els.childButtonStyleSelect.value = state.childButtonStyle;
+      els.childNavDisplaySelect.value = state.childNavDisplay;
     }
 
     function headerPhotoEnabled() {
@@ -4914,6 +5017,7 @@
         navStyle: state.navStyle,
         childButtonSize: currentChildButtonSize(),
         childButtonStyle: currentChildButtonStyle(),
+        childNavDisplay: currentChildNavDisplay(),
         headerPhotoEnabled: els.headerPhotoEnabled.checked,
         headerPhotoScope: headerPhotoScope(),
         headerPhotoPosition: headerPhotoPosition(),
@@ -5020,6 +5124,7 @@
       state.navStyle = ["pill", "box", "underline", "solid", "softbar"].includes(data.navStyle) ? data.navStyle : "pill";
       state.childButtonSize = ["compact", "standard", "large"].includes(data.childButtonSize) ? data.childButtonSize : "standard";
       state.childButtonStyle = ["card", "pill", "solid", "outline"].includes(data.childButtonStyle) ? data.childButtonStyle : "card";
+      state.childNavDisplay = ["page", "dropdown"].includes(data.childNavDisplay) ? data.childNavDisplay : "page";
       state.headerPhotoEnabled = Boolean(data.headerPhotoEnabled);
       els.headerPhotoEnabled.checked = state.headerPhotoEnabled;
       state.headerPhotoScope = data.headerPhotoScope === "all" ? "all" : "top";
@@ -5139,10 +5244,25 @@
         index,
         active: index === activeIndex
       }))).map((item) => {
+        const rootPage = state.pages[item.index] || item.page;
         const title = escapeHtml(item.title || `ページ${item.index + 1}`);
         const href = escapeHtml(slugForPage(item.index));
         const className = item.active ? "active" : "";
-        return `<a class="${className}" href="${href}"${previewEditAttr("page-nav", "label", "", item.index)}>${title}</a>`;
+        const children = currentChildNavDisplay() === "dropdown"
+          ? state.pages
+            .map((page, index) => ({ page, index }))
+            .filter((child) => child.page.parentPageId === pageId(rootPage))
+          : [];
+        if (!children.length) {
+          return `<a class="${className}" href="${href}"${previewEditAttr("page-nav", "label", "", item.index)}>${title}</a>`;
+        }
+        const childLinks = children.map(({ page, index }) => {
+          const childTitle = escapeHtml(page.navLabel || page.title || `ページ${index + 1}`);
+          const childHref = escapeHtml(slugForPage(index));
+          const childClass = index === activeIndex ? "active" : "";
+          return `<a class="nav-dropdown-link ${childClass}" href="${childHref}">${childTitle}</a>`;
+        }).join("");
+        return `<div class="nav-menu"><a class="${className}" href="${href}" aria-haspopup="true" aria-expanded="false"${previewEditAttr("page-nav", "label", "", item.index)}><span class="nav-label">${title}</span><span class="nav-caret" data-nav-dropdown-toggle="true" aria-label="下のページを表示">△</span></a><div class="nav-dropdown" hidden>${childLinks}</div></div>`;
       }).join("");
       return `<nav class="site-nav ${els.navPosition.value === "left" ? "site-nav-left" : "site-nav-top"}">${links}</nav>`;
     }
@@ -6298,7 +6418,7 @@
       const navClass = els.navPosition.value === "left" ? "nav-left" : "nav-top";
       const navStyleClass = `nav-style-${currentNavStyle()}`;
       const headingClass = `heading-${currentHeadingStyle()}`;
-      const childButtonClass = `child-button-size-${currentChildButtonSize()} child-button-style-${currentChildButtonStyle()}`;
+      const childButtonClass = `child-button-size-${currentChildButtonSize()} child-button-style-${currentChildButtonStyle()} child-nav-display-${currentChildNavDisplay()}`;
       const headerPhotoClass = hasHeaderPhoto ? "has-header-photo" : "";
       return `<!doctype html>
 <html lang="ja">
@@ -6310,9 +6430,48 @@
 </head>
 <body class="${template.className} ${navClass} ${navStyleClass} ${headingClass} ${childButtonClass} ${headerPhotoClass}" style="--preview-photo: url('${photoUrl}'); --header-photo: url('${headerUrl}'); --header-photo-position: ${headerPosition}; --header-photo-size: ${headerSize}; --site-font-family: ${escapeHtml(currentFontFamily())}; --site-font-size: ${currentBaseFontSize()}px; --site-font-scale: ${currentBaseFontSize() / 16}; --site-heading-scale: ${currentHeadingScale()};">
 ${buildPreviewHtml(options)}
+${navDropdownRuntimeHtml()}
 ${pdfViewerRuntimeHtml()}
 </body>
 </html>`;
+    }
+
+    function navDropdownRuntimeHtml() {
+      return `<script>
+(function(){
+  function closeMenus(except){
+    document.querySelectorAll('.nav-menu.is-open').forEach(function(menu){
+      if (menu === except) return;
+      menu.classList.remove('is-open');
+      var dropdown = menu.querySelector('.nav-dropdown');
+      var link = menu.querySelector(':scope > a');
+      if (dropdown) dropdown.hidden = true;
+      if (link) link.setAttribute('aria-expanded', 'false');
+    });
+  }
+  document.addEventListener('click', function(event){
+    var toggle = event.target.closest('[data-nav-dropdown-toggle]');
+    if (toggle){
+      event.preventDefault();
+      event.stopPropagation();
+      var menu = toggle.closest('.nav-menu');
+      var dropdown = menu && menu.querySelector('.nav-dropdown');
+      if (!menu || !dropdown) return;
+      var shouldOpen = dropdown.hidden;
+      closeMenus(menu);
+      dropdown.hidden = !shouldOpen;
+      menu.classList.toggle('is-open', shouldOpen);
+      var link = menu.querySelector(':scope > a');
+      if (link) link.setAttribute('aria-expanded', String(shouldOpen));
+      return;
+    }
+    if (!event.target.closest('.nav-menu')) closeMenus();
+  });
+  document.addEventListener('keydown', function(event){
+    if (event.key === 'Escape') closeMenus();
+  });
+})();
+<\/script>`;
     }
 
 function pdfViewerRuntimeHtml() {
@@ -6490,6 +6649,94 @@ nav {
   overflow-wrap: anywhere;
 }
 
+.site-nav .nav-menu {
+  position: relative;
+  display: block;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.site-nav .nav-menu > a {
+  gap: 8px;
+}
+
+.site-nav .nav-label {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.site-nav .nav-caret {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  min-height: 18px;
+  padding: 0 2px;
+  cursor: pointer;
+  font-size: 10px;
+  line-height: 1;
+  transition: transform .18s ease;
+}
+
+.site-nav .nav-menu.is-open > a .nav-caret {
+  transform: rotate(180deg);
+}
+
+.site-nav .nav-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 8;
+  display: grid;
+  min-width: 220px;
+  max-width: min(320px, calc(100vw - 32px));
+  padding: 8px;
+  border: 1px solid #d8e0e7;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(31,41,51,.16);
+}
+
+.site-nav .nav-dropdown[hidden],
+.site-nav .nav-dropdown a[hidden] {
+  display: none;
+}
+
+.site-nav .nav-dropdown a.nav-dropdown-link {
+  display: block;
+  width: 100%;
+  min-height: 42px;
+  max-width: none;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #245f43;
+  padding: 9px 12px;
+  font-size: 13px;
+  line-height: 1.35;
+  text-align: left;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.site-nav .nav-dropdown a.nav-dropdown-link:hover,
+.site-nav .nav-dropdown a.nav-dropdown-link:focus-visible,
+.site-nav .nav-dropdown a.nav-dropdown-link.active {
+  background: #e8f3ed;
+  color: #245f43;
+}
+
+body.child-nav-display-dropdown .hierarchy-nav {
+  display: none;
+}
+
+body.nav-left .site-nav .nav-dropdown {
+  top: 0;
+  left: calc(100% + 8px);
+}
+
 .site-nav a.active {
   color: #fff;
   background: #2f7d57;
@@ -6592,7 +6839,7 @@ body.nav-top .site-nav a {
   align-items: center;
   justify-content: flex-start;
   min-width: 0;
-  max-width: min(19rem, 100%);
+  max-width: 100%;
   min-height: 42px;
   line-height: 1.25;
   text-align: left;
@@ -8238,7 +8485,7 @@ exports.deleteUserByAdmin = onCall(async (request) => {
       state.html = buildExportHtml();
       state.css = buildExportCss();
       state.blockHtml = buildPeraichiLikeHtml();
-      els.preview.className = `site-preview ${template.className} ${els.navPosition.value === "left" ? "nav-left" : "nav-top"} nav-style-${currentNavStyle()} heading-${currentHeadingStyle()} child-button-size-${currentChildButtonSize()} child-button-style-${currentChildButtonStyle()} ${headerPhotoClass}`;
+      els.preview.className = `site-preview ${template.className} ${els.navPosition.value === "left" ? "nav-left" : "nav-top"} nav-style-${currentNavStyle()} heading-${currentHeadingStyle()} child-button-size-${currentChildButtonSize()} child-button-style-${currentChildButtonStyle()} child-nav-display-${currentChildNavDisplay()} ${headerPhotoClass}`;
       els.preview.style.setProperty("--preview-photo", `url('${previewPhoto}')`);
       els.preview.style.setProperty("--header-photo", `url('${headerPhoto}')`);
       els.preview.style.setProperty("--header-photo-position", headerPosition);
@@ -8872,6 +9119,11 @@ styles.css、page-*.html、images フォルダー、files フォルダーも同�
       applyChildButtonSettings();
       render();
     });
+    els.childNavDisplaySelect.addEventListener("change", () => {
+      state.childNavDisplay = els.childNavDisplaySelect.value;
+      applyChildButtonSettings();
+      render();
+    });
     [els.headerPhotoX, els.headerPhotoY, els.headerPhotoZoom].forEach((input) => {
       input.addEventListener("input", () => {
         els.headerPhotoPosition.value = "custom";
@@ -9493,6 +9745,28 @@ styles.css、page-*.html、images フォルダー、files フォルダーも同�
     });
 
     els.preview.addEventListener("click", (event) => {
+      const dropdownToggle = event.target.closest("[data-nav-dropdown-toggle]");
+      if (dropdownToggle) {
+        event.preventDefault();
+        event.stopPropagation();
+        const menu = dropdownToggle.closest(".nav-menu");
+        const dropdown = menu?.querySelector(".nav-dropdown");
+        if (!menu || !dropdown) return;
+        const shouldOpen = dropdown.hidden;
+        els.preview.querySelectorAll(".nav-menu.is-open").forEach((openMenu) => {
+          if (openMenu === menu) return;
+          openMenu.classList.remove("is-open");
+          const openDropdown = openMenu.querySelector(".nav-dropdown");
+          const openLink = openMenu.querySelector(":scope > a");
+          if (openDropdown) openDropdown.hidden = true;
+          if (openLink) openLink.setAttribute("aria-expanded", "false");
+        });
+        dropdown.hidden = !shouldOpen;
+        menu.classList.toggle("is-open", shouldOpen);
+        const menuLink = menu.querySelector(":scope > a");
+        if (menuLink) menuLink.setAttribute("aria-expanded", String(shouldOpen));
+        return;
+      }
       const editable = event.target.closest("[data-preview-edit-kind]");
       const editableLink = editable?.closest("a");
       if (editable && isPreviewTextEditGesture(event) && editableLink) {
