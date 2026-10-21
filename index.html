@@ -2214,6 +2214,15 @@
       line-height: 1.45;
     }
 
+    .pdf-description-editor {
+      display: grid;
+      gap: 7px;
+      padding: 10px;
+      border: 1px solid #b9d8c6;
+      border-radius: 8px;
+      background: #f7fbf8;
+    }
+
     .pdf-card-description {
       display: block;
       padding: 0 10px 10px;
@@ -6112,10 +6121,27 @@
     }
 
     function hydratePdfThumbnails(root = els.preview) {
-      root?.querySelectorAll("[data-pdf-thumb-source]").forEach((frame) => {
+      const frames = Array.from(root?.querySelectorAll("[data-pdf-thumb-source]") || []);
+      const hydrate = (frame) => {
+        if (frame.dataset.pdfThumbReady === "true") return;
         const source = pdfPreviewSource(frame.dataset.pdfThumbSource || "");
-        if (source) frame.src = pdfSourceWithFirstPage(source);
-      });
+        if (!source) return;
+        frame.src = pdfSourceWithFirstPage(source);
+        frame.dataset.pdfThumbReady = "true";
+      };
+      if (!frames.length) return;
+      if (!("IntersectionObserver" in window)) {
+        frames.forEach(hydrate);
+        return;
+      }
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          hydrate(entry.target);
+          observer.unobserve(entry.target);
+        });
+      }, { rootMargin: "240px 0px" });
+      frames.forEach((frame) => observer.observe(frame));
     }
 
     function pdfCardMarkup(link, linkIndex, context = {}) {
@@ -6495,15 +6521,22 @@
                           <option value="full" ${pdfThumbSize(block) === "full" ? "selected" : ""}>横幅いっぱい</option>
                         </select>
                       </label>
-                      <div class="field-help">見出しを外すと、PDFのサムネイルとリンクだけを表示します。</div>
+                      <div class="field-help">小さめは3枚、標準は2枚、大きめ・横幅いっぱいは1枚です。</div>
+                      <div class="pdf-description-editor">
+                        <div class="block-area-title">PDFごとの説明</div>
+                        <div class="field-help">選んだ枚数分の説明をここで入力できます。説明が不要なPDFは空欄にしてください。</div>
+                        ${Array.from({ length: pdfLinkLimit(block) }, (_, linkIndex) => `
+                          <label class="photo-caption-field">PDF${linkIndex + 1}の説明（なしでも可）
+                            <textarea rows="2" data-block-field="${index}:linkDescriptions.${linkIndex}" placeholder="PDF${linkIndex + 1}の説明を入力">${escapeHtml(block.linkDescriptions?.[linkIndex] || "")}</textarea>
+                          </label>
+                        `).join("")}
+                      </div>
+                      <div class="field-help">見出しを外すと、PDFのサムネイルと説明だけを表示します。</div>
                     ` : ""}
                     ${needsLinks ? (block.links || []).slice(0, block.type === "pdfLinks" ? pdfLinkLimit(block) : 3).map((link, linkIndex) => `
                       <div class="link-grid">
                         <button class="small-btn" type="button" data-choose-link-file="${index}:links.${linkIndex}">PDF・リンク${linkIndex + 1}のファイルを選ぶ</button>
                         ${link.fileName ? `<div class="photo-choice-meta">選択中: ${escapeHtml(link.fileName)}</div>` : ""}
-                        ${block.type === "pdfLinks" ? `<label class="photo-caption-field">PDF${linkIndex + 1}の本文（なしでも可）
-                          <textarea rows="2" data-block-field="${index}:linkDescriptions.${linkIndex}" placeholder="説明を入れない場合は空欄">${escapeHtml(block.linkDescriptions?.[linkIndex] || "")}</textarea>
-                        </label>` : ""}
                       </div>
                     `).join("") : ""}
                     ${needsPageLinks ? `
@@ -7693,6 +7726,15 @@ main > .block-half {
   display: block;
   padding: 0 10px 10px;
   line-height: 1.45;
+}
+
+.pdf-description-editor {
+  display: grid;
+  gap: 7px;
+  padding: 10px;
+  border: 1px solid #b9d8c6;
+  border-radius: 8px;
+  background: #f7fbf8;
 }
 
 .pdf-card:focus-visible {
