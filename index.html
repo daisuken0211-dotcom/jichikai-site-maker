@@ -2264,6 +2264,15 @@
       font-weight: 900;
     }
 
+    .pdf-lightbox-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .pdf-lightbox-open,
     .pdf-lightbox-close {
       min-height: 36px;
       border: 1px solid var(--line);
@@ -2272,6 +2281,11 @@
       color: #334155;
       font-weight: 900;
       padding: 4px 12px;
+      text-decoration: none;
+    }
+
+    .pdf-lightbox-close {
+      cursor: pointer;
     }
 
     .pdf-lightbox-frame {
@@ -2761,6 +2775,37 @@
       .pdf-grid.pdf-size-medium {
         grid-template-columns: 1fr;
       }
+
+      .pdf-grid.pdf-size-large .pdf-card,
+      .pdf-grid.pdf-size-full .pdf-card {
+        width: 100%;
+      }
+
+      .pdf-card {
+        min-width: 0;
+      }
+
+      .pdf-lightbox {
+        padding: 0;
+      }
+
+      .pdf-lightbox-dialog {
+        width: 100%;
+        height: 100dvh;
+        max-height: none;
+        border-radius: 0;
+      }
+
+      .pdf-lightbox-toolbar {
+        min-height: 52px;
+        padding: 8px 10px;
+      }
+
+      .pdf-lightbox-open,
+      .pdf-lightbox-close {
+        min-height: 40px;
+        padding: 6px 10px;
+      }
     }
   </style>
 </head>
@@ -3188,7 +3233,10 @@
     <div class="pdf-lightbox-dialog" role="dialog" aria-modal="true" aria-labelledby="pdfLightboxTitle">
       <div class="pdf-lightbox-toolbar">
         <strong id="pdfLightboxTitle">PDFプレビュー</strong>
-        <button class="pdf-lightbox-close" id="pdfLightboxClose" type="button">閉じる</button>
+        <div class="pdf-lightbox-actions">
+          <a class="pdf-lightbox-open" id="pdfLightboxOpen" href="#" target="_blank" rel="noopener">別画面で開く</a>
+          <button class="pdf-lightbox-close" id="pdfLightboxClose" type="button">閉じる</button>
+        </div>
       </div>
       <iframe class="pdf-lightbox-frame" id="pdfLightboxFrame" title="PDFプレビュー"></iframe>
     </div>
@@ -3389,6 +3437,7 @@
       pdfLightbox: document.getElementById("pdfLightbox"),
       pdfLightboxFrame: document.getElementById("pdfLightboxFrame"),
       pdfLightboxTitle: document.getElementById("pdfLightboxTitle"),
+      pdfLightboxOpen: document.getElementById("pdfLightboxOpen"),
       pdfLightboxClose: document.getElementById("pdfLightboxClose")
     };
 
@@ -6699,6 +6748,15 @@ function pdfViewerRuntimeHtml() {
   function withFirstPage(source){
     return source + (source.indexOf('#') >= 0 ? '&' : '#') + 'page=1&view=FitH';
   }
+  function isMobilePdfViewport(){
+    return !!(window.matchMedia && window.matchMedia('(max-width: 700px)').matches);
+  }
+  function openPdfInBrowser(source){
+    if (!source) return;
+    var target = withFirstPage(source);
+    var opened = window.open(target, '_blank', 'noopener,noreferrer');
+    if (!opened) window.location.href = target;
+  }
   function closeViewer(){
     var viewer = document.getElementById('pdf-lightbox');
     if (viewer) viewer.hidden = true;
@@ -6711,15 +6769,21 @@ function pdfViewerRuntimeHtml() {
       viewer = document.createElement('div');
       viewer.id = 'pdf-lightbox';
       viewer.className = 'pdf-lightbox';
-      viewer.innerHTML = '<div class="pdf-lightbox-dialog" role="dialog" aria-modal="true"><div class="pdf-lightbox-toolbar"><strong id="pdf-lightbox-title"></strong><button class="pdf-lightbox-close" type="button">閉じる</button></div><iframe class="pdf-lightbox-frame" id="pdf-lightbox-frame" title="PDFプレビュー"></iframe></div>';
+      viewer.innerHTML = '<div class="pdf-lightbox-dialog" role="dialog" aria-modal="true"><div class="pdf-lightbox-toolbar"><strong id="pdf-lightbox-title"></strong><div class="pdf-lightbox-actions"><a class="pdf-lightbox-open" id="pdf-lightbox-open" href="#" target="_blank" rel="noopener">別画面で開く</a><button class="pdf-lightbox-close" type="button">閉じる</button></div></div><iframe class="pdf-lightbox-frame" id="pdf-lightbox-frame" title="PDFプレビュー"></iframe></div>';
       document.body.appendChild(viewer);
       viewer.addEventListener('click', function(event){
         if (event.target === viewer || event.target.closest('.pdf-lightbox-close')) closeViewer();
       });
     }
+    var source = link.getAttribute('data-pdf-source') || '';
+    if (isMobilePdfViewport()) {
+      openPdfInBrowser(source);
+      return;
+    }
     viewer.hidden = false;
     document.getElementById('pdf-lightbox-title').textContent = link.getAttribute('data-pdf-title') || 'PDFプレビュー';
-    document.getElementById('pdf-lightbox-frame').src = withFirstPage(link.getAttribute('data-pdf-source') || '');
+    document.getElementById('pdf-lightbox-open').href = withFirstPage(source);
+    document.getElementById('pdf-lightbox-frame').src = withFirstPage(source);
   }
   document.addEventListener('click', function(event){
     var photo = event.target.closest('[data-photo-view]');
@@ -6738,7 +6802,7 @@ function pdfViewerRuntimeHtml() {
     if (!link) return;
     event.preventDefault();
     var source = link.getAttribute('data-pdf-source');
-    if (source) window.open(withFirstPage(source), '_blank', 'noopener');
+    if (source) openPdfInBrowser(source);
   });
   document.addEventListener('keydown', function(event){
     if (event.key === 'Escape') {
@@ -7663,6 +7727,15 @@ main > .block-half {
   font-weight: 900;
 }
 
+.pdf-lightbox-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.pdf-lightbox-open,
 .pdf-lightbox-close {
   min-height: 36px;
   border: 1px solid #d8e0e7;
@@ -7671,6 +7744,11 @@ main > .block-half {
   color: #334155;
   font-weight: 900;
   padding: 4px 12px;
+  text-decoration: none;
+}
+
+.pdf-lightbox-close {
+  cursor: pointer;
 }
 
 .pdf-lightbox-frame {
@@ -8086,6 +8164,37 @@ body.heading-sideband h2::before {
   .pdf-grid.pdf-size-small,
   .pdf-grid.pdf-size-medium {
     grid-template-columns: 1fr;
+  }
+
+  .pdf-grid.pdf-size-large .pdf-card,
+  .pdf-grid.pdf-size-full .pdf-card {
+    width: 100%;
+  }
+
+  .pdf-card {
+    min-width: 0;
+  }
+
+  .pdf-lightbox {
+    padding: 0;
+  }
+
+  .pdf-lightbox-dialog {
+    width: 100%;
+    height: 100dvh;
+    max-height: none;
+    border-radius: 0;
+  }
+
+  .pdf-lightbox-toolbar {
+    min-height: 52px;
+    padding: 8px 10px;
+  }
+
+  .pdf-lightbox-open,
+  .pdf-lightbox-close {
+    min-height: 40px;
+    padding: 6px 10px;
   }
 }`
         .replaceAll("#2f7d57", theme.main)
@@ -8802,8 +8911,15 @@ exports.deleteUserByAdmin = onCall(async (request) => {
     function openPdfLightbox(link) {
       if (!link || !els.pdfLightbox || !els.pdfLightboxFrame) return;
       const source = pdfPreviewSource(link.dataset.pdfSource || "");
+      const target = pdfSourceWithFirstPage(source);
+      if (window.matchMedia?.("(max-width: 700px)").matches) {
+        const opened = window.open(target, "_blank", "noopener,noreferrer");
+        if (!opened) window.location.href = target;
+        return;
+      }
       els.pdfLightboxTitle.textContent = link.dataset.pdfTitle || "PDFプレビュー";
-      els.pdfLightboxFrame.src = pdfSourceWithFirstPage(source);
+      els.pdfLightboxOpen.href = target;
+      els.pdfLightboxFrame.src = target;
       els.pdfLightbox.hidden = false;
       els.pdfLightboxClose.focus();
     }
