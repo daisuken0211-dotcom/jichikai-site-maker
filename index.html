@@ -1524,6 +1524,10 @@
       font-size: calc(1.5em * var(--block-heading-scale, var(--site-heading-scale, 1)));
     }
 
+    .site-preview [data-block-typography] .editable-content-table {
+      font-size: var(--table-font-size, inherit);
+    }
+
     .site-preview .header-inner {
       width: min(100% - 60px, 100%);
       margin: 0 auto;
@@ -3665,6 +3669,7 @@
         tableRowHeight: 52,
         tableColumnWidths: Array(15).fill(0),
         tableRowHeights: Array(15).fill(0),
+        tableFontSize: 0,
         textLinkText: "",
         textLinkUrl: "",
         fontFamily: "inherit",
@@ -6070,18 +6075,25 @@
       return [0.85, 1, 1.2, 1.4].includes(scale) ? scale : 0;
     }
 
+    function blockTableFontSize(block) {
+      const size = Number(block?.tableFontSize);
+      return [12, 14, 16, 18, 20].includes(size) ? size : 0;
+    }
+
     function blockTypographyAttr(block) {
       if (!block) return "";
       const styles = [];
       const fontKey = blockFontFamilyKey(block);
       const baseSize = blockBaseFontSize(block);
       const headingScale = blockHeadingScale(block);
+      const tableFontSize = blockTableFontSize(block);
       if (fontKey !== "inherit") styles.push(`--block-font-family:${escapeHtml(fontFamilyOptions[fontKey])}`);
       if (baseSize) {
         styles.push(`--block-font-size:${baseSize}px`);
         styles.push(`--block-font-scale:${baseSize / 16}`);
       }
       if (headingScale) styles.push(`--block-heading-scale:${headingScale}`);
+      if (tableFontSize) styles.push(`--table-font-size:${tableFontSize}px`);
       const styleAttr = styles.length ? ` style="${styles.join(";")}"` : "";
       return ` data-block-typography="1"${styleAttr}`;
     }
@@ -6606,6 +6618,16 @@
                           `).join("")}
                         </div>
                         <div class="table-width-total ${Math.abs(tableColumnWidthTotal(block) - 100) < 0.01 ? "" : "warning"}">合計：${Math.round(tableColumnWidthTotal(block))}%（100%に調整してください）</div>
+                        <label>表の文字サイズ
+                          <select data-block-field="${index}:tableFontSize">
+                            <option value="0" ${blockTableFontSize(block) === 0 ? "selected" : ""}>部品の本文サイズに合わせる</option>
+                            <option value="12" ${blockTableFontSize(block) === 12 ? "selected" : ""}>小さめ（12px）</option>
+                            <option value="14" ${blockTableFontSize(block) === 14 ? "selected" : ""}>やや小さめ（14px）</option>
+                            <option value="16" ${blockTableFontSize(block) === 16 ? "selected" : ""}>標準（16px）</option>
+                            <option value="18" ${blockTableFontSize(block) === 18 ? "selected" : ""}>大きめ（18px）</option>
+                            <option value="20" ${blockTableFontSize(block) === 20 ? "selected" : ""}>とても大きめ（20px）</option>
+                          </select>
+                        </label>
                         <div class="field-help">行ごとの高さ（横方向は同じ高さ）</div>
                         ${rowHeights.map((value, rowIndex) => `
                           <label>行${rowIndex + 1}の高さ <span class="range-value">${Math.round(value)}px</span>
@@ -7691,6 +7713,10 @@ main > .block-half {
   padding: 10px 12px;
   vertical-align: top;
   white-space: pre-wrap;
+}
+
+[data-block-typography] .editable-content-table {
+  font-size: var(--table-font-size, inherit);
 }
 
 .text-heading-only {
@@ -8822,6 +8848,7 @@ exports.deleteUserByAdmin = onCall(async (request) => {
     .sentence { font-size: 18px; max-width: 760px; margin: 0 auto; }
     .editable-table-wrap { width: 100%; overflow-x: auto; }
     .editable-content-table { width: 100%; min-width: 420px; border-collapse: collapse; table-layout: fixed; background: #fff; }
+    [data-block-typography] .editable-content-table { font-size: var(--table-font-size, inherit); }
     .editable-content-table td { min-width: 72px; border: 1px solid #d8e0e7; padding: 10px 12px; vertical-align: top; white-space: pre-wrap; }
     .article-box { border: 1px solid #d8e0e7; padding: 24px; display: grid; grid-template-columns: .8fr 1fr; gap: 24px; align-items: center; }
     .article-box img { width: 100%; border-radius: 8px; }
@@ -8869,6 +8896,7 @@ exports.deleteUserByAdmin = onCall(async (request) => {
     .sentence { font-size: 18px; max-width: 760px; margin: 0 auto; }
     .editable-table-wrap { width: 100%; overflow-x: auto; }
     .editable-content-table { width: 100%; min-width: 420px; border-collapse: collapse; table-layout: fixed; background: #fff; }
+    [data-block-typography] .editable-content-table { font-size: var(--table-font-size, inherit); }
     .editable-content-table td { min-width: 72px; border: 1px solid #d8e0e7; padding: 10px 12px; vertical-align: top; white-space: pre-wrap; }
     table { width: 100%; border-collapse: collapse; background: #fff; }
     th, td { border-bottom: 1px solid #d8e0e7; padding: 16px; text-align: left; vertical-align: top; }
@@ -10830,6 +10858,9 @@ styles.css、page-*.html、images フォルダー、files フォルダーも同�
         block.baseFontSize = [14, 16, 18, 20].includes(Number(input.value)) ? Number(input.value) : 0;
       } else if (path === "headingScale") {
         block.headingScale = [0.85, 1, 1.2, 1.4].includes(Number(input.value)) ? Number(input.value) : 0;
+      } else if (path === "tableFontSize") {
+        block.tableFontSize = [12, 14, 16, 18, 20].includes(Number(input.value)) ? Number(input.value) : 0;
+        renderAddedBlocks();
       } else if (["heading", "text", "width", "textLinkText", "textLinkUrl", "photoLinkUrl", "photoX", "photoY", "photoZoom"].includes(path)) {
         block[path] = input.value;
         if (path === "textLinkUrl" && !isDataUrl(input.value)) block.textLinkFileName = "";
