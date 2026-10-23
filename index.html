@@ -223,6 +223,69 @@
       color: #94a3b8;
     }
 
+    .table-structure-controls {
+      display: grid;
+      gap: 7px;
+      padding: 10px;
+      border: 1px solid #b9d8c6;
+      border-radius: 8px;
+      background: #f7fbf8;
+    }
+
+    .table-selection-label {
+      color: var(--green-dark);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .table-insert-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .table-insert-grid .small-btn {
+      min-height: 36px;
+      white-space: normal;
+      line-height: 1.3;
+    }
+
+    .table-column-widths {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .table-column-widths label {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 8px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .table-column-widths input[type="number"] {
+      width: 68px;
+      min-width: 0;
+      padding: 6px 7px;
+      text-align: right;
+    }
+
+    .table-width-total {
+      color: var(--green-dark);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .table-width-total.warning {
+      color: #9f2f2f;
+    }
+
     .section-box {
       display: grid;
       gap: 8px;
@@ -3293,7 +3356,8 @@
       localPhotos: [],
       pendingLinkFileTarget: null,
       pendingBlockPhotoTarget: null,
-      pendingBlockPhotoBatchTarget: null
+      pendingBlockPhotoBatchTarget: null,
+      activeTableCell: { blockId: "", row: 0, col: 0 }
     };
 
     const accessCodeConfig = {
@@ -5754,11 +5818,13 @@
       const cols = tableCols(block);
       const source = Array.isArray(block?.tableColumnWidths) ? block.tableColumnWidths : [];
       const fallback = 100 / cols;
-      const values = Array.from({ length: cols }, (_, index) =>
-        Math.min(100, Math.max(10, Number(source[index]) || fallback))
+      return Array.from({ length: cols }, (_, index) =>
+        Math.min(100, Math.max(1, Number(source[index]) || fallback))
       );
-      const total = values.reduce((sum, value) => sum + value, 0) || 100;
-      return values.map((value) => value / total * 100);
+    }
+
+    function tableColumnWidthTotal(block) {
+      return tableColumnWidths(block).reduce((sum, value) => sum + value, 0);
     }
 
     function tableColumnWidthMax(block) {
@@ -5782,6 +5848,86 @@
       block.tableCols = tableCols(block);
       block.tableCells = Array.from({ length: 225 }, (_, index) => String(source[index] || ""));
       return block.tableCells.slice(0, total);
+    }
+
+    function resizeTableGrid(block, nextRows, nextCols) {
+      if (!block) return;
+      const previousRows = tableRows(block);
+      const previousCols = tableCols(block);
+      const source = ensureTableCells(block);
+      const cells = Array(225).fill("");
+      const preservedRows = Math.min(previousRows, nextRows);
+      const preservedCols = Math.min(previousCols, nextCols);
+      for (let row = 0; row < preservedRows; row += 1) {
+        for (let col = 0; col < preservedCols; col += 1) {
+          cells[row * nextCols + col] = source[row * previousCols + col] || "";
+        }
+      }
+      block.tableRows = nextRows;
+      block.tableCols = nextCols;
+      block.tableCells = cells;
+    }
+
+    function tableSelectionFor(block) {
+      const rows = tableRows(block);
+      const cols = tableCols(block);
+      const selection = state.activeTableCell?.blockId === block?.id ? state.activeTableCell : null;
+      return {
+        row: Math.min(rows - 1, Math.max(0, Number(selection?.row) || 0)),
+        col: Math.min(cols - 1, Math.max(0, Number(selection?.col) || 0))
+      };
+    }
+
+    function setTableSelection(block, row = 0, col = 0) {
+      if (!block) return;
+      const rows = tableRows(block);
+      const cols = tableCols(block);
+      state.activeTableCell = {
+        blockId: block.id,
+        row: Math.min(rows - 1, Math.max(0, Number(row) || 0)),
+        col: Math.min(cols - 1, Math.max(0, Number(col) || 0))
+      };
+    }
+
+    function insertTableRow(block, rowIndex) {
+      const rows = tableRows(block);
+      const cols = tableCols(block);
+      if (rows >= 15) return false;
+      const insertAt = Math.min(rows, Math.max(0, Number(rowIndex) || 0));
+      const source = ensureTableCells(block);
+      const cells = [];
+      for (let row = 0; row < rows + 1; row += 1) {
+        if (row === insertAt) {
+          cells.push(...Array(cols).fill(""));
+          continue;
+        }
+        const sourceRow = row > insertAt ? row - 1 : row;
+        cells.push(...source.slice(sourceRow * cols, (sourceRow + 1) * cols));
+      }
+      block.tableCells = cells.concat(Array(225 - cells.length).fill(""));
+      const heights = tableRowHeights(block);
+      const copiedHeight = heights[Math.min(rows - 1, Math.max(0, insertAt - 1))] || tableRowHeight(block);
+      block.tableRowHeights = heights.slice(0, insertAt).concat(copiedHeight, heights.slice(insertAt), Array(15).fill(0)).slice(0, 15);
+      block.tableRows = rows + 1;
+      return true;
+    }
+
+    function insertTableColumn(block, columnIndex) {
+      const rows = tableRows(block);
+      const cols = tableCols(block);
+      if (cols >= 15) return false;
+      const insertAt = Math.min(cols, Math.max(0, Number(columnIndex) || 0));
+      const source = ensureTableCells(block);
+      const cells = [];
+      for (let row = 0; row < rows; row += 1) {
+        const sourceRow = source.slice(row * cols, (row + 1) * cols);
+        cells.push(...sourceRow.slice(0, insertAt), "", ...sourceRow.slice(insertAt));
+      }
+      block.tableCells = cells.concat(Array(225 - cells.length).fill(""));
+      const widths = tableColumnWidths(block);
+      block.tableColumnWidths = widths.slice(0, insertAt).concat(10, widths.slice(insertAt), Array(15).fill(0)).slice(0, 15);
+      block.tableCols = cols + 1;
+      return true;
     }
 
     function ensureTextParts(block) {
@@ -6057,6 +6203,7 @@
       const columnWidths = tableColumnWidths(block);
       const rowHeights = tableRowHeights(block);
       const cells = ensureTableCells(block);
+      const colgroup = `<colgroup>${columnWidths.map((columnWidth) => `<col style="width:${columnWidth}%;">`).join("")}</colgroup>`;
       const tableRowsMarkup = Array.from({ length: rows }, (_, rowIndex) => `
         <tr style="height:${rowHeights[rowIndex]}px;">${Array.from({ length: cols }, (_, colIndex) => {
           const cellIndex = rowIndex * cols + colIndex;
@@ -6064,11 +6211,11 @@
           return `<td class="editable-table-cell" style="height:${rowHeights[rowIndex]}px;"${previewEditAttr("block", "tableCell", block?.id || "", cellIndex)}>${value}</td>`;
         }).join("")}</tr>
       `).join("");
-      const colgroup = `<colgroup>${columnWidths.map((width) => `<col style="width:${width}%;">`).join("")}</colgroup>`;
+      const tableStyle = `width:${width}%;`;
       return `<section class="${blockClass(block, "text-block table-block")}"${previewBlockAttr(block)}>
         <h2${previewEditAttr("block", "heading", block?.id || "")}>${custom.heading}</h2>
         ${textPartsMarkup(block)}
-        <div class="editable-table-wrap"><table class="editable-content-table" style="width:${width}%;">${colgroup}<tbody>${tableRowsMarkup}</tbody></table></div>
+        <div class="editable-table-wrap"><table class="editable-content-table" style="${tableStyle}">${colgroup}<tbody>${tableRowsMarkup}</tbody></table></div>
       </section>`;
     }
 
@@ -6432,16 +6579,33 @@
                           ${Array.from({ length: 15 }, (_, value) => value + 1).map((value) => `<option value="${value}" ${tableCols(block) === value ? "selected" : ""}>${value}列</option>`).join("")}
                         </select>
                       </label>
+                      ${(() => {
+                        const selection = tableSelectionFor(block);
+                        return `<div class="table-structure-controls">
+                          <div class="block-area-title">表の行・列を追加</div>
+                          <div class="field-help">プレビューでセルを選ぶと、その位置を基準に追加できます。入力済みの内容はそのまま残ります。</div>
+                          <div class="table-selection-label">選択中：${selection.row + 1}行目・${selection.col + 1}列目</div>
+                          <div class="table-insert-grid">
+                            <button class="small-btn" type="button" data-table-insert="${index}:col-left" ${tableCols(block) >= 15 ? "disabled" : ""}>列を左に追加</button>
+                            <button class="small-btn" type="button" data-table-insert="${index}:col-right" ${tableCols(block) >= 15 ? "disabled" : ""}>列を右に追加</button>
+                            <button class="small-btn" type="button" data-table-insert="${index}:row-above" ${tableRows(block) >= 15 ? "disabled" : ""}>行を上に追加</button>
+                            <button class="small-btn" type="button" data-table-insert="${index}:row-below" ${tableRows(block) >= 15 ? "disabled" : ""}>行を下に追加</button>
+                          </div>
+                        </div>`;
+                      })()}
                       <label>表の横幅 <span class="range-value">${tableWidth(block)}%</span>
                         <input type="range" min="40" max="100" step="5" value="${tableWidth(block)}" data-block-field="${index}:tableWidth">
                       </label>
                       <div class="table-dimension-controls">
-                        <div class="field-help">列ごとの幅（縦方向は同じ幅）</div>
-                        ${columnWidths.map((value, columnIndex) => `
-                          <label>列${columnIndex + 1}の幅 <span class="range-value">${Math.round(value)}%</span>
-                            <input type="range" min="10" max="${tableColumnWidthMax(block)}" step="5" value="${Math.round(value)}" data-block-field="${index}:tableColumnWidths.${columnIndex}">
-                          </label>
-                        `).join("")}
+                        <div class="field-help">列ごとの幅（%）を入力します。ほかの列は自動で変わりません。</div>
+                        <div class="table-column-widths">
+                          ${columnWidths.map((value, columnIndex) => `
+                            <label>列${columnIndex + 1}
+                              <input type="number" min="1" max="100" step="1" value="${Math.round(value)}" data-block-field="${index}:tableColumnWidths.${columnIndex}">%
+                            </label>
+                          `).join("")}
+                        </div>
+                        <div class="table-width-total ${Math.abs(tableColumnWidthTotal(block) - 100) < 0.01 ? "" : "warning"}">合計：${Math.round(tableColumnWidthTotal(block))}%（100%に調整してください）</div>
                         <div class="field-help">行ごとの高さ（横方向は同じ高さ）</div>
                         ${rowHeights.map((value, rowIndex) => `
                           <label>行${rowIndex + 1}の高さ <span class="range-value">${Math.round(value)}px</span>
@@ -8657,7 +8821,7 @@ exports.deleteUserByAdmin = onCall(async (request) => {
     .main-visual h1 { margin: 0; font-size: clamp(38px, 7vw, 72px); }
     .sentence { font-size: 18px; max-width: 760px; margin: 0 auto; }
     .editable-table-wrap { width: 100%; overflow-x: auto; }
-    .editable-content-table { width: 100%; min-width: 420px; border-collapse: collapse; background: #fff; }
+    .editable-content-table { width: 100%; min-width: 420px; border-collapse: collapse; table-layout: fixed; background: #fff; }
     .editable-content-table td { min-width: 72px; border: 1px solid #d8e0e7; padding: 10px 12px; vertical-align: top; white-space: pre-wrap; }
     .article-box { border: 1px solid #d8e0e7; padding: 24px; display: grid; grid-template-columns: .8fr 1fr; gap: 24px; align-items: center; }
     .article-box img { width: 100%; border-radius: 8px; }
@@ -8704,7 +8868,7 @@ exports.deleteUserByAdmin = onCall(async (request) => {
     .heading-line h2 { border-top: 3px solid #8fc31f; border-bottom: 3px solid #8fc31f; padding: 12px 24px; }
     .sentence { font-size: 18px; max-width: 760px; margin: 0 auto; }
     .editable-table-wrap { width: 100%; overflow-x: auto; }
-    .editable-content-table { width: 100%; min-width: 420px; border-collapse: collapse; background: #fff; }
+    .editable-content-table { width: 100%; min-width: 420px; border-collapse: collapse; table-layout: fixed; background: #fff; }
     .editable-content-table td { min-width: 72px; border: 1px solid #d8e0e7; padding: 10px 12px; vertical-align: top; white-space: pre-wrap; }
     table { width: 100%; border-collapse: collapse; background: #fff; }
     th, td { border-bottom: 1px solid #d8e0e7; padding: 16px; text-align: left; vertical-align: top; }
@@ -8851,9 +9015,10 @@ exports.deleteUserByAdmin = onCall(async (request) => {
             const cellIndex = rowIndex * cols + colIndex;
             return `<td style="height:${rowHeights[rowIndex]}px;">${escapeHtml(cells[cellIndex] || "").replace(/\n/g, "<br>")}</td>`;
           }).join("")}</tr>`).join("");
-          const colgroup = `<colgroup>${columnWidths.map((columnWidth) => `<col style="width:${columnWidth}%">`).join("")}</colgroup>`;
+          const colgroup = `<colgroup>${columnWidths.map((columnWidth) => `<col style="width:${columnWidth}%;">`).join("")}</colgroup>`;
+          const tableStyle = `width:${width}%;`;
           return `<div class="pera1-section block" data-structure="b-table" data-block-name="表" id="${sectionId}">
-    <div class="c-wrapper"><h2 class="pera1-editable" data-structure="e-heading">${custom.heading}</h2><div class="sentence pera1-editable" data-structure="e-text">${custom.text}</div><div class="editable-table-wrap"><table class="editable-content-table" style="width:${width}%;">${colgroup}<tbody>${tableHtml}</tbody></table></div></div>
+    <div class="c-wrapper"><h2 class="pera1-editable" data-structure="e-heading">${custom.heading}</h2><div class="sentence pera1-editable" data-structure="e-text">${custom.text}</div><div class="editable-table-wrap"><table class="editable-content-table" style="${tableStyle}">${colgroup}<tbody>${tableHtml}</tbody></table></div></div>
   </div>`;
         }
         if (block.type === "pageLinks") {
@@ -10197,6 +10362,14 @@ styles.css、page-*.html、images フォルダー、files フォルダーも同�
       if (blockId && state.extraBlocks.some((block) => block.id === blockId)) {
         state.activeBlockId = blockId;
         state.activeNoticeIndex = -1;
+        if (editable.dataset.previewEditField === "tableCell") {
+          const block = state.extraBlocks.find((item) => item.id === blockId);
+          const cellIndex = Number(editable.dataset.previewEditIndex) || 0;
+          if (block) {
+            setTableSelection(block, Math.floor(cellIndex / tableCols(block)), cellIndex % tableCols(block));
+            renderAddedBlocks();
+          }
+        }
         applyEditorTab("blocks");
         syncPreviewSelection();
       }
@@ -10478,6 +10651,36 @@ styles.css、page-*.html、images フォルダー、files フォルダーも同�
         render(true);
         return;
       }
+      const tableInsertButton = event.target.closest("[data-table-insert]");
+      if (tableInsertButton) {
+        event.preventDefault();
+        event.stopPropagation();
+        const [indexText, action] = tableInsertButton.dataset.tableInsert.split(":");
+        const index = Number(indexText);
+        const block = state.extraBlocks[index];
+        if (!block || block.type !== "table") return;
+        const selection = tableSelectionFor(block);
+        const inserted = action === "col-left"
+          ? insertTableColumn(block, selection.col)
+          : action === "col-right"
+            ? insertTableColumn(block, selection.col + 1)
+            : action === "row-above"
+              ? insertTableRow(block, selection.row)
+              : insertTableRow(block, selection.row + 1);
+        if (!inserted) return;
+        const nextRow = action.startsWith("row-")
+          ? selection.row + (action === "row-below" ? 1 : 0)
+          : selection.row;
+        const nextCol = action.startsWith("col-")
+          ? selection.col + (action === "col-right" ? 1 : 0)
+          : selection.col;
+        setTableSelection(block, nextRow, nextCol);
+        state.activeBlockId = block.id;
+        renderAddedBlocks();
+        render(true);
+        els.status.textContent = action.startsWith("col-") ? "選んだ位置に列を追加しました" : "選んだ位置に行を追加しました";
+        return;
+      }
       const moveButton = event.target.closest("[data-move-block]");
       if (moveButton) {
         event.preventDefault();
@@ -10636,8 +10839,12 @@ styles.css、page-*.html、images フォルダー、files フォルダーも同�
         ensureTextParts(block);
         renderAddedBlocks();
       } else if (path === "tableRows" || path === "tableCols") {
-        block[path] = tableDimension(input.value, 2);
-        ensureTableCells(block);
+        const nextValue = tableDimension(input.value, 2);
+        resizeTableGrid(
+          block,
+          path === "tableRows" ? nextValue : tableRows(block),
+          path === "tableCols" ? nextValue : tableCols(block)
+        );
         renderAddedBlocks();
       } else if (path === "tableWidth") {
         block.tableWidth = Math.min(100, Math.max(40, Number(input.value) || 100));
@@ -10648,18 +10855,16 @@ styles.css、page-*.html、images フォルダー、files フォルダーも同�
       } else if (path.startsWith("tableColumnWidths.")) {
         const columnIndex = Math.min(14, Math.max(0, Number(path.split(".")[1]) || 0));
         const widths = tableColumnWidths(block);
-        const desired = Math.min(tableColumnWidthMax(block), Math.max(10, Number(input.value) || 10));
-        const otherIndexes = widths.map((_, index) => index).filter((index) => index !== columnIndex);
+        const desired = Math.min(100, Math.max(1, Number(input.value) || 1));
         widths[columnIndex] = desired;
-        if (otherIndexes.length) {
-          const remaining = Math.max(otherIndexes.length * 10, 100 - desired);
-          const each = remaining / otherIndexes.length;
-          otherIndexes.forEach((index) => {
-            widths[index] = each;
-          });
-        }
         block.tableColumnWidths = widths;
-        renderAddedBlocks();
+        const total = tableColumnWidthTotal(block);
+        const totalElement = input.closest(".table-dimension-controls")?.querySelector(".table-width-total");
+        if (totalElement) {
+          totalElement.textContent = `合計：${Math.round(total)}%（100%に調整してください）`;
+          totalElement.classList.toggle("warning", Math.abs(total - 100) >= 0.01);
+        }
+        render(true);
       } else if (path.startsWith("tableRowHeights.")) {
         const rowIndex = Math.min(14, Math.max(0, Number(path.split(".")[1]) || 0));
         const heights = Array.isArray(block.tableRowHeights) ? block.tableRowHeights : Array(15).fill(0);
