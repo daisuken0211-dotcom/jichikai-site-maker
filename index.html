@@ -3358,11 +3358,24 @@
       activeNoticeIndex: -1,
       isPreviewRendering: false,
       localPhotos: [],
+      localPhotoLoadToken: 0,
       pendingLinkFileTarget: null,
       pendingBlockPhotoTarget: null,
       pendingBlockPhotoBatchTarget: null,
       activeTableCell: { blockId: "", row: 0, col: 0 }
     };
+
+    const photoUploadTokens = new WeakMap();
+
+    function beginPhotoUpload(block) {
+      const token = (photoUploadTokens.get(block) || 0) + 1;
+      photoUploadTokens.set(block, token);
+      return token;
+    }
+
+    function isCurrentPhotoUpload(block, token) {
+      return photoUploadTokens.get(block) === token;
+    }
 
     const accessCodeConfig = {
       apiUrl: "https://sakuma-farm-homepage-auth.sakuma-farm-jichikai.workers.dev/check-code",
@@ -3677,6 +3690,7 @@
         headingScale: 0,
         photoLinkUrl: "",
         photoUrls: ["", "", ""],
+        photoNames: ["", "", ""],
         photoCaptions: ["", "", ""],
         photoCount: 1,
         photoColumns: 0,
@@ -5157,6 +5171,7 @@
     }
 
     async function loadLocalPhotoFiles(fileList) {
+      const loadToken = ++state.localPhotoLoadToken;
       const files = Array.from(fileList || [])
         .filter((file) => file.type.startsWith("image/"))
         .slice(0, 80);
@@ -5165,7 +5180,7 @@
         return;
       }
       els.status.textContent = "写真を読み込んでいます";
-      state.localPhotos = await Promise.all(files.map(async (file) => ({
+      const loadedPhotos = await Promise.all(files.map(async (file) => ({
         name: file.webkitRelativePath || file.name,
         ...(await compressImageForHomepage(file).catch(async () => {
           const dataUrl = await readFileAsDataUrl(file);
@@ -5179,6 +5194,8 @@
           };
         }))
       })));
+      if (loadToken !== state.localPhotoLoadToken) return;
+      state.localPhotos = loadedPhotos;
       renderPhotoLibrary();
       const originalTotal = state.localPhotos.reduce((sum, photo) => sum + photo.originalSize, 0);
       const compressedTotal = state.localPhotos.reduce((sum, photo) => sum + photo.compressedSize, 0);
@@ -5200,6 +5217,7 @@
       if (!files.length || !target) return;
       const block = state.extraBlocks[target.blockIndex];
       if (!block) return;
+      const uploadToken = beginPhotoUpload(block);
       const selectedExisting = (block.photoUrls || []).filter((url) => String(url || "").trim()).length;
       const shouldAutoSize = Boolean(options.autoSize) || (!selectedExisting && !Number(block.photoColumns) && !Number(block.photoRows));
       if (shouldAutoSize) {
@@ -5214,7 +5232,9 @@
         els.status.textContent = "写真を表示しています";
       }
       const instantUrls = await Promise.all(selectedFiles.map((file) => readFileAsDataUrl(file)));
+      if (!isCurrentPhotoUpload(block, uploadToken)) return;
       block.photoUrls = instantUrls.concat(Array(60 - instantUrls.length).fill(""));
+      block.photoNames = selectedFiles.map((file) => file.name).concat(Array(60 - selectedFiles.length).fill(""));
       block.photoCaptions = Array(60).fill("");
       block.photoCount = selectedFiles.length || 1;
       block.showHeading = block.showHeading === true;
@@ -5232,7 +5252,9 @@
           return { dataUrl: instantUrls[index], compressedSize: file.size, fallback: instantUrls[index] };
         }
       }));
+      if (!isCurrentPhotoUpload(block, uploadToken)) return;
       block.photoUrls = compressed.map((photo) => photo.dataUrl || photo.fallback).concat(Array(60 - compressed.length).fill(""));
+      block.photoNames = selectedFiles.map((file) => file.name).concat(Array(60 - selectedFiles.length).fill(""));
       renderPhotoLibrary();
       renderAddedBlocks();
       render(true);
@@ -5783,14 +5805,14 @@
         x: clampPhotoSetting(block.photoX, 50, 0, 100),
         y: clampPhotoSetting(block.photoY, 50, 0, 100),
         zoom: clampPhotoSetting(block.photoZoom, 100, 100, 300),
-        fit: block.photoFit === "contain" ? "contain" : "cover"
+      fit: block.photoFit === "cover" ? "cover" : "contain"
       };
       const setting = block.photoSettings?.[index] || {};
       return {
         x: clampPhotoSetting(setting.x, legacy.x, 0, 100),
         y: clampPhotoSetting(setting.y, legacy.y, 0, 100),
         zoom: clampPhotoSetting(setting.zoom, legacy.zoom, 100, 300),
-        fit: setting.fit === "contain" ? "contain" : legacy.fit
+        fit: setting.fit === "cover" ? "cover" : legacy.fit
       };
     }
 
@@ -6041,12 +6063,30 @@
       `;
     }
 
+    function compactPhotoSlots(block) {
+      if (!block || !Array.isArray(block.photoUrls)) return;
+      const selectedIndexes = block.photoUrls
+        .map((url, index) => String(url || "").trim() ? index : -1)
+        .filter((index) => index >= 0);
+      if (!selectedIndexes.length || selectedIndexes.every((index, position) => index === position)) return;
+      const compactArray = (key) => {
+        const source = Array.isArray(block[key]) ? block[key] : [];
+        block[key] = selectedIndexes.map((index) => source[index] || "")
+          .concat(Array(Math.max(0, 60 - selectedIndexes.length)).fill(""))
+          .slice(0, 60);
+      };
+      compactArray("photoUrls");
+      compactArray("photoNames");
+      compactArray("photoCaptions");
+    }
+
     function blockPhotoUrls(block, fallbackUrls = []) {
+      compactPhotoSlots(block);
       const count = blockPhotoCount(block);
       const ownPhotos = (block?.photoUrls || [])
-        .slice(0, count)
         .map((url) => String(url || "").trim())
-        .filter(Boolean);
+        .filter(Boolean)
+        .slice(0, count);
       return ownPhotos.length ? ownPhotos : fallbackUrls.slice(0, count);
     }
 
@@ -6665,7 +6705,7 @@
                           <div class="photo-picked-row">
                             <img src="${escapeHtml(url)}" alt="写真${photoIndex + 1}">
                             <div>
-                              <div class="photo-choice-meta">写真${photoIndex + 1}</div>
+                              <div class="photo-choice-meta">写真${photoIndex + 1}${block.photoNames?.[photoIndex] ? `：${escapeHtml(block.photoNames[photoIndex])}` : ""}</div>
                               <label class="photo-caption-field">コメント（なしでも可）
                                 <textarea rows="2" data-block-field="${index}:photoCaptions.${photoIndex}" placeholder="コメントを入れない場合は空欄">${escapeHtml(block.photoCaptions?.[photoIndex] || "")}</textarea>
                               </label>
@@ -6674,6 +6714,7 @@
                               <button class="small-btn" type="button" data-move-block-photo="${index}:${photoIndex}:up">上へ</button>
                               <button class="small-btn" type="button" data-move-block-photo="${index}:${photoIndex}:down">下へ</button>
                               <button class="small-btn" type="button" data-choose-block-photo="${index}:${photoIndex}">差し替え</button>
+                              <button class="small-btn" type="button" data-reset-block-photo="${index}:${photoIndex}">全体表示</button>
                             </div>
                           </div>
                         `).join("") || `<div class="status">まだ写真がありません。「写真をまとめて選ぶ」から選択してください。</div>`}
@@ -6775,6 +6816,7 @@
                           <label>写真の拡大 <span class="range-value">${setting.zoom}%</span>
                             <input type="range" min="100" max="300" step="10" value="${setting.zoom}" data-block-field="${index}:photoSettings.${photoIndex}.zoom">
                           </label>
+                          <div class="field-help">写真が切れるときは「全体を表示」。大きく見せるときは「切り取り表示」と拡大を使います。</div>
                           <label>横位置
                             <select data-block-field="${index}:photoSettings.${photoIndex}.x">
                               <option value="0" ${snapPhotoPosition(setting.x) === 0 ? "selected" : ""}>左</option>
@@ -9932,8 +9974,10 @@ styles.css、page-*.html、images フォルダー、files フォルダーも同�
       const slotIndex = Number(slotIndexText) || 0;
       if (slotIndex >= blockPhotoCount(activeBlock)) return;
       activeBlock.photoUrls = activeBlock.photoUrls || ["", "", ""];
+      activeBlock.photoNames = activeBlock.photoNames || ["", "", ""];
       ensurePhotoSettings(activeBlock);
       activeBlock.photoUrls[slotIndex] = photo.dataUrl;
+      activeBlock.photoNames[slotIndex] = photo.name || "";
       renderPhotoLibrary();
       renderAddedBlocks();
       render(true);
@@ -10628,6 +10672,7 @@ styles.css、page-*.html、images フォルダー、files フォルダーも同�
         const block = state.extraBlocks[index];
         if (!block) return;
         const urls = Array.isArray(block.photoUrls) ? block.photoUrls : [];
+        const names = Array.isArray(block.photoNames) ? block.photoNames : [];
         const captions = Array.isArray(block.photoCaptions) ? block.photoCaptions : [];
         const selectedIndexes = urls.map((url, photoIndex) => String(url || "").trim() ? photoIndex : -1).filter((photoIndex) => photoIndex >= 0);
         if (selectedIndexes.length < 2) {
@@ -10635,14 +10680,37 @@ styles.css、page-*.html、images フォルダー、files フォルダーも同�
           return;
         }
         const reversedUrls = selectedIndexes.map((photoIndex) => urls[photoIndex]).reverse();
+        const reversedNames = selectedIndexes.map((photoIndex) => names[photoIndex] || "").reverse();
         const reversedCaptions = selectedIndexes.map((photoIndex) => captions[photoIndex] || "").reverse();
         block.photoUrls = reversedUrls.concat(Array(60 - reversedUrls.length).fill(""));
+        block.photoNames = reversedNames.concat(Array(60 - reversedNames.length).fill(""));
         block.photoCaptions = reversedCaptions.concat(Array(60 - reversedCaptions.length).fill(""));
         state.activeBlockId = block.id;
         renderPhotoLibrary();
         renderAddedBlocks();
         render(true);
         els.status.textContent = "写真の上下の順番を逆にしました";
+        return;
+      }
+      const resetPhotoButton = event.target.closest("[data-reset-block-photo]");
+      if (resetPhotoButton) {
+        event.preventDefault();
+        event.stopPropagation();
+        const [indexText, photoIndexText] = resetPhotoButton.dataset.resetBlockPhoto.split(":");
+        const block = state.extraBlocks[Number(indexText)];
+        const photoIndex = Number(photoIndexText);
+        if (!block) return;
+        const settings = ensurePhotoSettings(block);
+        settings[photoIndex] = { x: 50, y: 50, zoom: 100, fit: "contain" };
+        block.photoSettings = settings;
+        block.photoX = settings[0].x;
+        block.photoY = settings[0].y;
+        block.photoZoom = settings[0].zoom;
+        block.photoFit = settings[0].fit;
+        state.activeBlockId = block.id;
+        renderAddedBlocks();
+        render(true);
+        els.status.textContent = `写真${photoIndex + 1}を全体表示に戻しました`;
         return;
       }
       const photoButton = event.target.closest("[data-choose-block-photo]");
@@ -10664,6 +10732,7 @@ styles.css、page-*.html、images フォルダー、files フォルダーも同�
         if (!block) return;
         const photoIndex = Number(photoIndexText);
         const urls = Array.isArray(block.photoUrls) ? block.photoUrls : [];
+        const names = Array.isArray(block.photoNames) ? block.photoNames : [];
         const captions = Array.isArray(block.photoCaptions) ? block.photoCaptions : [];
         const selectedIndexes = urls.map((url, index) => String(url || "").trim() ? index : -1).filter((index) => index >= 0);
         const position = selectedIndexes.indexOf(photoIndex);
@@ -10671,8 +10740,10 @@ styles.css、page-*.html、images フォルダー、files フォルダーも同�
         if (position < 0 || nextPosition < 0 || nextPosition >= selectedIndexes.length) return;
         const otherIndex = selectedIndexes[nextPosition];
         [urls[photoIndex], urls[otherIndex]] = [urls[otherIndex], urls[photoIndex]];
+        [names[photoIndex], names[otherIndex]] = [names[otherIndex], names[photoIndex]];
         [captions[photoIndex], captions[otherIndex]] = [captions[otherIndex], captions[photoIndex]];
         block.photoUrls = urls;
+        block.photoNames = names;
         block.photoCaptions = captions;
         state.activeBlockId = block.id;
         renderAddedBlocks();
@@ -10744,6 +10815,7 @@ styles.css、page-*.html、images フォルダー、files フォルダーも同�
       if (!file || !target) return;
       const block = state.extraBlocks[target.blockIndex];
       if (!block) return;
+      const uploadToken = beginPhotoUpload(block);
       const selectedIndexes = (block.photoUrls || [])
         .map((url, index) => String(url || "").trim() ? index : -1)
         .filter((index) => index >= 0);
@@ -10757,11 +10829,15 @@ styles.css、page-*.html、images フォルダー、files フォルダーも同�
       block.photoUrls = block.photoUrls.concat(Array(60 - block.photoUrls.length).fill("")).slice(0, 60);
       block.photoCaptions = Array.isArray(block.photoCaptions) ? block.photoCaptions : [];
       block.photoCaptions = block.photoCaptions.concat(Array(60 - block.photoCaptions.length).fill("")).slice(0, 60);
+      block.photoNames = Array.isArray(block.photoNames) ? block.photoNames : [];
+      block.photoNames = block.photoNames.concat(Array(60 - block.photoNames.length).fill("")).slice(0, 60);
       ensurePhotoSettings(block);
       state.activeBlockId = block.id;
       try {
         const instantDataUrl = await readFileAsDataUrl(file);
+        if (!isCurrentPhotoUpload(block, uploadToken)) return;
         block.photoUrls[slotIndex] = instantDataUrl;
+        block.photoNames[slotIndex] = file.name;
         renderPhotoLibrary();
         renderAddedBlocks();
         render(true);
@@ -10769,7 +10845,9 @@ styles.css、page-*.html、images フォルダー、files フォルダーも同�
         els.status.textContent = "写真を表示しました。裏でHP用に軽くしています";
 
         const compressed = await compressImageForHomepage(file);
+        if (!isCurrentPhotoUpload(block, uploadToken)) return;
         block.photoUrls[slotIndex] = compressed.dataUrl;
+        block.photoNames[slotIndex] = file.name;
         renderPhotoLibrary();
         renderAddedBlocks();
         render(true);
