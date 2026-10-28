@@ -2132,7 +2132,7 @@
 
     .photo-gallery .hero-photo {
       min-height: 210px;
-      height: clamp(180px, 34vw, 420px);
+      height: var(--photo-frame-height, clamp(180px, 34vw, 420px));
     }
 
     .photo-gallery .photo-item {
@@ -3699,6 +3699,7 @@
         photoY: 50,
         photoZoom: 100,
         photoFit: "contain",
+        photoFrameHeight: 0,
         photoSettings: [
           { x: 50, y: 50, zoom: 100, fit: "contain" },
           { x: 50, y: 50, zoom: 100, fit: "contain" },
@@ -6004,6 +6005,11 @@
       return 1;
     }
 
+    function photoFrameHeight(block) {
+      const configured = Number(block?.photoFrameHeight);
+      return [0, 160, 220, 280, 340, 420, 520, 600].includes(configured) ? configured : 0;
+    }
+
     function blockPhotoCapacity(block) {
       return blockPhotoColumns(block) * blockPhotoRows(block);
     }
@@ -6050,8 +6056,10 @@
       const adjustableClass = adjust ? " is-adjustable-photo" : "";
       const adjustAttr = (index) => target === "page" ? photoAdjustAttr("page", index) : photoAdjustAttr(adjust, index);
       const columns = Math.min(3, Math.max(1, Number(adjust?.photoColumns) || Math.min(3, Math.max(1, photos.length))));
+      const frameHeight = photoFrameHeight(adjust);
+      const galleryStyle = [`--photo-columns:${columns}`, frameHeight ? `--photo-frame-height:${frameHeight}px` : ""].filter(Boolean).join(";");
       return `
-        <div class="photo-gallery count-${photos.length}" style="--photo-columns:${columns}">
+        <div class="photo-gallery count-${photos.length}" style="${galleryStyle}">
           ${photos.map((url, index) => {
             const caption = adjust?.showText === false ? "" : String(adjust?.photoCaptions?.[index] || "").trim();
             const captionMarkup = caption
@@ -6802,6 +6810,21 @@
                       <option value="full" ${block.width !== "half" ? "selected" : ""}>横幅いっぱい</option>
                       <option value="half" ${block.width === "half" ? "selected" : ""}>半分の幅で横並び</option>
                     </select>
+                    ${needsPhotoContent ? `
+                      <label>写真の枠の高さ
+                        <select data-block-field="${index}:photoFrameHeight">
+                          <option value="0" ${photoFrameHeight(block) === 0 ? "selected" : ""}>自動（おすすめ）</option>
+                          <option value="160" ${photoFrameHeight(block) === 160 ? "selected" : ""}>短め（160px）</option>
+                          <option value="220" ${photoFrameHeight(block) === 220 ? "selected" : ""}>やや短め（220px）</option>
+                          <option value="280" ${photoFrameHeight(block) === 280 ? "selected" : ""}>標準（280px）</option>
+                          <option value="340" ${photoFrameHeight(block) === 340 ? "selected" : ""}>やや高め（340px）</option>
+                          <option value="420" ${photoFrameHeight(block) === 420 ? "selected" : ""}>高め（420px）</option>
+                          <option value="520" ${photoFrameHeight(block) === 520 ? "selected" : ""}>大きめ（520px）</option>
+                          <option value="600" ${photoFrameHeight(block) === 600 ? "selected" : ""}>とても大きめ（600px）</option>
+                        </select>
+                      </label>
+                      <div class="field-help">写真が切れるときは枠を高くし、「全体を表示」にすると写真全体が入ります。</div>
+                    ` : ""}
                     ${needsPhotoContent ? Array.from({ length: photoCount }, (_, photoIndex) => {
                       const setting = photoSetting(block, photoIndex);
                       return `
@@ -7609,7 +7632,7 @@ main > .block-half {
 
 .photo-gallery .hero-photo {
   min-height: 210px;
-  height: clamp(180px, 34vw, 420px);
+  height: var(--photo-frame-height, clamp(180px, 34vw, 420px));
   background: #f1f5f3;
 }
 
@@ -10921,7 +10944,7 @@ styles.css、page-*.html、images フォルダー、files フォルダーも同�
       }
     });
 
-    els.addedBlocks.addEventListener("input", (event) => {
+    const handleAddedBlockFieldChange = (event) => {
       const input = event.target.closest("[data-block-field]");
       if (!input) return;
       event.stopPropagation();
@@ -11009,6 +11032,10 @@ styles.css、page-*.html、images フォルダー、files フォルダーも同�
       } else if (path === "pdfThumbSize") {
         block.pdfThumbSize = pdfThumbSize({ pdfThumbSize: input.value });
         renderAddedBlocks();
+      } else if (path === "photoFrameHeight") {
+        block.photoFrameHeight = photoFrameHeight({ photoFrameHeight: input.value });
+        renderAddedBlocks();
+        render(true);
       } else if (path.startsWith("linkDescriptions.")) {
         const [, linkIndexText] = path.split(".");
         const linkIndex = Math.min(2, Math.max(0, Number(linkIndexText) || 0));
@@ -11069,7 +11096,10 @@ styles.css、page-*.html、images フォルダー、files フォルダーも同�
       if (input.tagName === "TEXTAREA") autoResizeTextarea(input);
       updateTextCounter(input);
       renderKeepingEditorPosition(true);
-    });
+    };
+
+    els.addedBlocks.addEventListener("input", handleAddedBlockFieldChange);
+    els.addedBlocks.addEventListener("change", handleAddedBlockFieldChange);
 
     optionalEls.noticeBoxes.forEach((box, index) => {
       box.addEventListener("focusin", () => {
